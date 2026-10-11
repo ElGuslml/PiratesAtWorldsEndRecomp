@@ -25,3 +25,14 @@
 # these are the only vtable entries missing (the rest are __try/__except scope-table targets).
 0x820FAEB8 = {}   # after the thunk at 0x820FAEB0; vtable entry at 0x8203BB08
 0x820FB500 = {}   # after the thunk at 0x820FB4F8; vtable entry at 0x8203B448
+
+# The game's waits for the GPU without spinning (src/gpu_wait.cpp): the D3D library waits for the
+# command processor in six loops (ring space, fences, pending swaps, write-backs), each opened by
+# sub_822AF458 and calling the hang check sub_822AF608 on every iteration; on PC they kept the
+# render thread at 100 % of a core. potcawe_gpu_wait_sleep_us = 0 disables it.
+[[midasm_hook]]
+address = 0x822AF458   # stw r4,0(r3) (entry of sub_822AF458: a wait starts)
+name = "PotcaweGpuWaitBeginHook"
+[[midasm_hook]]
+address = 0x822AF608   # mflr r12 (entry of sub_822AF608: every iteration of a wait)
+name = "PotcaweGpuWaitSpinHook"
