@@ -18,7 +18,12 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
   selection, title screen, main menu, the intro video and the start of gameplay.
 - Fixes so far: two functions the code analyzer missed (`potcawe_functions.toml`) and SDK patch 0016 (see
   below).
+- Lower CPU usage: the game's render thread sleeps instead of spinning while it waits for the GPU
+  (`src/gpu_wait.cpp`; `potcawe_gpu_wait_sleep_us = 0` restores the original busy wait).
+- No stutter the first time an effect appears: new D3D12 pipelines are created without stalling the frame
+  (`gpu_async_pipelines_no_frame_wait = true` in `potcawe.toml`).
 - Next: play further and find out which settings and fixes the rest of the game needs.
+- [`docs/`](docs/README.md) has a short note on each problem found and what was done about it.
 
 ## Requirements
 

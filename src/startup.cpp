@@ -32,6 +32,9 @@ constexpr const char kDefaultConfig[] =
     R"(# potcawerecomp.exe runtime configuration, loaded at startup. The game recreates this file with
 # these defaults if it is missing. Command line options (--name=value) win over it.
 log_level = "info"
+# Do not wait at the end of the frame for new D3D12 pipelines (50-250 ms stutter the first time an
+# effect appears): the object appears a few frames later. false = wait.
+gpu_async_pipelines_no_frame_wait = true
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {

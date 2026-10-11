@@ -19,4 +19,7 @@ tools/
 CLAUDE.md
 CLAUDE.local.md
 
+# Detailed investigation notes, per run (not published; the short public version is docs/)
+local_docs/
+
 *.log
