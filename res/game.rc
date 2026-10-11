@@ -1,0 +1,31 @@
+// Resources of potcawerecomp.exe: icon (res/icon.ico, when present) and file properties.
+#include <winver.h>
+#include "version.h"
+
+#ifdef POTCAWERECOMP_HAS_ICON
+1 ICON "icon.ico"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION POTCAWERECOMP_VERSION
+PRODUCTVERSION POTCAWERECOMP_VERSION
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "FileDescription", "Pirates of the Caribbean: At World's End - POTCAWERecomp"
+      VALUE "FileVersion", POTCAWERECOMP_VERSION_STR
+      VALUE "ProductName", "POTCAWERecomp"
+      VALUE "ProductVersion", POTCAWERECOMP_VERSION_STR
+      VALUE "OriginalFilename", "potcawerecomp.exe"
+      VALUE "LegalCopyright", "POTCAWERecomp code: MIT License. Game content belongs to its owners."
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

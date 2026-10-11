@@ -1,0 +1,27 @@
+# potcawe_functions.toml - Manual corrections for the analyzer (default.xex): functions it missed,
+# [[switch_tables]] the codegen mistranslates and [[midasm_hook]]s into src/. See GRAWRecomp's
+# yeti_functions.toml for examples of each.
+
+[functions]
+# Branch (b) targets that the automatic analysis did not assign to any function. All are small
+# functions reached only through tail calls: getters that return the address of a static object
+# (lis r11 / addi r3,r11,X / blr) and one this-adjusting thunk (addi r3,r3,4 / b).
+0x820C0900 = {}   # branched to from 0x820C166C
+0x820C1678 = {}   # branched to from 0x820C330C
+0x820CBEC8 = {}   # branched to from 0x820CBF9C
+0x820E7990 = {}   # branched to from 0x820EB9A4
+0x8210F288 = {}   # branched to from 0x8210F534
+0x82188348 = {}   # branched to from 0x821888AC
+0x821888B0 = {}   # branched to from 0x82189574
+0x822608F8 = {}   # branched to from 0x822614CC
+0x822614E0 = {}   # branched to from 0x82263344
+0x82265618 = {}   # branched to from 0x822661DC
+0x824FC588 = {}   # branched to from 0x824FF124 (this-adjusting thunk)
+
+# Getters placed right after a this-adjusting thunk that ends in a branch to the next instruction
+# (addi r3,r3,X / b +4). The analyzer folds the getter into the thunk as a label, but the getter is
+# also a vtable entry of its own and is called through it ("Call to invalid or unregistered function"
+# at the first boot). All code pointers in .rdata/.data were checked against the function table:
+# these are the only vtable entries missing (the rest are __try/__except scope-table targets).
+0x820FAEB8 = {}   # after the thunk at 0x820FAEB0; vtable entry at 0x8203BB08
+0x820FB500 = {}   # after the thunk at 0x820FB4F8; vtable entry at 0x8203B448
