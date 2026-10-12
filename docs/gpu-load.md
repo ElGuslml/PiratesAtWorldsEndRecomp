@@ -79,3 +79,9 @@ default, so the first run matches the console.
 | `render_target_draw_clears` | `true` | `false` draws the clears through their alias render targets and copies the result back (the SDK default) |
 | `render_target_skip_transfers_on_overwrite` | `true` | `false` restores the copies into fully overwritten render targets (the SDK default) |
 | `execute_unclipped_draw_vs_on_cpu` | `true` | `false` assumes unclipped draws use the whole EDRAM (the SDK default) |
+| `clear_memory_page_state` | `false` | `true` (the SDK default) re-uploads every CPU-written page each frame: about 1 ms more per frame at 2x2 |
+
+Other SDK options measured at 30 FPS, 2x2, antialiasing off (reference 31 % of the GPU): the ROV render
+target path 44 % (much slower), `gpu_3d_to_2d_texture=false`, `occlusion_query_enable=false`,
+`d3d12_tiled_shared_memory=false`, `d3d12_bindless=false` and `gamma_render_target_as_unorm16=false` within
+the noise; `clear_memory_page_state=false` 28 %, now the default here.

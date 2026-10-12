@@ -55,6 +55,11 @@ render_target_skip_transfers_on_overwrite = true
 # targets that hold that memory instead of drawing through the alias and copying back (SDK patch
 # 0018). false = the SDK default.
 render_target_draw_clears = true
+# Keep the GPU copies of memory the CPU uploaded valid across frames. With the SDK default (true)
+# every page uploaded by the CPU is re-uploaded the next frame even if it did not change: about
+# 1 ms of GPU per frame at a 2x2 render scale here, 10-15 MB per frame in GRAW. false is the
+# original Xenia behavior (true is a hack for one game); GRAW runs with false as well.
+clear_memory_page_state = false
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {
