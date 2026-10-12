@@ -22,6 +22,9 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
   (`src/gpu_wait.cpp`; `potcawe_gpu_wait_sleep_us = 0` restores the original busy wait).
 - No stutter the first time an effect appears: new D3D12 pipelines are created without stalling the frame
   (`gpu_async_pipelines_no_frame_wait = true` in `potcawe.toml`).
+- No flat-colored objects in Port Royal under GPU load (60 FPS with a 2× or 3× render scale): the shaders'
+  control flow is translated with `if` blocks instead of a `switch` (`dxbc_switch = false` in `potcawe.toml`,
+  see [`docs/flat-colored-objects.md`](docs/flat-colored-objects.md)).
 - **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, render quality and
   graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
   it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest

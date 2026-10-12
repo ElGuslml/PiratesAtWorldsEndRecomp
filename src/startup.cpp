@@ -36,6 +36,11 @@ log_level = "info"
 # Do not wait at the end of the frame for new D3D12 pipelines (50-250 ms stutter the first time an
 # effect appears): the object appears a few frames later. false = wait.
 gpu_async_pipelines_no_frame_wait = true
+# Translate the shaders' control flow with if blocks instead of a switch. With the switch (the SDK's
+# default) the lit objects of Port Royal turn into flat saturated colors when the GPU is loaded (60 FPS
+# with a 2x or 3x render scale): the pixel shader body re-executes and accumulates light
+# (docs/flat-colored-objects.md). true = the SDK default.
+dxbc_switch = false
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {
