@@ -1,7 +1,7 @@
-From 03ce4f55a56522c3ee8d6f69a5fec2584c03d446 Mon Sep 17 00:00:00 2001
+From 6c8cf05ccf18de9cd48dfe5682c9b2168c46b526 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:44 -0600
-Subject: [PATCH 10/16] gpu: only look up register info for writes when the
+Subject: [PATCH 10/18] gpu: only look up register info for writes when the
  debug log is on
 
 CommandProcessor::WriteRegister called RegisterFile::GetRegisterInfo (a

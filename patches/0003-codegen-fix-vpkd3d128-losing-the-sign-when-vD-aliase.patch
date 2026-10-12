@@ -1,7 +1,7 @@
-From 6b7db8c8b55f5e3ec9e33d85c169d6544220f6fa Mon Sep 17 00:00:00 2001
+From 5c24ec7b31a3e83fae6cedf8542d1713d718aca7 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:48:17 -0600
-Subject: [PATCH 03/16] codegen: fix vpkd3d128 losing the sign when vD aliases
+Subject: [PATCH 03/18] codegen: fix vpkd3d128 losing the sign when vD aliases
  vB
 
 The FLOAT16_2, NORMSHORT4 and FLOAT16_4 cases wrote the output lanes of vD

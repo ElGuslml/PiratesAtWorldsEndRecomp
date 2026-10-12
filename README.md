@@ -25,6 +25,11 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
 - No flat-colored objects in Port Royal under GPU load (60 FPS with a 2× or 3× render scale): the shaders'
   control flow is translated with `if` blocks instead of a `switch` (`dxbc_switch = false` in `potcawe.toml`,
   see [`docs/flat-colored-objects.md`](docs/flat-colored-objects.md)).
+- Less GPU time per frame with a 2× or 3× render scale (2×2: 49 → 60 FPS with the GPU at 89 % instead of
+  99 %; 3×3: 22 → 37 FPS on an RTX 4070 Ti): the game's 19 EDRAM clears per frame, drawn through
+  render targets with another MSAA mode and pitch, are done as clears of the render targets that hold
+  that memory instead of copying the frame into the alias and back (SDK patches 0017 and 0018 and
+  `execute_unclipped_draw_vs_on_cpu = true` in `potcawe.toml`, see [`docs/gpu-load.md`](docs/gpu-load.md)).
 - **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, render quality and
   graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
   it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
@@ -122,7 +127,8 @@ and the options they add are off by default. Each patch's commit message explain
 | 0014 | Log the guest context on unhandled guest access violations |
 | 0015 | `gpu_guest_fps_limit`: optional frame rate cap for the game |
 | 0016 | `XamUserReadProfileSettings` no longer writes past the game's buffer (title-specific settings larger than their nominal size) |
-| 0016 | `XamUserReadProfileSettings` no longer writes past the game's buffer (title-specific settings larger than their nominal size) |
+| 0017 | `render_target_skip_transfers_on_overwrite`: no EDRAM ownership transfer into a render target that a single triangle, rectangle or quad fully overwrites (the game's clears through MSAA / pitch aliases) |
+| 0018 | `render_target_draw_clears`: a draw that writes constant values to a rectangle of its render targets is done as a clear of the render targets owning that EDRAM, never through the alias |
 
 ## Credits
 

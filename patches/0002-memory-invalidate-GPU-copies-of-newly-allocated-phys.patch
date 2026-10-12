@@ -1,7 +1,7 @@
-From 467f316d6c608a7d3c5938595af4f1f8c6629d13 Mon Sep 17 00:00:00 2001
+From aa92462d2c2bba4f7f10d1d35727c6299fc28d53 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:48:09 -0600
-Subject: [PATCH 02/16] memory: invalidate GPU copies of newly allocated
+Subject: [PATCH 02/18] memory: invalidate GPU copies of newly allocated
  physical memory
 
 A GPU write (for instance a resolve the GPU processes late, after the

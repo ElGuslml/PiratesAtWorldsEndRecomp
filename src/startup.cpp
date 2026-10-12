@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iterator>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,19 @@ gpu_async_pipelines_no_frame_wait = true
 # with a 2x or 3x render scale): the pixel shader body re-executes and accumulates light
 # (docs/flat-colored-objects.md). true = the SDK default.
 dxbc_switch = false
+# The game clears the EDRAM by drawing a rectangle through a surface with another MSAA mode and
+# pitch than the scene (same tile layout). Without these two, the SDK copies the whole frame into
+# that alias and back around each of the 19 clears per frame, a third of the GPU time with a 2x2
+# render scale (docs/gpu-load.md). Run the vertex shader of unclipped draws on the CPU to know how
+# much EDRAM they use (the Xenia default; the SDK default is false)...
+execute_unclipped_draw_vs_on_cpu = true
+# ...skip the copy into a render target when the draw replaces every sample of it (SDK patch
+# 0017)...
+render_target_skip_transfers_on_overwrite = true
+# ...and when the draw writes constant values (a clear), write them straight into the render
+# targets that hold that memory instead of drawing through the alias and copying back (SDK patch
+# 0018). false = the SDK default.
+render_target_draw_clears = true
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {
@@ -114,13 +128,68 @@ void ConfigureUserData(std::filesystem::path& user_data_root, std::filesystem::p
   }
 }
 
+// Creates potcawe.toml with the defaults, or appends to an existing one the settings (with their
+// comments) it does not mention, so that a setting added in a newer build takes effect without
+// deleting the user's file. A setting the file has, with any value, is left alone.
 void EnsureDefaultConfig(const std::filesystem::path& config_path) {
+  // Logging is not initialized yet (the config sets it up): nothing to log here.
+  std::string existing;
   if (std::filesystem::exists(config_path)) {
+    std::ifstream in(config_path, std::ios::binary);
+    existing.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  } else {
+    std::ofstream f(config_path, std::ios::binary);
+    f << kDefaultConfig;
     return;
   }
-  std::ofstream f(config_path, std::ios::binary);
-  f << kDefaultConfig;
-  // Logging is not initialized yet (the config sets it up): nothing to log here.
+  auto has_key = [&existing](const std::string& key) {
+    size_t pos = 0;
+    while ((pos = existing.find(key, pos)) != std::string::npos) {
+      size_t line_start = existing.rfind('\n', pos);
+      line_start = line_start == std::string::npos ? 0 : line_start + 1;
+      size_t after = pos + key.size();
+      bool only_spaces_before = existing.find_first_not_of(" \t", line_start) == pos;
+      size_t next = existing.find_first_not_of(" \t", after);
+      if (only_spaces_before && next != std::string::npos && existing[next] == '=') {
+        return true;
+      }
+      pos = after;
+    }
+    return false;
+  };
+  std::string missing;
+  std::string comments;
+  std::istringstream defaults(kDefaultConfig);
+  std::string line;
+  while (std::getline(defaults, line)) {
+    if (line.empty()) {
+      comments.clear();
+      continue;
+    }
+    if (line[0] == '#') {
+      comments += line + '\n';
+      continue;
+    }
+    size_t eq = line.find('=');
+    if (eq == std::string::npos) {
+      comments.clear();
+      continue;
+    }
+    std::string key = line.substr(0, eq);
+    key.erase(key.find_last_not_of(" \t") + 1);
+    if (!has_key(key)) {
+      missing += comments + line + '\n';
+    }
+    comments.clear();
+  }
+  if (missing.empty()) {
+    return;
+  }
+  std::ofstream f(config_path, std::ios::binary | std::ios::app);
+  if (!existing.empty() && existing.back() != '\n') {
+    f << '\n';
+  }
+  f << missing;
 }
 
 bool CheckGameFiles(const std::filesystem::path& game_root) {

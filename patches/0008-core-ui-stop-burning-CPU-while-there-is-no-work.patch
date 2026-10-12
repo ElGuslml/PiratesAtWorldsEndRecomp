@@ -1,7 +1,7 @@
-From 6909375a52476febb18268e0f51fe5743269d583 Mon Sep 17 00:00:00 2001
+From 09ae4410407594be63ec5cad47db58abe8bbb1fd Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:16 -0600
-Subject: [PATCH 08/16] core, ui: stop burning CPU while there is no work
+Subject: [PATCH 08/18] core, ui: stop burning CPU while there is no work
 
 Two idle loops kept a core busy for no useful work:
 
