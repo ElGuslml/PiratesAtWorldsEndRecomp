@@ -1,0 +1,52 @@
+// potcawe - render without multisampling, and so in one EDRAM tile (launcher: Antialiasing).
+//
+// The game's renderer creates its EDRAM surfaces through its own wrapper of XGSetSurfaceHeader
+// (sub_824D5750), with the multisample type taken from a table indexed by the engine's
+// antialiasing level (0 = none, 1 = 2 samples, 2 = 4 samples; table at 0x8255E254). The scene is
+// rendered with 2x MSAA into surfaces that do not fit the 10 MB EDRAM at 1280x720, so the engine
+// renders it in two tiles of 416 and 368 rows (the same 962 draws twice, with a resolve of each).
+// On the PC the EDRAM is virtual and multisampling costs about 3 ms per frame at a 2x2 render
+// scale, the second tile another 3-4 ms. With potcawe_no_msaa the hooks below pass
+// D3DMULTISAMPLE_NONE at the six surface creations (three functions create the surfaces) and
+// force the number of tiles, which the engine computes from the antialiasing level, to one.
+// Dock of Port Royal at 2x2 and 60 FPS on an RTX 4070 Ti: GPU 89 % -> 59 %. The image loses only
+// the 2x edge antialiasing.
+
+#include <rex/cvar.h>
+#include <rex/logging.h>
+#include <rex/ppc/context.h>
+
+#include <atomic>
+#include <cstdint>
+
+REXCVAR_DEFINE_BOOL(potcawe_no_msaa, false, "Potcawe",
+                    "Create the game's render surfaces without multisampling (no 2x MSAA edge "
+                    "antialiasing; less GPU work at high render scales)");
+
+// [[midasm_hook]] at the bl sub_824D5750 of sub_823FBC90, sub_823F98D8 and sub_823F9058: r6 = the
+// D3DMULTISAMPLE_TYPE of the surface being created.
+void PotcaweMsaaHook(PPCRegister& r6) {
+  if (!REXCVAR_GET(potcawe_no_msaa) || r6.u32 == 0) {
+    return;
+  }
+  static std::atomic<int> logged{0};
+  if (logged.fetch_add(1) < 8) {
+    REXLOG_INFO("[msaa] surface multisample type {} -> 0 (potcawe_no_msaa)", r6.u32);
+  }
+  r6.u32 = 0;
+}
+
+// [[midasm_hook]] 0x823FBE20 (sub_823FBC90, after "add r3,r10,r11"): r3 = the number of EDRAM
+// tiles the scene is rendered in, ceil(surface bytes * (1 << antialiasing level) / 10 MB) - 2 at
+// 1280x720 with 2x MSAA. Without multisampling the color and depth surfaces fit in one, but the
+// engine still sizes them from the level, so the count is forced to 1 here.
+void PotcaweTileCountHook(PPCRegister& r3) {
+  if (!REXCVAR_GET(potcawe_no_msaa) || r3.u32 <= 1) {
+    return;
+  }
+  static std::atomic<bool> logged{false};
+  if (!logged.exchange(true)) {
+    REXLOG_INFO("[msaa] scene tiles {} -> 1 (potcawe_no_msaa)", r3.u32);
+  }
+  r3.u32 = 1;
+}

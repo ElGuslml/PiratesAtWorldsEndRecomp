@@ -40,7 +40,7 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
 
   bool fullscreen = rex::cvar::Query<bool>("fullscreen");
   REXLOG_INFO("[options] monitor={} scale={}x{} display={} window={}x{} video_mode={}x{} "
-              "letterbox={} 60fps={} gpu_backend={}",
+              "letterbox={} 60fps={} no_msaa={} gpu_backend={}",
               rex::cvar::Query<int32_t>("monitor"),
               rex::cvar::Query<int32_t>("draw_resolution_scale_x"),
               rex::cvar::Query<int32_t>("draw_resolution_scale_y"),
@@ -51,7 +51,7 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
               rex::cvar::Query<int32_t>("video_mode_width"),
               rex::cvar::Query<int32_t>("video_mode_height"),
               rex::cvar::Query<bool>("present_letterbox"), rex::cvar::Query<bool>("potcawe_60fps"),
-              rex::cvar::Query<std::string>("gpu_backend"));
+              rex::cvar::Query<bool>("potcawe_no_msaa"), rex::cvar::Query<std::string>("gpu_backend"));
 }
 
 std::filesystem::path GpuPluginPath() {

@@ -44,3 +44,45 @@ name = "PotcaweGpuWaitSpinHook"
 address = 0x822B5968   # cmplwi r10,0 (after lwz r10,13444(r31) in sub_822B58B0)
 name = "PotcawePresentIntervalHook"
 registers = ["r10"]
+
+# No MSAA (src/msaa.cpp): the renderer creates its surfaces through sub_824D5750 (a wrapper of
+# XGSetSurfaceHeader) from three functions; r6 is the multisample type. The hooks pass 0 when
+# potcawe_no_msaa is on.
+[[midasm_hook]]
+address = 0x823FBF84   # bl sub_824D5750 in sub_823FBC90
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+[[midasm_hook]]
+address = 0x823FC034   # bl sub_824D5750 in sub_823FBC90
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+[[midasm_hook]]
+address = 0x823F9B48   # bl sub_824D5750 in sub_823F98D8
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+[[midasm_hook]]
+address = 0x823F9BF4   # bl sub_824D5750 in sub_823F98D8
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+[[midasm_hook]]
+address = 0x823F9394   # bl sub_824D5750 in sub_823F9058
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+[[midasm_hook]]
+address = 0x823F9440   # bl sub_824D5750 in sub_823F9058
+name = "PotcaweMsaaHook"
+registers = ["r6"]
+# The same renderer function computes how many EDRAM tiles the scene needs from the antialiasing
+# level (2 at 1280x720 with 2x MSAA); one tile when potcawe_no_msaa is on.
+[[midasm_hook]]
+address = 0x823FBE20   # divwu r11,r23,r3 (after add r3,r10,r11 in sub_823FBC90)
+name = "PotcaweTileCountHook"
+registers = ["r3"]
+[[midasm_hook]]
+address = 0x823F99DC   # divwu r11,r23,r3 in sub_823F98D8
+name = "PotcaweTileCountHook"
+registers = ["r3"]
+[[midasm_hook]]
+address = 0x823F9228   # divwu r11,r23,r3 in sub_823F9058
+name = "PotcaweTileCountHook"
+registers = ["r3"]

@@ -37,6 +37,11 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
 - **60 FPS option** (launcher, `potcawe_60fps`): the game is capped at 30 FPS only by its Direct3D present
   interval; the engine's clock measures real time, so the option just presents every vblank. Off by default,
   so the first run matches the console ([`docs/frame-rate.md`](docs/frame-rate.md)).
+- **Antialiasing option** (launcher, `potcawe_no_msaa`): the game renders with 2× MSAA into surfaces that do
+  not fit the console's 10 MB of EDRAM, so it draws the whole scene twice (two tiles). On the PC that memory is
+  virtual: "Off (faster)" creates the surfaces without multisampling and in one tile, which cuts the GPU time
+  by a third at a 2×2 render scale (89 % → 59 % at 60 FPS on an RTX 4070 Ti) at the cost of the 2× edge
+  antialiasing. Off by default, so the first run matches the console ([`docs/gpu-load.md`](docs/gpu-load.md)).
 - Next: play further and find out which settings and fixes the rest of the game needs.
 - [`docs/`](docs/README.md) has a short note on each problem found and what was done about it.
 
@@ -98,11 +103,12 @@ POTCAWE Launcher. You can also add `POTCAWE Launcher.exe` to change options from
 | File (next to `potcawerecomp.exe`) | What it holds |
 |---|---|
 | `potcawe.toml` | Base settings. Created with the defaults this game needs if it is missing. |
-| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, render scale, frame rate, API). Loaded after `potcawe.toml`. |
+| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, render scale, frame rate, antialiasing, API). Loaded after `potcawe.toml`. |
 
 Command-line options (`--name=value`, for example Steam launch options) win over both files:
 `--fullscreen=false --window_width=1920 --window_height=1080`,
-`--draw_resolution_scale_x=2 --draw_resolution_scale_y=2`, `--potcawe_60fps=true`, `--gpu_backend=vulkan`.
+`--draw_resolution_scale_x=2 --draw_resolution_scale_y=2`, `--potcawe_60fps=true`, `--potcawe_no_msaa=true`,
+`--gpu_backend=vulkan`.
 
 ## How the SDK is modified
 

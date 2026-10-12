@@ -59,6 +59,7 @@ struct Options {
   Size window{kGuestWidth, kGuestHeight};  // window size in physical pixels
   int scale = 0;                           // 0 = automatic; 1..kMaxScale = chosen
   bool fps60 = false;                      // potcawe_60fps (src/framerate.cpp)
+  bool no_msaa = false;                    // potcawe_no_msaa (src/msaa.cpp)
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
 };
 
@@ -165,6 +166,9 @@ struct Texts {
   const wchar_t* framerate;
   const wchar_t* fps30;
   const wchar_t* fps60;
+  const wchar_t* antialiasing;
+  const wchar_t* aa_msaa;
+  const wchar_t* aa_off;
   const wchar_t* graphics;
   const wchar_t* quality_hint;
   const wchar_t* vulkan_hint;
@@ -193,6 +197,9 @@ const Texts& TextsFor(uint32_t language) {
       L"Frame rate",
       L"30 FPS (original)",
       L"60 FPS",
+      L"Antialiasing",
+      L"2× MSAA (original)",
+      L"Off (faster)",
       L"Graphics API",
       L"The game renders at 1280 × 720 times a whole number (2×, 3×) and the image is fitted "
       L"to the screen. Automatic picks the smallest scale that covers the resolution. 60 FPS "
@@ -222,6 +229,9 @@ const Texts& TextsFor(uint32_t language) {
       L"Bildrate",
       L"30 FPS (Original)",
       L"60 FPS",
+      L"Kantenglättung",
+      L"2× MSAA (Original)",
+      L"Aus (schneller)",
       L"Grafik-API",
       L"Das Spiel rendert in 1280 × 720 mal einer ganzen Zahl (2×, 3×), das Bild wird an den "
       L"Bildschirm angepasst. „Automatisch“ wählt die kleinste Stufe, die die Auflösung abdeckt. "
@@ -251,6 +261,9 @@ const Texts& TextsFor(uint32_t language) {
       L"Fréquence d'images",
       L"30 FPS (d'origine)",
       L"60 FPS",
+      L"Anticrénelage",
+      L"2× MSAA (d'origine)",
+      L"Désactivé (plus rapide)",
       L"API graphique",
       L"Le jeu est rendu en 1280 × 720 multiplié par un nombre entier (2×, 3×) et l'image "
       L"s'adapte à l'écran. « Automatique » choisit la plus petite échelle qui couvre la "
@@ -281,6 +294,9 @@ const Texts& TextsFor(uint32_t language) {
       L"Frecuencia de imagen",
       L"30 FPS (original)",
       L"60 FPS",
+      L"Antialiasing",
+      L"2× MSAA (original)",
+      L"Desactivado (más rápido)",
       L"API gráfica",
       L"El juego dibuja a 1280 × 720 por un número entero (2×, 3×) y la imagen se ajusta a la "
       L"pantalla. «Automática» elige la menor escala que cubre la resolución. 60 FPS presenta una "
@@ -310,6 +326,9 @@ const Texts& TextsFor(uint32_t language) {
       L"Frequenza fotogrammi",
       L"30 FPS (originale)",
       L"60 FPS",
+      L"Antialiasing",
+      L"2× MSAA (originale)",
+      L"Disattivato (più veloce)",
       L"API grafica",
       L"Il gioco disegna a 1280 × 720 per un numero intero (2×, 3×) e l'immagine si adatta "
       L"allo schermo. «Automatica» sceglie la scala più piccola che copre la risoluzione. 60 FPS "
@@ -509,6 +528,8 @@ enum ControlId : int {
   kIdQuality,
   kIdFramerateLabel,
   kIdFramerate,
+  kIdAntialiasingLabel,
+  kIdAntialiasing,
   kIdBackendLabel,
   kIdBackend,
   kIdHint,
@@ -517,14 +538,15 @@ enum ControlId : int {
 };
 
 // Option rows (top to bottom) and buttons (left to right), for the controller.
-constexpr int kRowIds[] = {kIdMonitor, kIdDisplay, kIdResolution, kIdQuality, kIdFramerate,
-                           kIdBackend};
+constexpr int kRowIds[] = {kIdMonitor, kIdDisplay,     kIdResolution, kIdQuality,
+                           kIdFramerate, kIdAntialiasing, kIdBackend};
 constexpr int kButtonIds[] = {IDOK, kIdSave, IDCANCEL};
 constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdDisplayLabel, kIdDisplay},
                             {kIdResolutionLabel, kIdResolution},
                             {kIdQualityLabel, kIdQuality},
                             {kIdFramerateLabel, kIdFramerate},
+                            {kIdAntialiasingLabel, kIdAntialiasing},
                             {kIdBackendLabel, kIdBackend}};
 
 enum class Result { kQuit, kSave, kPlay };
@@ -656,6 +678,7 @@ void Refresh(Launcher& l) {
   FillCombo(Item(l, kIdQuality), qualities, o.scale);
 
   FillCombo(Item(l, kIdFramerate), {t.fps30, t.fps60}, o.fps60 ? 1 : 0);
+  FillCombo(Item(l, kIdAntialiasing), {t.aa_msaa, t.aa_off}, o.no_msaa ? 1 : 0);
 
   // Proper names: the same in every language.
   std::vector<std::wstring> backends = {L"DirectX 12"};
@@ -695,6 +718,9 @@ void OnSelectionChange(Launcher& l, int id) {
     case kIdFramerate:
       o.fps60 = index == 1;
       break;
+    case kIdAntialiasing:
+      o.no_msaa = index == 1;
+      break;
     case kIdBackend:
       o.vulkan = l.has_vulkan && index == 1;
       break;
@@ -704,7 +730,7 @@ void OnSelectionChange(Launcher& l, int id) {
 
 // Positions in pixels at 96 DPI; scaled with the monitor DPI.
 constexpr int kClientWidth = 560;
-constexpr int kClientHeight = 438;
+constexpr int kClientHeight = 474;
 
 void Layout(Launcher& l, UINT dpi) {
   auto s = [dpi](int v) { return MulDiv(v, int(dpi), 96); };
@@ -1083,6 +1109,7 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   }
   o.vulkan = GetString(c, "gpu_backend") == "vulkan";
   o.fps60 = GetBool(c, "potcawe_60fps", false);
+  o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
   if (GetString(c, "launcher_render_scale") == "auto") {
     o.scale = 0;
   } else if (int scale = GetInt(c, "launcher_render_scale", 0); scale >= 1) {
@@ -1147,6 +1174,8 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   f << "gpu_backend = \"" << (o.vulkan ? "vulkan" : "d3d12") << "\"\n";
   // Present every vblank (60 FPS) instead of every second one (src/framerate.cpp).
   f << "potcawe_60fps = " << boolean(o.fps60) << "\n";
+  // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing.
+  f << "potcawe_no_msaa = " << boolean(o.no_msaa) << "\n";
   return bool(f);
 }
 
