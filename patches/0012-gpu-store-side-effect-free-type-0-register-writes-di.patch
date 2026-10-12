@@ -1,7 +1,7 @@
 From fec4bf7371baad92b3e898bc5b8236c4116de540 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:50:36 -0600
-Subject: [PATCH 12/18] gpu: store side-effect-free type-0 register writes
+Subject: [PATCH 12/19] gpu: store side-effect-free type-0 register writes
  directly
 
 ExecutePacketType0 sent every register through the virtual WriteRegister

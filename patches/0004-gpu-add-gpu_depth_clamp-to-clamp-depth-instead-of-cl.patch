@@ -1,7 +1,7 @@
 From 249a74d4e5a6f7170b18779ce0d3d2def816eaec Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:03 -0600
-Subject: [PATCH 04/18] gpu: add gpu_depth_clamp to clamp depth instead of
+Subject: [PATCH 04/19] gpu: add gpu_depth_clamp to clamp depth instead of
  clipping in Z
 
 Xenos does not seem to clip primitives against the near/far planes: GRAW

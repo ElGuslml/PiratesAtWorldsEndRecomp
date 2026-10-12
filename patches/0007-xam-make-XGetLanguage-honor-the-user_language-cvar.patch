@@ -1,7 +1,7 @@
 From ab5e72f7c59596f9437ac876358cce8f43d1df68 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:04 -0600
-Subject: [PATCH 07/18] xam: make XGetLanguage honor the user_language cvar
+Subject: [PATCH 07/19] xam: make XGetLanguage honor the user_language cvar
 
 XGetLanguage always returned English (inherited code with the game
 region hard-coded to NTSC-U) and ignored user_language, which the SDK

@@ -71,6 +71,16 @@ multisampling alone: 79 %), 32 % at 30 FPS (was 46 %), 3x3 60 FPS (the cap, GPU 
 except for the 2x edge antialiasing, which a 2x or 3x render scale makes much less important. Off by
 default, so the first run matches the console.
 
+## Tried and set aside: lazy resolves (patch 0019, `d3d12_lazy_resolve`, off)
+
+The SDK's resolve chain (render target dumped into the EDRAM buffer, converted into the shared memory,
+loaded back into a texture when sampled) was replaced for color resolves by two host copies (render target
+to a spare render target at resolve time, spare render target to the texture when sampled), with the shared
+memory written only if something else reads the destination. It works (same image), but at 2x2 on an
+RTX 4070 Ti the copies cost as much as the three passes they replace: the frame is memory-bound either way
+(RenderDoc timing: dispatches 2.40 to 2.34 ms, copies 1.30 to 1.86 ms; GPU 27-28 % at 30 FPS both ways). It
+stays in the SDK as an option, off, for GPUs where copies are cheaper or for a zero-copy variant.
+
 ## Options
 
 | Option (`potcawe.toml` or `--name=value`) | Default | Meaning |

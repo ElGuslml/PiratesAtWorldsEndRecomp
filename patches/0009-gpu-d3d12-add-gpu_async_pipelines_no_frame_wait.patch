@@ -1,7 +1,7 @@
 From 32b66347f317b1ff8e9dd426fa811f6c28a22e55 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:33 -0600
-Subject: [PATCH 09/18] gpu/d3d12: add gpu_async_pipelines_no_frame_wait
+Subject: [PATCH 09/19] gpu/d3d12: add gpu_async_pipelines_no_frame_wait
 
 With async_shader_compilation, PipelineCache::EndSubmission still created
 the queued pipelines on the command processor thread and waited for the
