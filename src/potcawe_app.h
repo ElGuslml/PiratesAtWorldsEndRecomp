@@ -12,6 +12,7 @@
 #include <rex/system/kernel_state.h>
 #include <rex/system/xthread.h>
 
+#include "options.h"
 #include "startup.h"
 
 class PotcaweApp : public rex::ReXApp {
@@ -50,13 +51,17 @@ class PotcaweApp : public rex::ReXApp {
   }
 
   // potcawe.toml with the built-in defaults if it is missing, then (after the SDK loads it) the game
-  // files check.
+  // files check and the POTCAWE Launcher options (separate executable,
+  // launcher/potcawe_launcher.cpp): potcawe_options.toml, before the window and the GPU are
+  // created. The game shows no window of its own.
   bool SetupEnvironment() override {
     auto exe_dir = rex::filesystem::GetExecutableFolder();
     potcawe::EnsureDefaultConfig(exe_dir / "potcawe.toml");
     if (!rex::ReXApp::SetupEnvironment()) return false;
     REXLOG_INFO("[startup] User data: {}", user_data_root().string());
-    return potcawe::CheckGameFiles(game_data_root());
+    if (!potcawe::CheckGameFiles(game_data_root())) return false;
+    potcawe::LoadLauncherOptions(exe_dir / "potcawe_options.toml", potcawe::GpuPluginPath());
+    return true;
   }
 
   // Window title (the SDK sets "<app name> <SDK build stamp>").

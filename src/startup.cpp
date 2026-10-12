@@ -30,7 +30,8 @@ constexpr uint32_t kGameExecutableCrc32 = 0xA31B1069;
 
 constexpr const char kDefaultConfig[] =
     R"(# potcawerecomp.exe runtime configuration, loaded at startup. The game recreates this file with
-# these defaults if it is missing. Command line options (--name=value) win over it.
+# these defaults if it is missing. POTCAWE Launcher saves its choices to potcawe_options.toml, which
+# is loaded after this file; command line options (--name=value) win over both.
 log_level = "info"
 # Do not wait at the end of the frame for new D3D12 pipelines (50-250 ms stutter the first time an
 # effect appears): the object appears a few frames later. false = wait.

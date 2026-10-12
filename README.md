@@ -22,6 +22,13 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
   (`src/gpu_wait.cpp`; `potcawe_gpu_wait_sleep_us = 0` restores the original busy wait).
 - No stutter the first time an effect appears: new D3D12 pipelines are created without stalling the frame
   (`gpu_async_pipelines_no_frame_wait = true` in `potcawe.toml`).
+- **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, render quality and
+  graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
+  it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
+  scale that covers your screen. Wider screens get black bars for now (the camera keeps 16:9).
+- **60 FPS option** (launcher, `potcawe_60fps`): the game is capped at 30 FPS only by its Direct3D present
+  interval; the engine's clock measures real time, so the option just presents every vblank. Off by default,
+  so the first run matches the console ([`docs/frame-rate.md`](docs/frame-rate.md)).
 - Next: play further and find out which settings and fixes the rest of the game needs.
 - [`docs/`](docs/README.md) has a short note on each problem found and what was done about it.
 
@@ -64,7 +71,8 @@ cmake --build --preset win-amd64-release
 ## Running
 
 ```powershell
-.\out\build\win-amd64-release\potcawerecomp.exe
+.\out\build\win-amd64-release\"POTCAWE Launcher.exe"   # choose the options, then Play
+.\out\build\win-amd64-release\potcawerecomp.exe        # or start the game directly with the saved options
 ```
 
 - Game files are found in `assets\` next to `potcawerecomp.exe`, otherwise in the repository's `assets\`.
@@ -72,11 +80,21 @@ cmake --build --preset win-amd64-release
 - Saves, the profile and the shader cache go to `userdata\` next to `potcawerecomp.exe` (if that folder
   cannot be written, for example under Program Files, they go to `Documents\potcawe`). Logs go to `logs\`.
 
+### Steam Big Picture
+
+Add `potcawerecomp.exe` as a non-Steam game: it starts straight into the game with the options you saved in
+POTCAWE Launcher. You can also add `POTCAWE Launcher.exe` to change options from the couch with a controller.
+
 ## Configuration
 
-`potcawe.toml`, next to `potcawerecomp.exe`, holds the base settings. It is created with the defaults this
-game needs if it is missing. Command-line options (`--name=value`) win over it, for example
-`--gpu_backend=vulkan` or `--draw_resolution_scale_x=2 --draw_resolution_scale_y=2`.
+| File (next to `potcawerecomp.exe`) | What it holds |
+|---|---|
+| `potcawe.toml` | Base settings. Created with the defaults this game needs if it is missing. |
+| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, render scale, frame rate, API). Loaded after `potcawe.toml`. |
+
+Command-line options (`--name=value`, for example Steam launch options) win over both files:
+`--fullscreen=false --window_width=1920 --window_height=1080`,
+`--draw_resolution_scale_x=2 --draw_resolution_scale_y=2`, `--potcawe_60fps=true`, `--gpu_backend=vulkan`.
 
 ## How the SDK is modified
 
@@ -100,6 +118,7 @@ and the options they add are off by default. Each patch's commit message explain
 | 0010–0013 | Faster register and shader-constant writes from the command processor |
 | 0014 | Log the guest context on unhandled guest access violations |
 | 0015 | `gpu_guest_fps_limit`: optional frame rate cap for the game |
+| 0016 | `XamUserReadProfileSettings` no longer writes past the game's buffer (title-specific settings larger than their nominal size) |
 | 0016 | `XamUserReadProfileSettings` no longer writes past the game's buffer (title-specific settings larger than their nominal size) |
 
 ## Credits

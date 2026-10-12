@@ -36,3 +36,11 @@ name = "PotcaweGpuWaitBeginHook"
 [[midasm_hook]]
 address = 0x822AF608   # mflr r12 (entry of sub_822AF608: every iteration of a wait)
 name = "PotcaweGpuWaitSpinHook"
+
+# 60 FPS (src/framerate.cpp): the Direct3D library reads the D3DRS_PRESENTINTERVAL render state
+# (device+13444, set to 2 by the game's renderer) in sub_822B58B0 and encodes it into the swap
+# descriptor for the vblank callback; the hook turns 2 into 1 when potcawe_60fps is on.
+[[midasm_hook]]
+address = 0x822B5968   # cmplwi r10,0 (after lwz r10,13444(r31) in sub_822B58B0)
+name = "PotcawePresentIntervalHook"
+registers = ["r10"]
