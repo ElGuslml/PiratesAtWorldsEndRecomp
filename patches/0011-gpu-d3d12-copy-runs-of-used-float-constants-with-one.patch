@@ -1,7 +1,7 @@
-From 1617479af29c774e4136702f208d6972d386c09a Mon Sep 17 00:00:00 2001
+From b0e40797e8314adc266c96e9f471d0ffa880577e Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:50:12 -0600
-Subject: [PATCH 11/19] gpu/d3d12: copy runs of used float constants with one
+Subject: [PATCH 11/20] gpu/d3d12: copy runs of used float constants with one
  memcpy each
 
 UpdateBindings packs only the float constants a shader uses into its

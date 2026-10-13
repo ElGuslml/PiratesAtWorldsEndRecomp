@@ -1,7 +1,7 @@
-From 9d65aeea7063b078dc6db446fdf93b8bb78463f5 Mon Sep 17 00:00:00 2001
+From 9aeff7a9edbef2da230e761768909082555c2436 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sun, 11 Oct 2026 21:46:11 -0600
-Subject: [PATCH 17/19] gpu: skip ownership transfers into render targets a
+Subject: [PATCH 17/20] gpu: skip ownership transfers into render targets a
  draw fully overwrites
 
 When a draw binds a render target whose EDRAM range is owned by another

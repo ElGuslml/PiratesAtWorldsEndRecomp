@@ -86,3 +86,9 @@ registers = ["r3"]
 address = 0x823F9228   # divwu r11,r23,r3 in sub_823F9058
 name = "PotcaweTileCountHook"
 registers = ["r3"]
+# The sun flare (sub_824521F8) scales the samples its occlusion query should count by the
+# antialiasing level; it sees level 0 when potcawe_no_msaa is on.
+[[midasm_hook]]
+address = 0x824522E4   # lis r11,-32256 (after bl sub_823B1E58 in sub_824521F8)
+name = "PotcaweFlareAaLevelHook"
+registers = ["r3"]

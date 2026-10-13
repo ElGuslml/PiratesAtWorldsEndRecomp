@@ -1,7 +1,7 @@
-From bc669b91c139ac996b5484c8a3d4a3e30d851eb0 Mon Sep 17 00:00:00 2001
+From 999c86a2dad266905a01212ff225416dd3be1316 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:51:07 -0600
-Subject: [PATCH 13/19] gpu: write type-0 shader constant ranges in bulk
+Subject: [PATCH 13/20] gpu: write type-0 shader constant ranges in bulk
 
 Some games (GRAW) upload their shader constants with type-0 packets
 instead of SET_CONSTANT: about 200 registers per draw, over a million per

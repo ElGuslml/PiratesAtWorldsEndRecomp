@@ -10,7 +10,7 @@
 // D3DMULTISAMPLE_NONE at the six surface creations (three functions create the surfaces) and
 // force the number of tiles, which the engine computes from the antialiasing level, to one.
 // Dock of Port Royal at 2x2 and 60 FPS on an RTX 4070 Ti: GPU 89 % -> 59 %. The image loses only
-// the 2x edge antialiasing.
+// the 2x edge antialiasing. The sun flare also reads the level (see PotcaweFlareAaLevelHook).
 
 #include <rex/cvar.h>
 #include <rex/logging.h>
@@ -49,4 +49,15 @@ void PotcaweTileCountHook(PPCRegister& r3) {
     REXLOG_INFO("[msaa] scene tiles {} -> 1 (potcawe_no_msaa)", r3.u32);
   }
   r3.u32 = 1;
+}
+
+// [[midasm_hook]] 0x824522E4 (sub_824521F8, after bl sub_823B1E58): r3 = the antialiasing level.
+// The sun flare's strength is the fraction of a quad at the sun that its occlusion query counts,
+// and the engine multiplies the samples it expects by 1, 2 or 4 for the level. Without
+// multisampling the query counts one sample per pixel, so the flare sees level 0; otherwise it
+// would reach only half its strength.
+void PotcaweFlareAaLevelHook(PPCRegister& r3) {
+  if (REXCVAR_GET(potcawe_no_msaa)) {
+    r3.u32 = 0;
+  }
 }

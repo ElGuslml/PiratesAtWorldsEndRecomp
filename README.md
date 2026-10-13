@@ -30,6 +30,9 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
   render targets with another MSAA mode and pitch, are done as clears of the render targets that hold
   that memory instead of copying the frame into the alias and back (SDK patches 0017 and 0018 and
   `execute_unclipped_draw_vs_on_cpu = true` in `potcawe.toml`, see [`docs/gpu-load.md`](docs/gpu-load.md)).
+- The sun's glare follows the sun: the game measures how much of the sun is visible with an occlusion query,
+  which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
+  [`docs/sun-glow.md`](docs/sun-glow.md)).
 - **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, render quality and
   graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
   it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
@@ -136,6 +139,7 @@ and the options they add are off by default. Each patch's commit message explain
 | 0017 | `render_target_skip_transfers_on_overwrite`: no EDRAM ownership transfer into a render target that a single triangle, rectangle or quad fully overwrites (the game's clears through MSAA / pitch aliases) |
 | 0018 | `render_target_draw_clears`: a draw that writes constant values to a rectangle of its render targets is done as a clear of the render targets owning that EDRAM, never through the alias |
 | 0019 | `d3d12_lazy_resolve`: color resolves kept as host render target copies and textures filled from them by copying, the shared memory written only on demand. Off: it measured no gain on an RTX 4070 Ti (the two host copies cost what the SDK's three passes cost) |
+| 0020 | Occlusion queries: the end pairs with the begin whatever its address and in every EDRAM tile, so host queries are no longer turned off at the first query (D3D12 and Vulkan) |
 
 ## Credits
 
