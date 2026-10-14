@@ -62,7 +62,7 @@ POTCAWERecomp.
   `fn_summary.py`, `rs_setters.py`, `xn_trace.py`. Run `python xenos_native/tools/ppc_index.py build` after
   a codegen.
 
-**Phase 2 (core renderer) in progress, since 2026-10-13** (go: D14). With `--xenos_native=true`, or the
+**Phase 2 (core renderer) done, 2026-10-13 to 2026-10-14** (go: D14; exit check in `plan.md`). With `--xenos_native=true`, or the
 launcher's Renderer row on XenosNative (D25; it forces Antialiasing Off for now):
 - the SDK's command processor runs for synchronization only (`xenos_native/sdk_patches/0002`), and
   XenosNative presents through its own DiligentCore (Vulkan) swap chain;
@@ -76,13 +76,14 @@ launcher's Renderer row on XenosNative (D25; it forces Antialiasing Off for now)
   Phase 2 run had AA Off), against 8.5–9 ms for the Xenos path at 2×2: too much (Phase 3). 60 FPS, no stalls
   since the DiligentCore patch for robust buffer access (D22).
 
-Decisions D15–D27; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+Decisions D15–D28; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
 messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan device
 (`tools/renderdoc/xn_inspect.py`, `xn_users.py`).
 
-Next are the remaining Phase 2 items (partial clears, pipelines off the render thread, the 60 FPS and GPU
-wait hooks checked on this path), then the exit check: the three scenes, the fallback, 10 minutes without a
-crash. Follow `xenos_native/docs/plan.md` and tick its boxes as work is done.
+Next is Phase 3 (parity in POTCAWE), once Gustavo gives the go. The agreed order: GPU time first (the
+town side of the dock costs 12 ms, the Xenos path ~5 ms), then the occlusion queries (the sun glare), then
+resolution, MSAA and the rest of the game. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
+done.
 
 ## Read first
 

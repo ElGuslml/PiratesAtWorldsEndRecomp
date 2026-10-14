@@ -18,7 +18,7 @@ Xenos backend stays as the fallback.
 - [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
-- Status: **Phase 2 in progress** (2026-10-14). By default the game runs on the Xenos backend exactly as in
+- Status: **Phase 2 done** (2026-10-14), Phase 3 next. By default the game runs on the Xenos backend exactly as in
   POTCAWERecomp. With the launcher's Renderer row on "XenosNative (experimental)" (or `--xenos_native=true`),
   XenosNative draws the frames on DiligentCore (Vulkan), with the game's textures, at 1280×720 without
   antialiasing; the menus and the Port Royal dock look as on the Xenos path, but it is still experimental
