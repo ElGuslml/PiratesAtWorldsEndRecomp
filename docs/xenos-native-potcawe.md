@@ -382,6 +382,11 @@ took the dock from 12.1 to 3.3 ms per frame facing the town, and from 2.8 to 1.8
   host;
 - the alpha-tested foliage looks as before, with no black borders: BC1 with 1-bit alpha.
 
+**Shader translation (D34).** The dock's load analyzes 83 shaders and translates 93 shader variants.
+On worker threads, the render thread's longest frame in the load went from ~80 ms to 52–54 ms. About 1,400
+draws are skipped over the load's first frames while their shaders are translated, and the start view is
+complete 25 s later.
+
 **The display gamma (found while checking D33, not fixed yet).** At the same view, XenosNative's image is
 lighter in the darks than the Xenos path's. The tone curve from XenosNative to the Xenos path, green
 channel, start view:
