@@ -106,7 +106,9 @@ Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
 2. a persistent pipeline cache: done (D42). The shaders, translations and pipelines used are kept per
    title in the runtime's cache directory and prepared at the next start; from the second run no draw waits
    at the dock's load;
-3. any aspect ratio without bars (ultrawide, 16:10, the Steam Deck).
+3. any aspect ratio without bars (ultrawide, 16:10, the Steam Deck): done (D43). The output is filled
+   with a scale per axis, the game's 16:9 cameras are widened (`src/aspect.cpp`, culling included), and the
+   HUD, menus and videos are drawn in a centered 16:9 box.
 
 Notes: `local_docs/07-phase4.md`.
 

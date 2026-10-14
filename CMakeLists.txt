@@ -59,6 +59,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${POTCAWE_SOURCE
 # Sources
 set(POTCAWE_SOURCES
     src/main.cpp
+    src/aspect.cpp
     src/framerate.cpp
     src/msaa.cpp
     src/gpu_wait.cpp

@@ -75,6 +75,8 @@ const xenos_native::Profile& XenosNativeProfile() {
     // The end of the engine's post-processing: the finished scene, blended with the last frame, copied to
     // 0x09B2E000; the HUD composite draws it, then the HUD over it (docs/xenos-native-potcawe.md).
     p.scene_resolve_caller = 0x824583EC;
+    // src/aspect.cpp widens the game's 16:9 cameras: XenosNative fills outputs of any aspect ratio.
+    p.widens_cameras = true;
     xenos_native::DeviceLayout& d = p.device;
     d.dirty_masks = 0;
     d.command_buffer_write = 48;

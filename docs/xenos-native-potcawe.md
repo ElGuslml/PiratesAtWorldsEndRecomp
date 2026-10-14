@@ -451,6 +451,48 @@ executable:
 
 From the second run on, the dock loads with no draw waiting for a shader or a pipeline.
 
+**Aspect ratios (D43).** What `src/aspect.cpp` relies on:
+- **The camera.** `sub_823288C8` builds the engine camera's projection and culling frustum (three callers).
+  - The perspective branch takes the tangents of the half angles: `+12` is the width and `+8` the height,
+    in degrees. It passes them to `sub_82328428` (the frustum, with `+16` and `+20`, the depth range),
+    then stores P00 = 1 / tan at `+432` and P11 at `+452`. The projection is copied to `+496`.
+  - The menus use a 45° vertical angle (tan 0.41421), the dock 55° (0.52057), both 16:9 (tan ratio 1.7778).
+  - The parallel branch builds P00 = 2 / `+28` and P11 = 2 / `+32`. The only parallel cameras seen are
+    1000×1000.
+  - The other camera class, with the "Projection Angle Width/Height" properties (`sub_822FC610`,
+    `sub_82303D60`), does not run in the menus or at the dock.
+- **The views.** `sub_823B6290` (virtual) draws one view per call, in stages; its return addresses name
+  them:
+  - `823B6334`: shadow maps, which upload their own matrices from `823B4BC4`;
+  - `823B6650`, `823B67AC`, `823B67CC`: opaque 3D;
+  - `823B69A4`, `823B6A08`: effects, the sun's haze, the flare query;
+  - `823B6AD8`: 2D draws (also the menu's Bink video);
+  - `823B6B40`: the post-processing (`sub_823D2160`), which in the last view composites the scene and the
+    HUD over the screen;
+  - `823B6C48`: the last resolve.
+
+  At the dock a frame has: the water reflection (`823EDF5C`), the 3D view, then the HUD view. In the menus:
+  the video's view, then the menu's.
+- **Telling 2D views apart.** `sub_823B3C38` sets a view's constants and passes the view's matrix to
+  `c0–c3` (the call at `0x823B3E48`, `r5`) and to `c160` of the pixel shader.
+  - The 2D views (the HUD, the menus, the video behind them) have a square parallel projection:
+    `0.002 0 0 0 / 0 0.002 0 0 / 0 0 z 0 / 0 0 t 1` (the 1000×1000 camera).
+  - The 3D views have a perspective column (`m[3] = 1`, `m[15]` = the distance).
+- **The text measures through the 2D camera.** The game's text layout converts glyph widths through that
+  camera. With its P00 narrowed (run 177) the glyphs kept their stretched width, and "Reiniciar desde punto
+  de control" lost its last word. Hence the renderer's box and an untouched camera.
+- **The haze's rectangle.** `sub_823F8750` sets the scissor from a draw's screen rectangle, at `+784` of
+  its render state block: `+4` left, `+8` top, `+12` width, `+16` height (0 to 1 of the viewport), `+20`
+  enabled.
+  - At the dock it is used by the sun's haze (a mesh of 900 indices), and in the HUD view (run 156: a
+    HUD mesh drawn a second time with it, perhaps a gauge).
+  - The town view gives `0 0 1106 720` at 16:9 and `0 0 967 720` at 21:9. The rectangle is computed with
+    the camera, but at 21:9 it falls short of the mesh: a vertical seam in the sky toward the sun (RenderDoc,
+    `potcawe_frame6849.rdc`, event 1433: a scissor 2340 pixels wide).
+  - At 16:9, without the rectangle, the image does not change (runs 182, 183).
+- **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
+  width as in the box. It is the Bink planes' edge, older than D43.
+
 ## Measurements
 
 The baseline and the estimate are in the plan

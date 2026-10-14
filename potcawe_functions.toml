@@ -45,6 +45,26 @@ address = 0x822B5968   # cmplwi r10,0 (after lwz r10,13444(r31) in sub_822B58B0)
 name = "PotcawePresentIntervalHook"
 registers = ["r10"]
 
+# Any aspect ratio without bars, with XenosNative (src/aspect.cpp): the 16:9 3D views are widened by
+# xenos_native::AspectFactor() (their projection and culling frustum, built by sub_823288C8), the 2D views
+# (HUD, menus, videos) are drawn in a 16:9 box in the middle, and 3D effects' screen rectangles are opened
+# on the wider axis.
+[[midasm_hook]]
+address = 0x82328B84   # fmr f0,f1: perspective branch, f29 = tan(width / 2), f1 = tan(height / 2)
+name = "PotcawePerspectiveAspectHook"
+registers = ["f1", "f29"]
+[[midasm_hook]]
+address = 0x823B3E48   # bl 0x822b7848 in sub_823B3C38: the view's matrix to c0-c3, r5 = the matrix
+name = "PotcaweViewAspectHook"
+registers = ["r5"]
+[[midasm_hook]]
+address = 0x823B6B20   # li r5,112 in sub_823B6290: the view's post-processing starts
+name = "PotcawePostProcessingAspectHook"
+[[midasm_hook]]
+address = 0x823F8838   # fmadds f12,f12,f0,f6 in sub_823F8750: a draw's screen rectangle, f12 f10 f11 f9
+name = "PotcaweScissorAspectHook"
+registers = ["f9", "f10", "f11", "f12"]
+
 # No MSAA (src/msaa.cpp): the renderer creates its surfaces through sub_824D5750 (a wrapper of
 # XGSetSurfaceHeader) from three functions; r6 is the multisample type. The hooks pass 0 when
 # potcawe_no_msaa is on.
