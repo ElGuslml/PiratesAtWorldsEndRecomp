@@ -94,8 +94,8 @@ startup if yours is a different version. See [`assets/README.md`](assets/README.
 ## Building from source
 
 ```powershell
-git clone --recursive https://github.com/ElGuslml/PiratesAtWorldsEndRecomp.git
-cd PiratesAtWorldsEndRecomp
+git clone --recursive https://github.com/ElGuslml/PiratesAtWorldsEndRecompXenosNative.git
+cd PiratesAtWorldsEndRecompXenosNative
 # copy your game files into assets\ first: the build recompiles assets\default.xex
 cmake --preset win-amd64-release
 cmake --build --preset win-amd64-release
