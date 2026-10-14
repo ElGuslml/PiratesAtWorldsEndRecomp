@@ -84,16 +84,20 @@ messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan devi
 order: D31). Done:
 - GPU time at the dock 12.1 → 3.3 ms per frame: render targets bound only when they change (D30);
 - the occlusion queries (the sun glare) measured on the host and answered to the sync-only command
-  processor through `xenos_native/sdk_patches/0003` (D32).
+  processor through `xenos_native/sdk_patches/0003` (D32);
+- DXT1 kept compressed as BC1 (`xenos_native/diligent_patches/0002`): texture memory at the dock
+  276–318 → 128–139 MB (D33).
 
 Next, in order:
-1. DXT1 as BC1;
-2. shader translation off the render thread;
-3. guest memory uploads, step A;
-4. render resolution at any scale.
+1. shader translation off the render thread;
+2. guest memory uploads, step A;
+3. render resolution at any scale.
+
+Found and not fixed yet: XenosNative does not apply the display gamma ramp, so its image is lighter in the
+darks than the Xenos path's (plan, Phase 4).
 
 The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
-Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D32; notes
+Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D33; notes
 `local_docs/06-phase3-performance.md`. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
 done.
 

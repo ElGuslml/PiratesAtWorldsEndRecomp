@@ -372,7 +372,26 @@ took the dock from 12.1 to 3.3 ms per frame facing the town, and from 2.8 to 1.8
   screen, up to 104 facing it;
 - 1,200 queries answered per 600 frames. Only the first 4 at the dock come before any result, and get 0;
 - in three views toward the sun, each taken on both paths with the same keys, XenosNative's glare
-  matches the Xenos path's. The white-out over the geometry Gustavo saw after D26 is gone.
+  matches the Xenos path's.
+
+**Textures (D33).** Runs `potcawe_109`–`113`:
+- the dock keeps 412–460 guest textures on the host. With DXT1 decompressed they took 276–318 MB; as BC1,
+  128–139 MB. The video memory in use went from 3,968 to 3,763 MB (RTSS);
+- the "1.8 GB of host data" of Phase 2's step 7 is the data the loads wrote from the start to the dock,
+  most of it the menus' video planes, which every frame of video loads again. It is not what stays on the
+  host;
+- the alpha-tested foliage looks as before, with no black borders: BC1 with 1-bit alpha.
+
+**The display gamma (found while checking D33, not fixed yet).** At the same view, XenosNative's image is
+lighter in the darks than the Xenos path's. The tone curve from XenosNative to the Xenos path, green
+channel, start view:
+
+| XenosNative | 24 | 48 | 64 | 96 | 128 | 160 | 192 | 248 |
+|---|---|---|---|---|---|---|---|---|
+| Xenos path | 10 | 32 | 49 | 82 | 116 | 150 | 186 | 247 |
+
+The SDK's presenter applies the guest's gamma ramp (`apply_gamma_table` / `apply_gamma_pwl`); XenosNative
+presents the front buffer as it is. Phase 4 item in the plan. The white-out over the geometry Gustavo saw after D26 is gone.
 
 ## Measurements
 
