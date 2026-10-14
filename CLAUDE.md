@@ -68,16 +68,20 @@ POTCAWERecomp.
 - render targets, clears, resolves and Present work;
 - every draw goes through XenosNative's draw path (`xenos_native/src/draw.cpp`): the SDK's translator, its
   `SharedMemory` and `PrimitiveProcessor` on DiligentCore buffers, DiligentCore pipelines;
-- textures are white placeholders except resolve results, so the menus and the Port Royal dock show
-  geometry, vertex colors and fog but not the game's art;
-- GPU time at the dock is 10.7 ms per frame at 1×, which is too much (Phase 3). 60 FPS, no stalls since the
-  DiligentCore patch for robust buffer access (D22).
+- textures come from the SDK's `TextureCache` on DiligentCore (`xenos_native/src/guest_textures.cpp`, step
+  7 done on 2026-10-14, D23): the language menu, the title screen and main menu (Bink backgrounds) and the
+  Port Royal dock (HUD, character shadows) match the Xenos path;
+- GPU time at the dock is 11.7–12.0 ms per frame at 1× with Antialiasing Off (the options' default; every
+  Phase 2 run had AA Off), against 8.5–9 ms for the Xenos path at 2×2: too much (Phase 3). 60 FPS, no stalls
+  since the DiligentCore patch for robust buffer access (D22).
 
-Decisions D15–D22; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
-messages in the log, RenderDoc captures of the Vulkan device (`tools/renderdoc/xn_inspect.py`).
+Decisions D15–D24; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan device
+(`tools/renderdoc/xn_inspect.py`, `xn_users.py`).
 
-Next is Phase 2 step 7, **textures**, then the remaining Phase 2 items. Follow `xenos_native/docs/plan.md`
-and tick its boxes as work is done.
+Next are the remaining Phase 2 items (partial clears, pipelines off the render thread, the 60 FPS and GPU
+wait hooks checked on this path), then the exit check: the three scenes, the fallback, 10 minutes without a
+crash. Follow `xenos_native/docs/plan.md` and tick its boxes as work is done.
 
 ## Read first
 

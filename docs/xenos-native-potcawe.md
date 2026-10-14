@@ -183,6 +183,7 @@ Shader objects (as in Dante's Inferno):
 | `sub_823FBC90`, `sub_823F98D8`, `sub_823F9058` | Create the engine's surfaces and compute the tile count from the AA level |
 | `sub_823B1E58` | AA factor (renderer+1420: level 0/1/2 → 1.0/2.0/4.0) |
 | `sub_82343A50` | Engine clock (real time, its own 1/60 limiter) |
+| `sub_8242D218` | Per mesh, every frame, under the scene traversal (`sub_8233AC68` ↔ `sub_82337DB8`, recursive, then `sub_82351650`, `sub_82430360`, `sub_8242D990`): updates the mesh's flags and takes and releases a reference (atomic, `+4`) on its material objects. Those writes land in the same 256 KB blocks of physical memory as about 30 textures (see Phase 2 so far) |
 
 The engine's renderer object keeps the D3D device at `+116`.
 
@@ -276,17 +277,20 @@ the library's own:
 - **Per-tile resolves.** The engine resolves each tile's rectangle into the same texture under
   SetPredication. With one host target, these become one resolve of the union (the overlap rows are
   resolved twice with the same content).
-- **Video planes.** Bink writes its texture planes without Lock/Unlock.
+- **Video planes.** Bink writes its texture planes without Lock/Unlock. XenosNative's texture cache sees
+  those writes through the guest memory mirror's page watches, and reloads a plane when its data changed
+  (D23). The title screen and main menu backgrounds play.
 
 ## Phase 2 so far
 
-Runs `potcawe_026`–`046` (`local_docs/05-phase2.md`), 2026-10-13, window 1280×720, default settings (2×
-MSAA, 60 FPS).
+Runs `potcawe_026`–`074` (`local_docs/05-phase2.md`), 2026-10-13 and 14, window 1280×720, default
+settings: **Antialiasing Off** (`potcawe_no_msaa = true` in `potcawe_options.toml`; every render target is
+1×) and 60 FPS. (Corrected on 2026-10-14: earlier versions of this section and of the plan said 2× MSAA.)
 
 | Scene | Draw calls per frame | Drawn | Render targets / resolve targets | Shaders / pipelines | Image |
 |---|---|---|---|---|---|
-| Menus (language, title, main menu) | 2–28 | all | 8 / 20 | 11 / 8 | Language menu: panels, the language list as glyph quads, the selection highlight; no texture art. |
-| Port Royal dock | 1,120–1,144 | all | 13 / 33 | 97 / ~180 (growing slowly) | The hill, the buildings and the fog from the default camera; white placeholder textures. |
+| Menus (language, title, main menu) | 2–28 | all | 8 / 20 | 11 / 8 | Since step 7, as on the Xenos path, Bink backgrounds included. |
+| Port Royal dock | 1,120–1,144 | all | 12 / 33 | 97 / ~180 (growing slowly) | Since step 7, as on the Xenos path at the same spot: textures, HUD, character shadows. |
 
 What the game does that the draw path met:
 - **Every draw packet is bin-predicated**, also outside tiled passes. The draw's primitive type, count and
@@ -305,12 +309,37 @@ What the game does that the draw path met:
   ~9,500 are placeholders until step 7.
 - **Uploads.** About 1.5 MB of vertex data in about 170 copies per frame at the dock, most of it data the
   game writes every frame.
-- **GPU time.** 10.7 ms per frame at the dock (DiligentCore duration queries; `nvidia-smi` 69 %), against
-  about 14 ms for the Xenos path at 2×2 (four times the pixels). Renderer CPU time 4.7 ms per frame.
+- **GPU time.** 10.7 ms per frame at the dock before step 7, 11.7–12.0 ms with the textures (DiligentCore
+  duration queries), against 8.5–9 ms for the Xenos path at 2×2 with AA Off (four times the pixels).
+  Renderer CPU time 4.7 ms per frame before step 7, 5.4 ms after. Phase 3 has to close that gap.
 - **Lost device on the first dock frames.** Some buffer read of the translated shaders goes out of range
   there; without Vulkan's `robustBufferAccess` the device was lost, which DiligentCore does not report in
   release builds. It showed up as a dynamic heap that filled up every 1.4 s and a GPU at 8.6 %. Fixed by
   enabling the feature (D22).
+
+Step 7, textures (runs `potcawe_056`–`074`):
+- **About 4,000 textures** are loaded by the time the dock is on screen (1.8 GB of host data, much of it
+  DXT1 decompressed to RGBA8); at the dock about 9,500 texture bindings per frame are guest textures and
+  about 160 are resolve results. No format met so far lacks a host format.
+- **The engine writes next to its textures every frame.** `sub_8242D218` (see the engine functions) writes
+  reference counts in pages of the 256 KB blocks that hold about 30 of the dock's textures, at the start
+  of each frame, on the render thread. `SharedMemory` invalidates whole blocks, so those textures became
+  outdated every frame, 16 MB of host data reloaded with unchanged guest data. The texture cache now
+  hashes the data first (D23): 31 loads skipped per frame, a few real loads per minute.
+- **The back buffer surface changes format.** Surface `0x40243200` (and the scene's `0x40243E70`) reads
+  `2_10_10_10_FLOAT_AS_16_16_16_16` at its draws and `2_10_10_10_FLOAT` at its resolves. With host targets
+  keyed by the surface's format, the HUD composite was drawn into one target and the front buffer resolved
+  from the other, so the HUD never showed. Keyed by the storage format now.
+- **The HUD** is drawn into its own 8_8_8_8 surface at EDRAM 0 (cleared to transparent black; the 3D
+  elements first, with reversed depth, then a depth resolve, then the 2D elements), resolved to
+  `0x0886B000`, and composited over the scene in the back buffer (2 DrawVerticesUP).
+- **Character shadows** come from two cascades drawn into a 1024×1024 float24 depth surface (pitch 1040)
+  and resolved into slices 0 and 1 of one stacked `k_24_8_FLOAT` texture (`0x08FAA000`). The scene's pixel
+  shaders (for example `6B954BAB187F64D2`) take four point samples (`tfetch3D`, the slice from the cascade
+  selection) and compare them with the light-space depth they compute. Both the slices (once both
+  cascades landed in one host slice) and the depth range (D24) had to be right for the shadows to show.
+- **The front buffer** is resolved with the red/blue swap, and its texture's swizzle swaps it back; the
+  presenter applies that swizzle now.
 
 ## Measurements
 

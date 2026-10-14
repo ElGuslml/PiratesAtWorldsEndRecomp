@@ -18,9 +18,10 @@ Xenos backend stays as the fallback.
 - [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
-- Status: **Phase 2 in progress** (2026-10-13). By default the game runs on the Xenos backend exactly as in
-  POTCAWERecomp. With `--xenos_native=true`, XenosNative draws the frames on DiligentCore (Vulkan), still
-  with placeholder textures: it is not playable that way yet. The trace (`--xenos_native_trace=true`, F9)
+- Status: **Phase 2 in progress** (2026-10-14). By default the game runs on the Xenos backend exactly as in
+  POTCAWERecomp. With `--xenos_native=true`, XenosNative draws the frames on DiligentCore (Vulkan), with the
+  game's textures; the menus and the Port Royal dock look as on the Xenos path, but it is still
+  experimental (slower on the GPU, only those scenes checked). The trace (`--xenos_native_trace=true`, F9)
   and the observer (`--xenos_native_verify=true`, F10) are off by default.
 - Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
   [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
