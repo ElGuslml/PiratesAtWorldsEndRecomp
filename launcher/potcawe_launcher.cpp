@@ -3,10 +3,11 @@
 // Picture).
 //
 // Plain Win32, no SDK. Reads potcawe.toml and potcawe_options.toml (next to this exe and
-// potcawerecomp.exe), shows monitor, display, resolution, render quality, frame rate and graphics API,
-// and saves
+// potcawerecomp.exe), shows monitor, display, resolution, render quality, frame rate, antialiasing,
+// anisotropic filtering and graphics API, and saves
 // the choice to potcawe_options.toml, which potcawerecomp.exe loads at startup (src/options.cpp).
-// Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp).
+// Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
+// filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp).
 // "Play" also starts potcawerecomp.exe (with the arguments the launcher received) and waits for it
 // to exit, so Steam keeps seeing the game as running. Works with mouse, keyboard or controller
 // (XInput). The launcher texts follow the Windows display language (English, German, French,
@@ -60,6 +61,7 @@ struct Options {
   int scale = 0;                           // 0 = automatic; 1..kMaxScale = chosen
   bool fps60 = false;                      // potcawe_60fps (src/framerate.cpp)
   bool no_msaa = false;                    // potcawe_no_msaa (src/msaa.cpp)
+  int anisotropic = 5;                     // anisotropic_override (SDK): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
 };
 
@@ -169,6 +171,8 @@ struct Texts {
   const wchar_t* antialiasing;
   const wchar_t* aa_msaa;
   const wchar_t* aa_off;
+  const wchar_t* anisotropic;
+  const wchar_t* aniso_off;
   const wchar_t* graphics;
   const wchar_t* quality_hint;
   const wchar_t* vulkan_hint;
@@ -200,6 +204,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (original)",
       L"Off (faster)",
+      L"Anisotropic filtering",
+      L"Off",
       L"Graphics API",
       L"The game renders at 1280 × 720 times a whole number (2×, 3×) and the image is fitted "
       L"to the screen. Automatic picks the smallest scale that covers the resolution. 60 FPS "
@@ -232,6 +238,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Kantenglättung",
       L"2× MSAA (Original)",
       L"Aus (schneller)",
+      L"Anisotrope Filterung",
+      L"Aus",
       L"Grafik-API",
       L"Das Spiel rendert in 1280 × 720 mal einer ganzen Zahl (2×, 3×), das Bild wird an den "
       L"Bildschirm angepasst. „Automatisch“ wählt die kleinste Stufe, die die Auflösung abdeckt. "
@@ -264,6 +272,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Anticrénelage",
       L"2× MSAA (d'origine)",
       L"Désactivé (plus rapide)",
+      L"Filtrage anisotrope",
+      L"Désactivé",
       L"API graphique",
       L"Le jeu est rendu en 1280 × 720 multiplié par un nombre entier (2×, 3×) et l'image "
       L"s'adapte à l'écran. « Automatique » choisit la plus petite échelle qui couvre la "
@@ -297,6 +307,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (original)",
       L"Desactivado (más rápido)",
+      L"Filtrado anisotrópico",
+      L"Desactivado",
       L"API gráfica",
       L"El juego dibuja a 1280 × 720 por un número entero (2×, 3×) y la imagen se ajusta a la "
       L"pantalla. «Automática» elige la menor escala que cubre la resolución. 60 FPS presenta una "
@@ -329,6 +341,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (originale)",
       L"Disattivato (più veloce)",
+      L"Filtro anisotropico",
+      L"Disattivato",
       L"API grafica",
       L"Il gioco disegna a 1280 × 720 per un numero intero (2×, 3×) e l'immagine si adatta "
       L"allo schermo. «Automatica» sceglie la scala più piccola che copre la risoluzione. 60 FPS "
@@ -530,6 +544,8 @@ enum ControlId : int {
   kIdFramerate,
   kIdAntialiasingLabel,
   kIdAntialiasing,
+  kIdAnisotropicLabel,
+  kIdAnisotropic,
   kIdBackendLabel,
   kIdBackend,
   kIdHint,
@@ -538,8 +554,8 @@ enum ControlId : int {
 };
 
 // Option rows (top to bottom) and buttons (left to right), for the controller.
-constexpr int kRowIds[] = {kIdMonitor, kIdDisplay,     kIdResolution, kIdQuality,
-                           kIdFramerate, kIdAntialiasing, kIdBackend};
+constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay,      kIdResolution,  kIdQuality,
+                           kIdFramerate, kIdAntialiasing, kIdAnisotropic, kIdBackend};
 constexpr int kButtonIds[] = {IDOK, kIdSave, IDCANCEL};
 constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdDisplayLabel, kIdDisplay},
@@ -547,7 +563,11 @@ constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdQualityLabel, kIdQuality},
                             {kIdFramerateLabel, kIdFramerate},
                             {kIdAntialiasingLabel, kIdAntialiasing},
+                            {kIdAnisotropicLabel, kIdAnisotropic},
                             {kIdBackendLabel, kIdBackend}};
+
+// The anisotropic filtering row's values (anisotropic_override), top to bottom.
+constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
 
 enum class Result { kQuit, kSave, kPlay };
 
@@ -628,6 +648,8 @@ void Refresh(Launcher& l) {
   SetWindowTextW(Item(l, kIdResolutionLabel), t.resolution);
   SetWindowTextW(Item(l, kIdQualityLabel), t.quality);
   SetWindowTextW(Item(l, kIdFramerateLabel), t.framerate);
+  SetWindowTextW(Item(l, kIdAntialiasingLabel), t.antialiasing);
+  SetWindowTextW(Item(l, kIdAnisotropicLabel), t.anisotropic);
   SetWindowTextW(Item(l, kIdBackendLabel), t.graphics);
   SetWindowTextW(Item(l, kIdHint), o.vulkan ? t.vulkan_hint : t.quality_hint);
   SetWindowTextW(Item(l, kIdPadHint), t.pad_hint);
@@ -679,6 +701,10 @@ void Refresh(Launcher& l) {
 
   FillCombo(Item(l, kIdFramerate), {t.fps30, t.fps60}, o.fps60 ? 1 : 0);
   FillCombo(Item(l, kIdAntialiasing), {t.aa_msaa, t.aa_off}, o.no_msaa ? 1 : 0);
+  FillCombo(Item(l, kIdAnisotropic),
+            {L"16×", L"8×", std::wstring(L"4×  ") + t.original, L"2×", t.aniso_off},
+            int(std::find(std::begin(kAnisotropicValues), std::end(kAnisotropicValues), o.anisotropic) -
+                std::begin(kAnisotropicValues)));
 
   // Proper names: the same in every language.
   std::vector<std::wstring> backends = {L"DirectX 12"};
@@ -721,6 +747,9 @@ void OnSelectionChange(Launcher& l, int id) {
     case kIdAntialiasing:
       o.no_msaa = index == 1;
       break;
+    case kIdAnisotropic:
+      o.anisotropic = kAnisotropicValues[std::clamp(index, 0, int(std::size(kAnisotropicValues)) - 1)];
+      break;
     case kIdBackend:
       o.vulkan = l.has_vulkan && index == 1;
       break;
@@ -730,7 +759,7 @@ void OnSelectionChange(Launcher& l, int id) {
 
 // Positions in pixels at 96 DPI; scaled with the monitor DPI.
 constexpr int kClientWidth = 560;
-constexpr int kClientHeight = 474;
+constexpr int kClientHeight = 510;
 
 void Layout(Launcher& l, UINT dpi) {
   auto s = [dpi](int v) { return MulDiv(v, int(dpi), 96); };
@@ -1110,6 +1139,11 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   o.vulkan = GetString(c, "gpu_backend") == "vulkan";
   o.fps60 = GetBool(c, "potcawe_60fps", false);
   o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
+  // Without the key, the game's default (src/startup.cpp adds it to potcawe.toml at the next start): 16x.
+  // A value the row does not offer: -1 (only what the game asks: 4x on some textures) shows as 4x, 1 (1x)
+  // as off.
+  int anisotropic = GetInt(c, "anisotropic_override", 5);
+  o.anisotropic = anisotropic < 0 ? 3 : anisotropic == 1 ? 0 : std::min(anisotropic, 5);
   if (GetString(c, "launcher_render_scale") == "auto") {
     o.scale = 0;
   } else if (int scale = GetInt(c, "launcher_render_scale", 0); scale >= 1) {
@@ -1176,6 +1210,9 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   f << "potcawe_60fps = " << boolean(o.fps60) << "\n";
   // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing.
   f << "potcawe_no_msaa = " << boolean(o.no_msaa) << "\n";
+  // Anisotropic filtering for textures with mipmaps, sharper at oblique angles (SDK cvar; the game itself
+  // asks for 4x on some textures only): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off.
+  f << "anisotropic_override = " << o.anisotropic << "\n";
   return bool(f);
 }
 
