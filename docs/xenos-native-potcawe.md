@@ -350,6 +350,13 @@ Step 7, textures (runs `potcawe_056`–`074`):
 - **The front buffer** is resolved with the red/blue swap, and its texture's swizzle swaps it back; the
   presenter applies that swizzle now.
 
+Gustavo's play at the dock (2026-10-14, after D26):
+- no stretched triangles and no white patch;
+- the sun glare is too strong and drawn over the geometry when turning right: the flare's occlusion
+  queries get fake counts on this path (Phase 3);
+- the GPU load depends on the view: ~80 % at the start view, 20–25 % facing the sea (RTSS), against ~30 %
+  for the Xenos path at the start view with the same settings (Phase 3, performance).
+
 ## Measurements
 
 The baseline and the estimate are in the plan
