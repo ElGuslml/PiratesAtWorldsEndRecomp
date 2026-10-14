@@ -443,6 +443,14 @@ sharp HUD:
 - in the menus too, where their text stays sharp;
 - SMAA costs about 0.05 ms at 1× and 0.15 ms at 2×.
 
+**Pipeline storage (D42).** POTCAWE's runtime keeps it in `userdata/cache/xenos_native/` next to the
+executable:
+- `425607D1.pipelines`: 97 shaders, 108 translations and 128 pipelines after the menus and the dock,
+  77 KB;
+- `425607D1.vkcache`: 5.3 MB.
+
+From the second run on, the dock loads with no draw waiting for a shader or a pipeline.
+
 ## Measurements
 
 The baseline and the estimate are in the plan

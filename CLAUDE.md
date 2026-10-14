@@ -103,7 +103,9 @@ Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
 **Phase 4 (POTCAWE polish) in progress, since 2026-10-14** (D39, D40). First, in this order:
 1. XenosNative's own antialiasing: done (D41). SMAA (default) or FXAA on the copy of the finished scene,
    before the HUD; the launcher's Antialiasing row chooses it with XenosNative;
-2. a persistent pipeline cache;
+2. a persistent pipeline cache: done (D42). The shaders, translations and pipelines used are kept per
+   title in the runtime's cache directory and prepared at the next start; from the second run no draw waits
+   at the dock's load;
 3. any aspect ratio without bars (ultrawide, 16:10, the Steam Deck).
 
 Notes: `local_docs/07-phase4.md`.

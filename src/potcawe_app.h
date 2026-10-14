@@ -75,7 +75,7 @@ class PotcaweApp : public rex::ReXApp {
       window()->SetTitle("Pirates of the Caribbean: At World's End");
     }
     xenos_native::Initialize(potcawe::XenosNativeProfile(), runtime() ? runtime()->graphics_system() : nullptr,
-                             window());
+                             window(), runtime() ? runtime()->cache_root() : std::filesystem::path());
   }
 
   // On exit, log whether the game asked to launch another executable.
