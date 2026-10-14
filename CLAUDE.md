@@ -100,16 +100,17 @@ closed: D39). Results at the dock:
 
 Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
 
-**Phase 4 (POTCAWE polish) next.** Its items, in the order Gustavo chooses:
-- XenosNative's own antialiasing (the game's MSAA is not brought over, D31);
-- every level compared with the Xenos path;
-- any aspect ratio without bars;
-- a persistent pipeline cache;
-- long sessions;
-- the known limits from Phase 2.
+**Phase 4 (POTCAWE polish) in progress, since 2026-10-14** (D39, D40). First, in this order:
+1. XenosNative's own antialiasing, FXAA and SMAA, on the scene before the HUD (the game's MSAA is not
+   brought over, D31);
+2. a persistent pipeline cache;
+3. any aspect ratio without bars (ultrawide, 16:10, the Steam Deck).
 
-Phase 5 is the second game and the library's extraction. Follow `xenos_native/docs/plan.md` and tick its
-boxes as work is done.
+Then: every level compared with the Xenos path, long sessions, the known limits from Phase 2.
+
+Phase 5 is temporal upscaling and frame generation (motion vectors, DLSS / DLAA, FSR 3), and Phase 6 the
+second game and the library's extraction (D40). Follow `xenos_native/docs/plan.md` and tick its boxes as
+work is done.
 
 ## Read first
 
