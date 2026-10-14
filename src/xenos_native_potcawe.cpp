@@ -54,6 +54,9 @@ XENOS_NATIVE_HOOK(822AF398, FlushCpuRange)
 // Command buffer, queries, frame. Swap runs once per frame, from the engine's Synchronize
 // (sub_822B5D50, an alias of Swap with no front buffer); Present does not call it.
 XENOS_NATIVE_HOOK(822AEC50, KickSegment)
+// New segment from the allocator (device +48/+52/+56): from KickSegment (sub_822AEAC8), from the
+// reservation sub_822AEE50 when a reservation does not fit after the kick, and from Present.
+XENOS_NATIVE_HOOK(822AE950, NewSegment)
 XENOS_NATIVE_HOOK(822B8120, SetShaderGPRAllocation)  // runs prebuilt buffers of 1-point draws
 XENOS_NATIVE_HOOK(822BA590, QueryIssue)
 XENOS_NATIVE_HOOK(822BA818, QueryGetData)

@@ -107,6 +107,7 @@ reads the register shadow.
 | `sub_822AA700` | texture Unlock | traced | Never called in the traced scenes. |
 | `sub_822AF398` | flush the CPU cache over a range (`dcbf`) | traced | Called by Unlock and by the command buffer code (~430 per frame). |
 | `sub_822AEC50` | start a new command buffer segment | traced | When `[+48] > [+56]`; 8–17 per frame, always inside another call. Ends the segment with a fence (`sub_822AE440`). |
+| `sub_822AE950` | `NewSegment(dev, dwords)`: the write pointer to a newly allocated segment | hooked (D26) | Sets `+48/+52/+56`. Called by `sub_822AEC50` (through `sub_822AEAC8`), by the reservation `sub_822AEE50` when a reservation does not fit after the kick, and by Present. |
 | `sub_822B8120` | `SetShaderGPRAllocation(dev, flags, vertexGprs, pixelGprs)` | traced | 7–8 per frame (48/80 and 16/112 GPRs). Runs three prebuilt command buffers (`INDIRECT_BUFFER`) of 8 one-point draws each, at `0x1FCA1000` (physical). |
 | `sub_822BA590`, `sub_822BA818` | Query Issue, GetData | traced | 4 Issue and 1 GetData per frame (the sun flare). |
 | `sub_822B58B0` | `Swap(dev, frontBuffer, params)` | traced | Once per frame, from the engine's Synchronize (`sub_822B5D50`, an alias with no front buffer). |
@@ -299,12 +300,16 @@ What the game does that the draw path met:
   index buffer are in that packet (`VGT_DRAW_INITIATOR`, `VGT_DMA_BASE`, `VGT_DMA_SIZE`).
 - **Index buffers** at the menu are 16-bit with the 8-in-16 swap (`VGT_DMA_SIZE` `0x4000xxxx`); the panels are
   auto-indexed triangle strips.
-- **Inline vertex shaders are sometimes overwritten while a level loads.** Vertex shaders are loaded inline
-  (`IM_LOAD_IMMEDIATE`, 105–192 dwords) by `DrawIndexedVertices`. While the dock loads, the copy read from
-  the command buffer sometimes holds a coherency packet sequence (`COHER_*_HOST`, `WAIT_REG_MEM`, as
-  `sub_822B0010` writes it) in the middle of the microcode. It made the SDK's analysis crash the game; now
-  those draws are skipped and logged (D20, D21). Reading each segment as it ends made it rarer; the writer
-  is not identified yet.
+- **Inline vertex shaders seemed overwritten, and draws kept the wrong programs.** Vertex shaders are
+  loaded inline (`IM_LOAD_IMMEDIATE`, 105–192 dwords) by `DrawIndexedVertices`. Sometimes the copy held a
+  coherency packet sequence (`COHER_*_HOST`, `WAIT_REG_MEM`, as `sub_822B0010` writes it) in the middle of
+  the microcode, which made the SDK's analysis crash the game (D20, D21). The cause (D26) was a segment
+  change the tracker did not follow: when a reservation does not fit even after the kick, the library
+  starts another segment directly (`sub_822AE950`). The tracker then read stale memory as packets, or lost
+  the call's packets. The lost ones were worse: one or two calls per frame, and when a draw's program flush
+  was lost, that draw and the next ones (up to 24) kept the previous programs. Those were the stretched
+  triangles Gustavo saw at the dock for a few seconds at a time. With `NewSegment` hooked, every draw
+  matches the command processor, programs included.
 - **Texture addresses.** The resolve destinations' headers hold CPU addresses (`0xA84D2000`); the sampling
   draws' fetch constants hold GPU addresses (`0x084D2000`). Once both were keyed by the GPU address, the
   composite found the scene: 156 texture bindings per frame at the dock are resolve results, the other
