@@ -18,8 +18,10 @@ Xenos backend stays as the fallback.
 - [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
-- Status: **Phase 0** (scaffolding, 2026-10-13). The library is linked but does not render yet; the game
-  runs on the Xenos backend exactly as in POTCAWERecomp.
+- Status: **Phase 1 done** (2026-10-13): the game's Direct3D layer is mapped, and the observer rebuilds the
+  GPU state of 100 % of the draws from it. The library does not render yet; the game runs on the Xenos
+  backend exactly as in POTCAWERecomp. The trace (`--xenos_native_trace=true`, F9) and the observer
+  (`--xenos_native_verify=true`, F10) are off by default.
 - Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
   [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
   [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md)).

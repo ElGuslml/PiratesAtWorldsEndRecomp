@@ -48,8 +48,22 @@ Phase 0 is committed (`0aacfea`, 2026-10-13) and pushed to `origin`, a private G
 is tracked; `CLAUDE.local.md`, `tools/`, `local_docs/` and `assets/` stay gitignored, as inherited from
 POTCAWERecomp.
 
-Next is **Phase 1**: map the game's D3D entry points and device layout, then trace mode, then the observer
-at 100 %. Follow `xenos_native/docs/plan.md` and tick its boxes as work is done.
+**Phase 1 (map and observe) done, 2026-10-13.**
+- **D3D map:** 39 entry points hooked in `src/xenos_native_potcawe.cpp`, with the XDK 2.0.5426 device layout.
+- **Trace:** `--xenos_native_trace`, F9 dumps a frame.
+- **Observer:** `--xenos_native_verify`, F10 verifies a frame, through SDK patch
+  `xenos_native/sdk_patches/0001`.
+- **Result:** 100 % of the draws rebuilt at the title screen, the main menu and the Port Royal dock, with
+  and without 2× MSAA.
+- **Open questions:** all answered in `docs/xenos-native-potcawe.md`.
+- **Decisions:** D11–D13.
+- **Notes:** `local_docs/02`–`04`.
+- **Analysis tools** (personal, in `tools/`): `ppc_index.py`, `pm4_consts.py`, `fn_summary.py`,
+  `rs_setters.py`, `xn_trace.py`. Run `python tools/ppc_index.py build` after a codegen.
+
+Next is the **go/no-go decision for Phase 2** (Gustavo; the recommendation in `plan.md` is go), then
+Phase 2: DiligentCore and the first frames. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
+done.
 
 ## Read first
 
@@ -74,6 +88,7 @@ at 100 %. Follow `xenos_native/docs/plan.md` and tick its boxes as work is done.
 | `thirdparty/rexglue-sdk` | Official ReXGlue SDK, submodule pinned to v0.10.0 (`c94f5eb`), with `patches/` applied at configure time. |
 | `thirdparty/diligent-core` | DiligentCore, a submodule to be added in Phase 2, pinned to a commit. |
 | `patches/` | The shared SDK series (identical to GRAWRecomp and KameoRecomp). |
+| `xenos_native/sdk_patches/` | XenosNative's own SDK patches (D10/D11), applied after `patches/`. |
 | `potcawe_manifest.toml`, `potcawe_functions.toml`, `potcawe_functions_auto.toml` | Codegen input. |
 | `launcher/`, `res/`, `cmake/` | As in POTCAWERecomp. |
 | `assets/` | The game files: a real copy, 6.4 GB, gitignored. |
@@ -138,4 +153,11 @@ As in POTCAWERecomp:
 4. Reconfigure, after `git -C thirdparty/rexglue-sdk checkout -- .`.
 
 A general fix also goes to POTCAWERecomp, GRAWRecomp and KameoRecomp. XenosNative-only SDK changes follow
-rule 5 above.
+rule 5 above:
+1. Use the submodule's branch `xenos-native`: the shared series with `git am`, then XenosNative's patches.
+   A `git worktree` in the scratchpad keeps the submodule's working tree untouched.
+2. Commit the change.
+3. Export only XenosNative's commits:
+   `git format-patch <last shared commit>..HEAD -o <repo>/xenos_native/sdk_patches`.
+4. Reconfigure as above. `cmake/apply_sdk_patches.cmake` applies `xenos_native/sdk_patches/` after
+   `patches/`.

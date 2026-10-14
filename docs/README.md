@@ -19,4 +19,4 @@ side:
 
 | Document | Contents |
 |---|---|
-| [xenos-native-potcawe.md](xenos-native-potcawe.md) | POTCAWE's Direct3D map, device offsets, engine behavior, frame structure, measurements and the open questions of Phase 1 |
+| [xenos-native-potcawe.md](xenos-native-potcawe.md) | POTCAWE's Direct3D map (39 entry points), device layout, engine behavior, frame structure from the trace, the observer's results, the answers to Phase 1's questions, and the measurements |

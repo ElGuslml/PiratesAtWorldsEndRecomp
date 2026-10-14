@@ -51,8 +51,8 @@ XENOS_NATIVE_HOOK(822ACF88, IndexBufferUnlock)
 XENOS_NATIVE_HOOK(822AA700, TextureUnlock)
 XENOS_NATIVE_HOOK(822AF398, FlushCpuRange)
 
-// Command buffer, queries, frame. Swap runs twice per frame: from Synchronize (sub_822B5D50, an alias
-// with no front buffer) and from Present.
+// Command buffer, queries, frame. Swap runs once per frame, from the engine's Synchronize
+// (sub_822B5D50, an alias of Swap with no front buffer); Present does not call it.
 XENOS_NATIVE_HOOK(822AEC50, KickSegment)
 XENOS_NATIVE_HOOK(822B8120, SetShaderGPRAllocation)  // runs prebuilt buffers of 1-point draws
 XENOS_NATIVE_HOOK(822BA590, QueryIssue)
