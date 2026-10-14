@@ -30,7 +30,8 @@ Sources:
 6. [Phase 1 questions, answered](#phase-1-questions-answered)
 7. [Behavior XenosNative has to respect](#behavior-xenosnative-has-to-respect)
 8. [Phase 2 so far](#phase-2-so-far)
-9. [Measurements](#measurements)
+9. [Phase 3 so far](#phase-3-so-far)
+10. [Measurements](#measurements)
 
 ## The executable
 
@@ -109,7 +110,7 @@ reads the register shadow.
 | `sub_822AEC50` | start a new command buffer segment | traced | When `[+48] > [+56]`; 8–17 per frame, always inside another call. Ends the segment with a fence (`sub_822AE440`). |
 | `sub_822AE950` | `NewSegment(dev, dwords)`: the write pointer to a newly allocated segment | hooked (D26) | Sets `+48/+52/+56`. Called by `sub_822AEC50` (through `sub_822AEAC8`), by the reservation `sub_822AEE50` when a reservation does not fit after the kick, and by Present. |
 | `sub_822B8120` | `SetShaderGPRAllocation(dev, flags, vertexGprs, pixelGprs)` | traced | 7–8 per frame (48/80 and 16/112 GPRs). Runs three prebuilt command buffers (`INDIRECT_BUFFER`) of 8 one-point draws each, at `0x1FCA1000` (physical). |
-| `sub_822BA590`, `sub_822BA818` | Query Issue, GetData | traced | 4 Issue and 1 GetData per frame (the sun flare). |
+| `sub_822BA590`, `sub_822BA818` | Query Issue, GetData | Issue hooked (D32), GetData traced | 4 Issue and 1 GetData per frame (the sun flare): two queries, each BEGIN then END. |
 | `sub_822B58B0` | `Swap(dev, frontBuffer, params)` | traced | Once per frame, from the engine's Synchronize (`sub_822B5D50`, an alias with no front buffer). |
 | `sub_822B5D58` | `Present(dev, params)` | traced | Once per frame; ends the frame. Does not call Swap. |
 | `sub_822AF860` | `Direct3D_CreateDevice` | known | Calls the device init `sub_822B6A60` (ring init with `ME_INIT`, prebuilt buffers by `sub_822B7700`). |
@@ -276,7 +277,7 @@ the library's own:
 - **Sun flare.** The expected sample count scales with the AA level (`PotcaweFlareAaLevelHook`). Host
   queries must count samples the way the game expects. Compare with the Xenos path (patch 0020) at the
   same spot. With tiling, each tile has its own query block (the address is the only state that differs
-  per tile).
+  per tile). Done in Phase 3 (D32): see [Phase 3 so far](#phase-3-so-far).
 - **Per-tile resolves.** The engine resolves each tile's rectangle into the same texture under
   SetPredication. With one host target, these become one resolve of the union (the overlap rows are
   resolved twice with the same content).
@@ -356,6 +357,22 @@ Gustavo's play at the dock (2026-10-14, after D26):
   queries get fake counts on this path (Phase 3);
 - the GPU load depends on the view: ~80 % at the start view, 20–25 % facing the sea (RTSS), against ~30 %
   for the Xenos path at the start view with the same settings (Phase 3, performance).
+
+## Phase 3 so far
+
+Notes: `local_docs/06-phase3-performance.md`. Window 1280×720, Antialiasing Off, 60 FPS.
+
+**GPU time (D30).** Every draw ran in its own render pass. Binding the render targets only when they change
+took the dock from 12.1 to 3.3 ms per frame facing the town, and from 2.8 to 1.8 ms facing the sea.
+
+**The sun flare's occlusion queries (D32).** Runs `potcawe_101`–`108`:
+- per frame, two queries, each Issue(BEGIN), the flare's draws, Issue(END). With one tile their blocks are
+  `0x06F2D000` and `0x06F2D040`, the same every frame;
+- the counts: up to 91 samples per query on the first frames at the dock, 0 with the sun hidden or off
+  screen, up to 104 facing it;
+- 1,200 queries answered per 600 frames. Only the first 4 at the dock come before any result, and get 0;
+- in three views toward the sun, each taken on both paths with the same keys, XenosNative's glare
+  matches the Xenos path's. The white-out over the geometry Gustavo saw after D26 is gone.
 
 ## Measurements
 

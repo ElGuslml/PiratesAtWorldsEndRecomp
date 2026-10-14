@@ -76,13 +76,25 @@ launcher's Renderer row on XenosNative (D25; it forces Antialiasing Off for now)
   Phase 2 run had AA Off), against 8.5–9 ms for the Xenos path at 2×2: too much (Phase 3). 60 FPS, no stalls
   since the DiligentCore patch for robust buffer access (D22).
 
-Decisions D15–D30; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+Decisions D15–D28; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
 messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan device
 (`tools/renderdoc/xn_inspect.py`, `xn_users.py`).
 
-**Phase 3 (parity in POTCAWE) in progress, since 2026-10-14** (go: D29). The agreed order: GPU time first (the
-town side of the dock costs 12 ms, the Xenos path ~5 ms), then the occlusion queries (the sun glare), then
-resolution, MSAA and the rest of the game. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
+**Phase 3 (performance and the renderer's own features) in progress, since 2026-10-14** (go: D29; scope and
+order: D31). Done:
+- GPU time at the dock 12.1 → 3.3 ms per frame: render targets bound only when they change (D30);
+- the occlusion queries (the sun glare) measured on the host and answered to the sync-only command
+  processor through `xenos_native/sdk_patches/0003` (D32).
+
+Next, in order:
+1. DXT1 as BC1;
+2. shader translation off the render thread;
+3. guest memory uploads, step A;
+4. render resolution at any scale.
+
+The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
+Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D32; notes
+`local_docs/06-phase3-performance.md`. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
 done.
 
 ## Read first
