@@ -490,6 +490,15 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
     the camera, but at 21:9 it falls short of the mesh: a vertical seam in the sky toward the sun (RenderDoc,
     `potcawe_frame6849.rdc`, event 1433: a scissor 2340 pixels wide).
   - At 16:9, without the rectangle, the image does not change (runs 182, 183).
+- **Anisotropic filtering (D44).** The game's samplers in the menus and at the dock come to 11 distinct
+  states.
+  - One asks for 4x itself: a texture with 11 mip levels. It only appeared in the run that turns toward
+    the sea.
+  - The dock's textures (5 and 8 mip levels) ask for none: trilinear.
+  - The rest have no mipmaps (render targets, 2D).
+
+  The SDK's `anisotropic_override` (16x by default here, `src/startup.cpp`) applies to the trilinear ones
+  on both paths. At 16x the GPU time is unchanged: 3.46 ms at 2×, 6.22 ms at 3×.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
 

@@ -110,6 +110,9 @@ Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
    with a scale per axis, the game's 16:9 cameras are widened (`src/aspect.cpp`, culling included), and the
    HUD, menus and videos are drawn in a centered 16:9 box.
 
+Also done: anisotropic filtering (D44). XenosNative applies the SDK's `anisotropic_override` as the Xenos path
+does, and POTCAWE defaults to 16x with a launcher row (made in POTCAWERecomp, `f3b67db`, and merged).
+
 Notes: `local_docs/07-phase4.md`.
 
 Then: every level compared with the Xenos path, long sessions, the known limits from Phase 2.
