@@ -31,7 +31,8 @@ Sources:
 7. [Behavior XenosNative has to respect](#behavior-xenosnative-has-to-respect)
 8. [Phase 2 so far](#phase-2-so-far)
 9. [Phase 3 so far](#phase-3-so-far)
-10. [Measurements](#measurements)
+10. [Phase 4 so far](#phase-4-so-far)
+11. [Measurements](#measurements)
 
 ## The executable
 
@@ -419,6 +420,28 @@ XenosNative level):
 POTCAWE presents a `2_10_10_10_AS_16_16_16_16` front buffer (format 54, 1280×720) and writes a piecewise
 linear ramp early on (384 DC_LUT writes). Red at 32, 64, 128 and 192 of 255 becomes 67, 196, 467 and 748 of
 1023, where a straight line gives 129, 259, 518 and 776. The 256-entry table stays linear. The white-out over the geometry Gustavo saw after D26 is gone.
+
+## Phase 4 so far
+
+**The end of the frame** (trace of frame 4500 at the dock, run 156, with the callers):
+1. **The post-processing** draws the scene into the composite surface (`0x40243200`, 2_10_10_10_FLOAT,
+   pitch 1280, EDRAM 0), and the engine copies it to `0x0886B000`, 8_8_8_8 (Resolve from `0x8245E180`).
+2. **A temporal blend:** the last frame's finished scene (`0x09B2E000`) is drawn into the surface, then
+   blended with the copy and the depth texture `0x084D2000`. That looks like motion blur.
+3. **The finished scene** is copied to `0x09B2E000` (Resolve from `0x824583EC`). It is also the next
+   frame's "last frame".
+4. **The HUD** is drawn into an 8_8_8_8 surface at the same EDRAM (`0x40268410`): a clear to transparent black,
+   5 draws of 3D HUD elements, a depth resolve to `0x084D2000`, 10 draws of 2D elements, then a copy to
+   `0x0886B000`.
+5. **The composite:** two full-screen `DrawVerticesUP` into `0x40243200`, the finished scene
+   (`0x09B2E000`) and the HUD (`0x0886B000`) over it. Then the resolve to the front buffer, format 54.
+
+**Antialiasing (D41).** The profile names step 3's resolve (`scene_resolve_caller = 0x824583EC`).
+XenosNative antialiases that copy in place with SMAA or FXAA, so step 5 composites a smooth scene under a
+sharp HUD:
+- once per frame at the dock;
+- in the menus too, where their text stays sharp;
+- SMAA costs about 0.05 ms at 1× and 0.15 ms at 2×.
 
 ## Measurements
 
