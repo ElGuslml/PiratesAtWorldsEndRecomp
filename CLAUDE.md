@@ -62,7 +62,8 @@ POTCAWERecomp.
   `fn_summary.py`, `rs_setters.py`, `xn_trace.py`. Run `python xenos_native/tools/ppc_index.py build` after
   a codegen.
 
-**Phase 2 (core renderer) in progress, since 2026-10-13** (go: D14). With `--xenos_native=true`:
+**Phase 2 (core renderer) in progress, since 2026-10-13** (go: D14). With `--xenos_native=true`, or the
+launcher's Renderer row on XenosNative (D25; it forces Antialiasing Off for now):
 - the SDK's command processor runs for synchronization only (`xenos_native/sdk_patches/0002`), and
   XenosNative presents through its own DiligentCore (Vulkan) swap chain;
 - render targets, clears, resolves and Present work;
@@ -75,7 +76,7 @@ POTCAWERecomp.
   Phase 2 run had AA Off), against 8.5–9 ms for the Xenos path at 2×2: too much (Phase 3). 60 FPS, no stalls
   since the DiligentCore patch for robust buffer access (D22).
 
-Decisions D15–D24; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+Decisions D15–D25; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
 messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan device
 (`tools/renderdoc/xn_inspect.py`, `xn_users.py`).
 

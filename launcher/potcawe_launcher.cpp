@@ -3,9 +3,12 @@
 // Picture).
 //
 // Plain Win32, no SDK. Reads potcawe.toml and potcawe_options.toml (next to this exe and
-// potcawerecomp.exe), shows monitor, display, resolution, render quality, frame rate and graphics API,
-// and saves
-// the choice to potcawe_options.toml, which potcawerecomp.exe loads at startup (src/options.cpp).
+// potcawerecomp.exe), shows monitor, display, resolution, renderer, render quality, frame rate,
+// antialiasing and graphics API, and saves the choice to potcawe_options.toml, which
+// potcawerecomp.exe loads at startup (src/options.cpp).
+// Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which draws at
+// 1280x720 without MSAA for now, so the render quality, antialiasing and graphics API rows do not apply
+// to it and are shown disabled.
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp).
 // "Play" also starts potcawerecomp.exe (with the arguments the launcher received) and waits for it
 // to exit, so Steam keeps seeing the game as running. Works with mouse, keyboard or controller
@@ -61,6 +64,7 @@ struct Options {
   bool fps60 = false;                      // potcawe_60fps (src/framerate.cpp)
   bool no_msaa = false;                    // potcawe_no_msaa (src/msaa.cpp)
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
+  bool native = false;                     // xenos_native: XenosNative draws instead of Xenos
 };
 
 // --- potcawe.toml / potcawe_options.toml ---
@@ -170,8 +174,12 @@ struct Texts {
   const wchar_t* aa_msaa;
   const wchar_t* aa_off;
   const wchar_t* graphics;
+  const wchar_t* renderer;
+  const wchar_t* renderer_xenos;
+  const wchar_t* renderer_native;
   const wchar_t* quality_hint;
   const wchar_t* vulkan_hint;
+  const wchar_t* native_hint;
   const wchar_t* pad_hint;
   const wchar_t* play;
   const wchar_t* save;
@@ -201,11 +209,17 @@ const Texts& TextsFor(uint32_t language) {
       L"2× MSAA (original)",
       L"Off (faster)",
       L"Graphics API",
+      L"Renderer",
+      L"Xenos (emulated)",
+      L"XenosNative (experimental)",
       L"The game renders at 1280 × 720 times a whole number (2×, 3×) and the image is fitted "
       L"to the screen. Automatic picks the smallest scale that covers the resolution. 60 FPS "
       L"presents every vblank instead of every second one; the game speed does not change.",
       L"Vulkan has been tested less than DirectX 12 in this game: use it if DirectX 12 gives you "
       L"problems.",
+      L"XenosNative draws the game natively with Vulkan instead of emulating the Xbox 360 GPU. It is "
+      L"experimental: for now it renders at 1280 × 720 without antialiasing, and some effects may "
+      L"look different than with Xenos.",
       L"Controller: ↑↓ choose · ←→ change · A play · B quit",
       L"Play",
       L"Save",
@@ -233,11 +247,17 @@ const Texts& TextsFor(uint32_t language) {
       L"2× MSAA (Original)",
       L"Aus (schneller)",
       L"Grafik-API",
+      L"Renderer",
+      L"Xenos (emuliert)",
+      L"XenosNative (experimentell)",
       L"Das Spiel rendert in 1280 × 720 mal einer ganzen Zahl (2×, 3×), das Bild wird an den "
       L"Bildschirm angepasst. „Automatisch“ wählt die kleinste Stufe, die die Auflösung abdeckt. "
       L"60 FPS zeigt jedes Vblank ein Bild statt jedes zweite; die Spielgeschwindigkeit bleibt gleich.",
       L"Vulkan ist in diesem Spiel weniger getestet als DirectX 12: nutze es, wenn DirectX 12 "
       L"Probleme macht.",
+      L"XenosNative zeichnet das Spiel nativ mit Vulkan, statt die GPU der Xbox 360 zu emulieren. Es "
+      L"ist experimentell: vorerst rendert es in 1280 × 720 ohne Kantenglättung, und manche Effekte "
+      L"können anders aussehen als mit Xenos.",
       L"Controller: ↑↓ wählen · ←→ ändern · A spielen · B beenden",
       L"Spielen",
       L"Speichern",
@@ -265,12 +285,18 @@ const Texts& TextsFor(uint32_t language) {
       L"2× MSAA (d'origine)",
       L"Désactivé (plus rapide)",
       L"API graphique",
+      L"Moteur de rendu",
+      L"Xenos (émulé)",
+      L"XenosNative (expérimental)",
       L"Le jeu est rendu en 1280 × 720 multiplié par un nombre entier (2×, 3×) et l'image "
       L"s'adapte à l'écran. « Automatique » choisit la plus petite échelle qui couvre la "
       L"résolution. 60 FPS affiche une image à chaque vblank au lieu d'une sur deux ; la vitesse du "
       L"jeu ne change pas.",
       L"Vulkan a été moins testé que DirectX 12 dans ce jeu : utilisez-le si DirectX 12 pose "
       L"problème.",
+      L"XenosNative dessine le jeu nativement avec Vulkan au lieu d'émuler le GPU de la Xbox 360. Il "
+      L"est expérimental : pour l'instant il rend en 1280 × 720 sans anticrénelage, et certains "
+      L"effets peuvent différer de Xenos.",
       L"Manette : ↑↓ choisir · ←→ modifier · A jouer · B quitter",
       L"Jouer",
       L"Enregistrer",
@@ -298,11 +324,17 @@ const Texts& TextsFor(uint32_t language) {
       L"2× MSAA (original)",
       L"Desactivado (más rápido)",
       L"API gráfica",
+      L"Renderizador",
+      L"Xenos (emulado)",
+      L"XenosNative (experimental)",
       L"El juego dibuja a 1280 × 720 por un número entero (2×, 3×) y la imagen se ajusta a la "
       L"pantalla. «Automática» elige la menor escala que cubre la resolución. 60 FPS presenta una "
       L"imagen por vblank en vez de una de cada dos; la velocidad del juego no cambia.",
       L"Vulkan está menos probado que DirectX 12 en este juego: úsalo si DirectX 12 te da "
       L"problemas.",
+      L"XenosNative dibuja el juego de forma nativa con Vulkan en vez de emular la GPU de Xbox 360. "
+      L"Es experimental: por ahora dibuja a 1280 × 720 sin antialiasing, y algunos efectos pueden "
+      L"verse distintos que con Xenos.",
       L"Mando: ↑↓ elegir · ←→ cambiar · A jugar · B salir",
       L"Jugar",
       L"Guardar",
@@ -330,11 +362,17 @@ const Texts& TextsFor(uint32_t language) {
       L"2× MSAA (originale)",
       L"Disattivato (più veloce)",
       L"API grafica",
+      L"Renderer",
+      L"Xenos (emulato)",
+      L"XenosNative (sperimentale)",
       L"Il gioco disegna a 1280 × 720 per un numero intero (2×, 3×) e l'immagine si adatta "
       L"allo schermo. «Automatica» sceglie la scala più piccola che copre la risoluzione. 60 FPS "
       L"presenta un'immagine a ogni vblank invece di una su due; la velocità del gioco non cambia.",
       L"Vulkan è meno collaudato di DirectX 12 in questo gioco: usalo se DirectX 12 dà "
       L"problemi.",
+      L"XenosNative disegna il gioco in modo nativo con Vulkan invece di emulare la GPU della Xbox "
+      L"360. È sperimentale: per ora disegna a 1280 × 720 senza antialiasing, e alcuni effetti "
+      L"possono apparire diversi rispetto a Xenos.",
       L"Controller: ↑↓ scegli · ←→ cambia · A gioca · B esci",
       L"Gioca",
       L"Salva",
@@ -524,6 +562,8 @@ enum ControlId : int {
   kIdDisplay,
   kIdResolutionLabel,
   kIdResolution,
+  kIdRendererLabel,
+  kIdRenderer,
   kIdQualityLabel,
   kIdQuality,
   kIdFramerateLabel,
@@ -538,12 +578,13 @@ enum ControlId : int {
 };
 
 // Option rows (top to bottom) and buttons (left to right), for the controller.
-constexpr int kRowIds[] = {kIdMonitor, kIdDisplay,     kIdResolution, kIdQuality,
-                           kIdFramerate, kIdAntialiasing, kIdBackend};
+constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay,      kIdResolution, kIdRenderer,
+                           kIdQuality,   kIdFramerate,    kIdAntialiasing, kIdBackend};
 constexpr int kButtonIds[] = {IDOK, kIdSave, IDCANCEL};
 constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdDisplayLabel, kIdDisplay},
                             {kIdResolutionLabel, kIdResolution},
+                            {kIdRendererLabel, kIdRenderer},
                             {kIdQualityLabel, kIdQuality},
                             {kIdFramerateLabel, kIdFramerate},
                             {kIdAntialiasingLabel, kIdAntialiasing},
@@ -628,8 +669,10 @@ void Refresh(Launcher& l) {
   SetWindowTextW(Item(l, kIdResolutionLabel), t.resolution);
   SetWindowTextW(Item(l, kIdQualityLabel), t.quality);
   SetWindowTextW(Item(l, kIdFramerateLabel), t.framerate);
+  SetWindowTextW(Item(l, kIdAntialiasingLabel), t.antialiasing);
   SetWindowTextW(Item(l, kIdBackendLabel), t.graphics);
-  SetWindowTextW(Item(l, kIdHint), o.vulkan ? t.vulkan_hint : t.quality_hint);
+  SetWindowTextW(Item(l, kIdRendererLabel), t.renderer);
+  SetWindowTextW(Item(l, kIdHint), o.native ? t.native_hint : o.vulkan ? t.vulkan_hint : t.quality_hint);
   SetWindowTextW(Item(l, kIdPadHint), t.pad_hint);
   SetWindowTextW(Item(l, IDOK), t.play);
   SetWindowTextW(Item(l, kIdSave), t.save);
@@ -670,22 +713,42 @@ void Refresh(Launcher& l) {
   }
   EnableWindow(resolution, o.display == kWindow);
 
-  std::vector<std::wstring> qualities = {std::wstring(t.automatic) + L" — " +
-                                         RenderText(AutoScale(OutputSize(l)), t)};
-  for (int scale = 1; scale <= kMaxScale; ++scale) {
-    qualities.push_back(RenderText({scale, scale}, t));
+  // XenosNative needs Vulkan (it draws through DiligentCore's Vulkan backend).
+  std::vector<std::wstring> renderers = {t.renderer_xenos};
+  if (l.has_vulkan) {
+    renderers.emplace_back(t.renderer_native);
   }
-  FillCombo(Item(l, kIdQuality), qualities, o.scale);
+  FillCombo(Item(l, kIdRenderer), renderers, o.native ? 1 : 0);
+
+  // With XenosNative the next rows show what it uses (1280x720, no MSAA, Vulkan), disabled; the choices
+  // for Xenos are kept.
+  if (o.native) {
+    FillCombo(Item(l, kIdQuality), {RenderText({1, 1}, t)}, 0);
+    FillCombo(Item(l, kIdAntialiasing), {t.aa_off}, 0);
+    FillCombo(Item(l, kIdBackend), {L"Vulkan"}, 0);
+  } else {
+    std::vector<std::wstring> qualities = {std::wstring(t.automatic) + L" — " +
+                                           RenderText(AutoScale(OutputSize(l)), t)};
+    for (int scale = 1; scale <= kMaxScale; ++scale) {
+      qualities.push_back(RenderText({scale, scale}, t));
+    }
+    FillCombo(Item(l, kIdQuality), qualities, o.scale);
+    FillCombo(Item(l, kIdAntialiasing), {t.aa_msaa, t.aa_off}, o.no_msaa ? 1 : 0);
+    // Proper names: the same in every language.
+    std::vector<std::wstring> backends = {L"DirectX 12"};
+    if (l.has_vulkan) {
+      backends.emplace_back(L"Vulkan");
+    }
+    FillCombo(Item(l, kIdBackend), backends, o.vulkan ? 1 : 0);
+  }
+  for (int id : {kIdQuality, kIdAntialiasing, kIdBackend}) {
+    if (o.native && GetFocus() == Item(l, id)) {
+      SetFocus(Item(l, kIdRenderer));
+    }
+    EnableWindow(Item(l, id), !o.native);
+  }
 
   FillCombo(Item(l, kIdFramerate), {t.fps30, t.fps60}, o.fps60 ? 1 : 0);
-  FillCombo(Item(l, kIdAntialiasing), {t.aa_msaa, t.aa_off}, o.no_msaa ? 1 : 0);
-
-  // Proper names: the same in every language.
-  std::vector<std::wstring> backends = {L"DirectX 12"};
-  if (l.has_vulkan) {
-    backends.emplace_back(L"Vulkan");
-  }
-  FillCombo(Item(l, kIdBackend), backends, o.vulkan ? 1 : 0);
 }
 
 // Copies the selection of list id into l.o and refreshes the window.
@@ -712,17 +775,26 @@ void OnSelectionChange(Launcher& l, int id) {
         o.window = l.window_sizes[index];
       }
       break;
+    case kIdRenderer:
+      o.native = l.has_vulkan && index == 1;
+      break;
     case kIdQuality:
-      o.scale = std::clamp(index, 0, kMaxScale);
+      if (!o.native) {
+        o.scale = std::clamp(index, 0, kMaxScale);
+      }
       break;
     case kIdFramerate:
       o.fps60 = index == 1;
       break;
     case kIdAntialiasing:
-      o.no_msaa = index == 1;
+      if (!o.native) {
+        o.no_msaa = index == 1;
+      }
       break;
     case kIdBackend:
-      o.vulkan = l.has_vulkan && index == 1;
+      if (!o.native) {
+        o.vulkan = l.has_vulkan && index == 1;
+      }
       break;
   }
   Refresh(l);
@@ -730,7 +802,7 @@ void OnSelectionChange(Launcher& l, int id) {
 
 // Positions in pixels at 96 DPI; scaled with the monitor DPI.
 constexpr int kClientWidth = 560;
-constexpr int kClientHeight = 474;
+constexpr int kClientHeight = 510;
 
 void Layout(Launcher& l, UINT dpi) {
   auto s = [dpi](int v) { return MulDiv(v, int(dpi), 96); };
@@ -1110,6 +1182,7 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   o.vulkan = GetString(c, "gpu_backend") == "vulkan";
   o.fps60 = GetBool(c, "potcawe_60fps", false);
   o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
+  o.native = GetBool(c, "xenos_native", false);
   if (GetString(c, "launcher_render_scale") == "auto") {
     o.scale = 0;
   } else if (int scale = GetInt(c, "launcher_render_scale", 0); scale >= 1) {
@@ -1167,15 +1240,22 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
     f << "launcher_render_scale = " << o.scale << "\n";
   }
   // resolution_scale = 1 so that draw_resolution_scale_x/y win (even if potcawe.toml says
-  // otherwise).
+  // otherwise). With XenosNative the SDK's backend only keeps the GPU in sync, at 1x (XenosNative
+  // draws at 1280x720 for now); launcher_render_scale keeps the choice for Xenos.
+  if (o.native) {
+    scale = {1, 1};
+  }
   f << "resolution_scale = 1\n";
   f << "draw_resolution_scale_x = " << scale.first << "\n";
   f << "draw_resolution_scale_y = " << scale.second << "\n";
   f << "gpu_backend = \"" << (o.vulkan ? "vulkan" : "d3d12") << "\"\n";
   // Present every vblank (60 FPS) instead of every second one (src/framerate.cpp).
   f << "potcawe_60fps = " << boolean(o.fps60) << "\n";
-  // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing.
+  // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing. The game
+  // applies it with XenosNative whatever this says.
   f << "potcawe_no_msaa = " << boolean(o.no_msaa) << "\n";
+  // XenosNative (xenos_native/): draw natively on Vulkan instead of emulating the GPU (experimental).
+  f << "xenos_native = " << boolean(o.native) << "\n";
   return bool(f);
 }
 

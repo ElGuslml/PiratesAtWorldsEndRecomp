@@ -11,27 +11,41 @@
 // force the number of tiles, which the engine computes from the antialiasing level, to one.
 // Dock of Port Royal at 2x2 and 60 FPS on an RTX 4070 Ti: GPU 89 % -> 59 %. The image loses only
 // the 2x edge antialiasing. The sun flare also reads the level (see PotcaweFlareAaLevelHook).
+// XenosNative draws each pass once at its surface's size and does not join the two tiles yet, so
+// with it the hooks always apply, whatever potcawe_no_msaa says.
 
 #include <rex/cvar.h>
 #include <rex/logging.h>
 #include <rex/ppc/context.h>
+#include <xenos_native/xenos_native.h>
 
 #include <atomic>
 #include <cstdint>
 
 REXCVAR_DEFINE_BOOL(potcawe_no_msaa, false, "Potcawe",
                     "Create the game's render surfaces without multisampling (no 2x MSAA edge "
-                    "antialiasing; less GPU work at high render scales)");
+                    "antialiasing; less GPU work at high render scales). Always on with XenosNative");
+
+namespace {
+
+// Why the surfaces are created without multisampling, or nullptr if they are not.
+const char* NoMsaaReason() {
+  if (xenos_native::Renders()) return "XenosNative";
+  return REXCVAR_GET(potcawe_no_msaa) ? "potcawe_no_msaa" : nullptr;
+}
+
+}  // namespace
 
 // [[midasm_hook]] at the bl sub_824D5750 of sub_823FBC90, sub_823F98D8 and sub_823F9058: r6 = the
 // D3DMULTISAMPLE_TYPE of the surface being created.
 void PotcaweMsaaHook(PPCRegister& r6) {
-  if (!REXCVAR_GET(potcawe_no_msaa) || r6.u32 == 0) {
+  const char* reason = NoMsaaReason();
+  if (!reason || r6.u32 == 0) {
     return;
   }
   static std::atomic<int> logged{0};
   if (logged.fetch_add(1) < 8) {
-    REXLOG_INFO("[msaa] surface multisample type {} -> 0 (potcawe_no_msaa)", r6.u32);
+    REXLOG_INFO("[msaa] surface multisample type {} -> 0 ({})", r6.u32, reason);
   }
   r6.u32 = 0;
 }
@@ -41,12 +55,13 @@ void PotcaweMsaaHook(PPCRegister& r6) {
 // 1280x720 with 2x MSAA. Without multisampling the color and depth surfaces fit in one, but the
 // engine still sizes them from the level, so the count is forced to 1 here.
 void PotcaweTileCountHook(PPCRegister& r3) {
-  if (!REXCVAR_GET(potcawe_no_msaa) || r3.u32 <= 1) {
+  const char* reason = NoMsaaReason();
+  if (!reason || r3.u32 <= 1) {
     return;
   }
   static std::atomic<bool> logged{false};
   if (!logged.exchange(true)) {
-    REXLOG_INFO("[msaa] scene tiles {} -> 1 (potcawe_no_msaa)", r3.u32);
+    REXLOG_INFO("[msaa] scene tiles {} -> 1 ({})", r3.u32, reason);
   }
   r3.u32 = 1;
 }
@@ -57,7 +72,7 @@ void PotcaweTileCountHook(PPCRegister& r3) {
 // multisampling the query counts one sample per pixel, so the flare sees level 0; otherwise it
 // would reach only half its strength.
 void PotcaweFlareAaLevelHook(PPCRegister& r3) {
-  if (REXCVAR_GET(potcawe_no_msaa)) {
+  if (NoMsaaReason()) {
     r3.u32 = 0;
   }
 }

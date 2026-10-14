@@ -19,9 +19,10 @@ Xenos backend stays as the fallback.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
 - Status: **Phase 2 in progress** (2026-10-14). By default the game runs on the Xenos backend exactly as in
-  POTCAWERecomp. With `--xenos_native=true`, XenosNative draws the frames on DiligentCore (Vulkan), with the
-  game's textures; the menus and the Port Royal dock look as on the Xenos path, but it is still
-  experimental (slower on the GPU, only those scenes checked). The trace (`--xenos_native_trace=true`, F9)
+  POTCAWERecomp. With the launcher's Renderer row on "XenosNative (experimental)" (or `--xenos_native=true`),
+  XenosNative draws the frames on DiligentCore (Vulkan), with the game's textures, at 1280×720 without
+  antialiasing; the menus and the Port Royal dock look as on the Xenos path, but it is still experimental
+  (slower on the GPU, only those scenes checked). The trace (`--xenos_native_trace=true`, F9)
   and the observer (`--xenos_native_verify=true`, F10) are off by default.
 - Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
   [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
@@ -58,8 +59,8 @@ first and merged here.
 - The sun's glare follows the sun: the game measures how much of the sun is visible with an occlusion query,
   which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
   [`docs/sun-glow.md`](docs/sun-glow.md)).
-- **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, render quality and
-  graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
+- **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer (Xenos, or
+  XenosNative while it is in development), render quality and graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
   it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
   scale that covers your screen. Wider screens get black bars for now (the camera keeps 16:9).
 - **60 FPS option** (launcher, `potcawe_60fps`): the game is capped at 30 FPS only by its Direct3D present
@@ -131,7 +132,7 @@ POTCAWE Launcher. You can also add `POTCAWE Launcher.exe` to change options from
 | File (next to `potcawerecomp.exe`) | What it holds |
 |---|---|
 | `potcawe.toml` | Base settings. Created with the defaults this game needs if it is missing. |
-| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, render scale, frame rate, antialiasing, API). Loaded after `potcawe.toml`. |
+| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, renderer, render scale, frame rate, antialiasing, API). Loaded after `potcawe.toml`. |
 
 Command-line options (`--name=value`, for example Steam launch options) win over both files:
 `--fullscreen=false --window_width=1920 --window_height=1080`,

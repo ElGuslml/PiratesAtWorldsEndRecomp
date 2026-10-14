@@ -269,7 +269,9 @@ the library's own:
   because the command processor still advances the read pointer and the fences.
 - **Antialiasing option.** `src/msaa.cpp` forces no MSAA (six surface creations) and one tile (three tile
   counts). With XenosNative the scene is drawn once anyway, so the option can become plain "2× MSAA on/off"
-  without the tile hooks. To decide in Phase 3.
+  without the tile hooks. To decide in Phase 3. Until then the hooks always apply with XenosNative
+  (`xenos_native::Renders()`, D25): with 2× MSAA the scene surface is 1280×416 (one tile), and XenosNative
+  drew only those top 416 rows of the image (run 46).
 - **Sun flare.** The expected sample count scales with the AA level (`PotcaweFlareAaLevelHook`). Host
   queries must count samples the way the game expects. Compare with the Xenos path (patch 0020) at the
   same spot. With tiling, each tile has its own query block (the address is the only state that differs
