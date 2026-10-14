@@ -305,9 +305,12 @@ What the game does that the draw path met:
   ~9,500 are placeholders until step 7.
 - **Uploads.** About 1.5 MB of vertex data in about 170 copies per frame at the dock, most of it data the
   game writes every frame.
-- **GPU time.** 10.9 ms per frame at the dock (DiligentCore duration queries), against about 14 ms for the
-  Xenos path at 2×2 (four times the pixels). DiligentCore's dynamic heap fills up now and then while the GPU
-  falls behind, and stalls the frame.
+- **GPU time.** 10.7 ms per frame at the dock (DiligentCore duration queries; `nvidia-smi` 69 %), against
+  about 14 ms for the Xenos path at 2×2 (four times the pixels). Renderer CPU time 4.7 ms per frame.
+- **Lost device on the first dock frames.** Some buffer read of the translated shaders goes out of range
+  there; without Vulkan's `robustBufferAccess` the device was lost, which DiligentCore does not report in
+  release builds. It showed up as a dynamic heap that filled up every 1.4 s and a GPU at 8.6 %. Fixed by
+  enabling the feature (D22).
 
 ## Measurements
 

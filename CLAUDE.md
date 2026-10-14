@@ -70,9 +70,10 @@ POTCAWERecomp.
   `SharedMemory` and `PrimitiveProcessor` on DiligentCore buffers, DiligentCore pipelines;
 - textures are white placeholders except resolve results, so the menus and the Port Royal dock show
   geometry, vertex colors and fog but not the game's art;
-- GPU time at the dock is 10.9 ms per frame at 1×, which is too much (Phase 3).
+- GPU time at the dock is 10.7 ms per frame at 1×, which is too much (Phase 3). 60 FPS, no stalls since the
+  DiligentCore patch for robust buffer access (D22).
 
-Decisions D15–D21; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+Decisions D15–D22; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
 messages in the log, RenderDoc captures of the Vulkan device (`tools/renderdoc/xn_inspect.py`).
 
 Next is Phase 2 step 7, **textures**, then the remaining Phase 2 items. Follow `xenos_native/docs/plan.md`
@@ -99,9 +100,10 @@ and tick its boxes as work is done.
 | `docs/` | Published game notes (one per problem), plus `xenos-native-potcawe.md` (the game side of XenosNative). |
 | `src/` | The game: startup, launcher options, game hooks. The XenosNative hook file and profile for POTCAWE go here (`src/xenos_native_potcawe.cpp`, Phase 1). |
 | `thirdparty/rexglue-sdk` | Official ReXGlue SDK, submodule pinned to v0.10.0 (`c94f5eb`), with `patches/` applied at configure time. |
-| `thirdparty/diligent-core` | DiligentCore, a submodule to be added in Phase 2, pinned to a commit. |
+| `thirdparty/diligent-core` | DiligentCore (Vulkan backend only), a submodule pinned to master `074060c`, with `xenos_native/diligent_patches/` applied at configure time. |
 | `patches/` | The shared SDK series (identical to GRAWRecomp and KameoRecomp). |
 | `xenos_native/sdk_patches/` | XenosNative's own SDK patches (D10/D11), applied after `patches/`. |
+| `xenos_native/diligent_patches/` | XenosNative's DiligentCore patches (D22), applied to `thirdparty/diligent-core` at configure time. |
 | `potcawe_manifest.toml`, `potcawe_functions.toml`, `potcawe_functions_auto.toml` | Codegen input. |
 | `launcher/`, `res/`, `cmake/` | As in POTCAWERecomp. |
 | `assets/` | The game files: a real copy, 6.4 GB, gitignored. |
@@ -174,3 +176,14 @@ rule 5 above:
    `git format-patch <last shared commit>..HEAD -o <repo>/xenos_native/sdk_patches`.
 4. Reconfigure as above. `cmake/apply_sdk_patches.cmake` applies `xenos_native/sdk_patches/` after
    `patches/`.
+
+## Changing DiligentCore
+
+The submodule stays at its pinned commit; XenosNative's changes are `xenos_native/diligent_patches/` (D22),
+applied by `xenos_native/cmake/apply_diligent_patches.cmake` when configuring:
+1. Use the submodule's branch `xenos-native` (pinned commit plus the series), checked out in a
+   `git worktree` in the scratchpad.
+2. Commit the change there.
+3. `git format-patch <pinned commit>..HEAD -o <repo>/xenos_native/diligent_patches` (delete the old files
+   first).
+4. `git -C thirdparty/diligent-core checkout -- .`, then configure again.
