@@ -89,15 +89,14 @@ order: D31). Done:
   276–318 → 128–139 MB (D33);
 - shader translation on two worker threads; a draw waits by being skipped (D34);
 - guest memory pages copied only when their data changed: 7–9 copies per frame instead of ~145, GPU time
-  at the dock 3.3 → 1.65 ms (D35, which replaces the planned upload step A).
+  at the dock 3.3 → 1.65 ms (D35, which replaces the planned upload step A);
+- the guest's display gamma ramp applied when presenting (`xenos_native/sdk_patches/0004`, D36): the image
+  has the Xenos path's contrast. Found while checking D33; done early at Gustavo's request.
 
 Next: render resolution at any scale.
 
-Found and not fixed yet: XenosNative does not apply the display gamma ramp, so its image is lighter in the
-darks than the Xenos path's (plan, Phase 4).
-
 The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
-Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D35; notes
+Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D36; notes
 `local_docs/06-phase3-performance.md`. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
 done.
 

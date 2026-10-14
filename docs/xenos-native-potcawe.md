@@ -393,16 +393,20 @@ them and the mirror's invalidation covers more than the write. Only 6–7 of the
 written just before draws 41, 607 and 1062–1122, and one index range. With unchanged pages skipped the dock
 makes 7–9 copies per frame, and its GPU time is 1.55–1.66 ms facing the town (3.3 ms before).
 
-**The display gamma (found while checking D33, not fixed yet).** At the same view, XenosNative's image is
-lighter in the darks than the Xenos path's. The tone curve from XenosNative to the Xenos path, green
-channel, start view:
+**The display gamma (found while checking D33, fixed by D36).** XenosNative's image was lighter in the
+darks than the Xenos path's, and Gustavo found it flat while playing. The SDK's presenters apply the
+guest's gamma ramp (`apply_gamma_table` / `apply_gamma_pwl`); XenosNative presented the front buffer as it
+was. The tone curve from XenosNative to the Xenos path, green channel, start view (average Xenos level per
+XenosNative level):
 
 | XenosNative | 24 | 48 | 64 | 96 | 128 | 160 | 192 | 248 |
 |---|---|---|---|---|---|---|---|---|
-| Xenos path | 10 | 32 | 49 | 82 | 116 | 150 | 186 | 247 |
+| Xenos path, before D36 | 10 | 32 | 49 | 82 | 116 | 150 | 186 | 247 |
+| Xenos path, with D36 | 23.8 | 47.1 | 64.3 | 96.2 | 127.1 | 159.4 | 191.8 | 247.2 |
 
-The SDK's presenter applies the guest's gamma ramp (`apply_gamma_table` / `apply_gamma_pwl`); XenosNative
-presents the front buffer as it is. Phase 4 item in the plan. The white-out over the geometry Gustavo saw after D26 is gone.
+POTCAWE presents a `2_10_10_10_AS_16_16_16_16` front buffer (format 54, 1280×720) and writes a piecewise
+linear ramp early on (384 DC_LUT writes). Red at 32, 64, 128 and 192 of 255 becomes 67, 196, 467 and 748 of
+1023, where a straight line gives 129, 259, 518 and 776. The 256-entry table stays linear. The white-out over the geometry Gustavo saw after D26 is gone.
 
 ## Measurements
 
