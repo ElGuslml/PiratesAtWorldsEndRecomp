@@ -38,6 +38,14 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
                 options_path.string());
   }
 
+  // XenosNative draws through its own Vulkan device (DiligentCore), and the SDK's backend only keeps the
+  // GPU in sync then. Its Vulkan backend keeps the process on one graphics API: no idle D3D12 device next
+  // to XenosNative's, and overlays such as RTSS report the API that presents.
+  if (rex::cvar::Query<bool>("xenos_native") && rex::cvar::Query<std::string>("gpu_backend") != "vulkan") {
+    rex::cvar::SetFlagByName("gpu_backend", "vulkan");
+    REXLOG_INFO("[options] gpu_backend set to vulkan: XenosNative draws");
+  }
+
   bool fullscreen = rex::cvar::Query<bool>("fullscreen");
   REXLOG_INFO("[options] monitor={} scale={}x{} display={} window={}x{} video_mode={}x{} "
               "letterbox={} 60fps={} no_msaa={} gpu_backend={} xenos_native={}",

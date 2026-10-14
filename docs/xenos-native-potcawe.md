@@ -280,6 +280,8 @@ the library's own:
 - **Per-tile resolves.** The engine resolves each tile's rectangle into the same texture under
   SetPredication. With one host target, these become one resolve of the union (the overlap rows are
   resolved twice with the same content).
+- **Graphics API.** With XenosNative, `src/options.cpp` sets `gpu_backend = vulkan` for the SDK's
+  sync-only backend (D27); otherwise an overlay such as RTSS may report the idle D3D12 device.
 - **Video planes.** Bink writes its texture planes without Lock/Unlock. XenosNative's texture cache sees
   those writes through the guest memory mirror's page watches, and reloads a plane when its data changed
   (D23). The title screen and main menu backgrounds play.
