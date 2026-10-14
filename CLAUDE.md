@@ -111,7 +111,9 @@ Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
    HUD, menus and videos are drawn in a centered 16:9 box.
 
 Also done: anisotropic filtering (D44). XenosNative applies the SDK's `anisotropic_override` as the Xenos path
-does, and POTCAWE defaults to 16x with a launcher row (made in POTCAWERecomp, `f3b67db`, and merged).
+does, and POTCAWE defaults to 16x with a launcher row (made in POTCAWERecomp, `f3b67db`, and merged). The
+Vulkan pipeline cache is saved on a thread of its own (D45): its saves were the 30–80 ms stutters every few
+minutes.
 
 Notes: `local_docs/07-phase4.md`.
 

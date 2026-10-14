@@ -447,7 +447,8 @@ sharp HUD:
 executable:
 - `425607D1.pipelines`: 97 shaders, 108 translations and 128 pipelines after the menus and the dock,
   77 KB;
-- `425607D1.vkcache`: 5.3 MB.
+- `425607D1.vkcache`: 5.3 MB then, 25 MB after testing many render scales (each adds its own binaries).
+  Saving it took 30–80 ms; it is saved on a thread of its own since D45.
 
 From the second run on, the dock loads with no draw waiting for a shader or a pipeline.
 
