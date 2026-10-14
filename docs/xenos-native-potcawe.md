@@ -387,6 +387,12 @@ On worker threads, the render thread's longest frame in the load went from ~80 m
 draws are skipped over the load's first frames while their shaders are translated, and the start view is
 complete 25 s later.
 
+**Guest memory uploads (D35).** Each frame at the dock asks again for about 150 ranges (~3 MB) of index,
+vertex and texture data, because the engine's per-mesh reference counting (`sub_8242D218`) writes next to
+them and the mirror's invalidation covers more than the write. Only 6–7 of them hold new data: vertex data
+written just before draws 41, 607 and 1062–1122, and one index range. With unchanged pages skipped the dock
+makes 7–9 copies per frame, and its GPU time is 1.55–1.66 ms facing the town (3.3 ms before).
+
 **The display gamma (found while checking D33, not fixed yet).** At the same view, XenosNative's image is
 lighter in the darks than the Xenos path's. The tone curve from XenosNative to the Xenos path, green
 channel, start view:
@@ -416,6 +422,7 @@ RTSS.
 | 2026-10-13 | Phase 0 | 2×2, AA Off, 60 FPS | 50.8 %, 60 FPS | |
 | 2026-10-14 | Phase 2 close (`cc6003d`) | 1×, AA Off, 60 FPS | ~30 % (RTSS) | ~80 % (RTSS); 12.1 ms GPU (duration queries), 4 ms facing the sea |
 | 2026-10-14 | Phase 3, D30 | 1×, AA Off, 60 FPS | | 27 % (RTSS); 3.3 ms GPU, 1.8 ms facing the sea |
+| 2026-10-14 | Phase 3, D35 | 1×, AA Off, 60 FPS | | 14–19 % (RTSS); 1.55–1.66 ms GPU facing the town, 1.0–1.7 ms walking |
 | 2026-10-13 | Phase 0 | 3×3, 2× MSAA, 60 FPS | 90.5 %, 33 FPS (29.1 ms) | |
 | 2026-10-13 | Phase 0 | 3×3, AA Off, 60 FPS | 96.9 %, 60 FPS (17.1 ms) | |
 
