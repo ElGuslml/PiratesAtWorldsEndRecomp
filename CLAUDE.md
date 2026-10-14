@@ -117,7 +117,13 @@ minutes.
 
 Notes: `local_docs/07-phase4.md`.
 
-Then: every level compared with the Xenos path, long sessions, the known limits from Phase 2.
+Still open in Phase 4: every level compared with the Xenos path, the hour-long session, the known limits from
+Phase 2.
+
+**Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
+request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
+`xenos_native_antialiasing = dlaa`. Next: jitter, motion vectors, DLAA before the game's post-processing, then
+the upscaling modes. Notes: `local_docs/08-phase5.md`.
 
 Phase 5 is temporal upscaling and frame generation (motion vectors, DLSS / DLAA, FSR 3), and Phase 6 the
 second game and the library's extraction (D40). Follow `xenos_native/docs/plan.md` and tick its boxes as

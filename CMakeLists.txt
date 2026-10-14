@@ -80,6 +80,8 @@ add_dependencies(potcawe potcawe_sources_marker)
 # XenosNative: the native renderer (xenos_native/README.md). The game side (hooks, profile) is in src/.
 add_subdirectory(xenos_native)
 target_link_libraries(potcawe PRIVATE xenos_native)
+# NVIDIA's DLSS runtime next to the executable (Phase 5, D46).
+xenos_native_copy_runtime(potcawe)
 
 # The target and the app keep the name "potcawe" (potcawe.toml, logs\potcawe_NNN.log); only the
 # executable gets a descriptive name.
