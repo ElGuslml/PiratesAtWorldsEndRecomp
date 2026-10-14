@@ -440,6 +440,11 @@ RTSS.
 | 2026-10-14 | Phase 3, D30 | 1×, AA Off, 60 FPS | | 27 % (RTSS); 3.3 ms GPU, 1.8 ms facing the sea |
 | 2026-10-14 | Phase 3, D35 | 1×, AA Off, 60 FPS | | 14–19 % (RTSS); 1.55–1.66 ms GPU facing the town, 1.0–1.7 ms walking |
 | 2026-10-14 | Phase 3, D38 | 2× (2560×1440 fullscreen), AA Off, 60 FPS | (2×2) | 3.32–3.84 ms GPU facing the town; 1.25× 1.95 ms, 1.5× 2.35–2.51 ms |
+| 2026-10-14 | Phase 3 A/B (`55b01f9`), `gpu_ab.ps1` | 1×, AA Off, 60 FPS | 28.9 % | 17.8 % (1.69 ms) |
+| 2026-10-14 | Phase 3 A/B | 2×, AA Off, 60 FPS | 51.3 % / 51.6 % (2× MSAA: 81.4 %) | 26.8 % / 27.4 % (3.30 ms) |
+| 2026-10-14 | Phase 3 A/B | 3×, AA Off, 60 FPS | 96.9 %, 59 FPS (2× MSAA: 93.2 %, 33 FPS) | 42.6 %, 60 FPS (5.85 ms) |
+| 2026-10-14 | Phase 3 A/B | 2×, AA Off, 30 FPS | 28.3 % (2× MSAA: 41.3 %) | 15.8 % (3.34 ms) |
+| 2026-10-14 | Phase 3 A/B | 3×, AA Off, 30 FPS | 50.8 % (2× MSAA: 84.5 %) | 24.4 % (6.08 ms) |
 | 2026-10-13 | Phase 0 | 3×3, 2× MSAA, 60 FPS | 90.5 %, 33 FPS (29.1 ms) | |
 | 2026-10-13 | Phase 0 | 3×3, AA Off, 60 FPS | 96.9 %, 60 FPS (17.1 ms) | |
 

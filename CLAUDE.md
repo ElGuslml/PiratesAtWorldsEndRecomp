@@ -99,7 +99,11 @@ order: D31). Done:
 
   The launcher shows that resolution with XenosNative instead of a scale choice.
 
-Next: the A/B against the Xenos path (`tools/gpu_ab.ps1`), then Phase 3's exit.
+- the A/B against the Xenos path (`tools/gpu_ab.ps1`, both paths in one session; the table in `plan.md`):
+  at the same resolution without antialiasing XenosNative uses 38–56 % less of the GPU (2×: 27 % against
+  51 %); at 3× it holds 60 FPS where the Xenos path with 2× MSAA drops to 33.
+
+Phase 3's exit criteria hold; closing it is Gustavo's decision.
 
 The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
 Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D38; notes
