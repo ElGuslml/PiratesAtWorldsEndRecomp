@@ -9,6 +9,9 @@ Status: **Phase 1 done (2026-10-13).** Every entry point XenosNative needs is ma
 rebuilds the GPU state of 100 % of the draws at the title screen, the main menu and the Port Royal dock,
 with and without 2× MSAA.
 
+**Phase 2 in progress.** With `--xenos_native=true`, XenosNative draws every frame from the language menu
+to the Port Royal dock, with placeholder textures ([Phase 2 so far](#phase-2-so-far)).
+
 Sources:
 - static analysis of the generated C++ of this build (Phase 1, `local_docs/02-d3d-map.md`);
 - the trace and the observer (runs `potcawe_012`–`021`, `local_docs/03-trace.md` and
@@ -26,7 +29,8 @@ Sources:
 5. [The frame](#the-frame)
 6. [Phase 1 questions, answered](#phase-1-questions-answered)
 7. [Behavior XenosNative has to respect](#behavior-xenosnative-has-to-respect)
-8. [Measurements](#measurements)
+8. [Phase 2 so far](#phase-2-so-far)
+9. [Measurements](#measurements)
 
 ## The executable
 
@@ -273,6 +277,37 @@ the library's own:
   SetPredication. With one host target, these become one resolve of the union (the overlap rows are
   resolved twice with the same content).
 - **Video planes.** Bink writes its texture planes without Lock/Unlock.
+
+## Phase 2 so far
+
+Runs `potcawe_026`–`046` (`local_docs/05-phase2.md`), 2026-10-13, window 1280×720, default settings (2×
+MSAA, 60 FPS).
+
+| Scene | Draw calls per frame | Drawn | Render targets / resolve targets | Shaders / pipelines | Image |
+|---|---|---|---|---|---|
+| Menus (language, title, main menu) | 2–28 | all | 8 / 20 | 11 / 8 | Language menu: panels, the language list as glyph quads, the selection highlight; no texture art. |
+| Port Royal dock | 1,120–1,144 | all | 13 / 33 | 97 / ~180 (growing slowly) | The hill, the buildings and the fog from the default camera; white placeholder textures. |
+
+What the game does that the draw path met:
+- **Every draw packet is bin-predicated**, also outside tiled passes. The draw's primitive type, count and
+  index buffer are in that packet (`VGT_DRAW_INITIATOR`, `VGT_DMA_BASE`, `VGT_DMA_SIZE`).
+- **Index buffers** at the menu are 16-bit with the 8-in-16 swap (`VGT_DMA_SIZE` `0x4000xxxx`); the panels are
+  auto-indexed triangle strips.
+- **Inline vertex shaders are sometimes overwritten while a level loads.** Vertex shaders are loaded inline
+  (`IM_LOAD_IMMEDIATE`, 105–192 dwords) by `DrawIndexedVertices`. While the dock loads, the copy read from
+  the command buffer sometimes holds a coherency packet sequence (`COHER_*_HOST`, `WAIT_REG_MEM`, as
+  `sub_822B0010` writes it) in the middle of the microcode. It made the SDK's analysis crash the game; now
+  those draws are skipped and logged (D20, D21). Reading each segment as it ends made it rarer; the writer
+  is not identified yet.
+- **Texture addresses.** The resolve destinations' headers hold CPU addresses (`0xA84D2000`); the sampling
+  draws' fetch constants hold GPU addresses (`0x084D2000`). Once both were keyed by the GPU address, the
+  composite found the scene: 156 texture bindings per frame at the dock are resolve results, the other
+  ~9,500 are placeholders until step 7.
+- **Uploads.** About 1.5 MB of vertex data in about 170 copies per frame at the dock, most of it data the
+  game writes every frame.
+- **GPU time.** 10.9 ms per frame at the dock (DiligentCore duration queries), against about 14 ms for the
+  Xenos path at 2×2 (four times the pixels). DiligentCore's dynamic heap fills up now and then while the GPU
+  falls behind, and stalls the frame.
 
 ## Measurements
 

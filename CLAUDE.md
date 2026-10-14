@@ -62,9 +62,21 @@ POTCAWERecomp.
   `fn_summary.py`, `rs_setters.py`, `xn_trace.py`. Run `python xenos_native/tools/ppc_index.py build` after
   a codegen.
 
-Next is the **go/no-go decision for Phase 2** (Gustavo; the recommendation in `plan.md` is go), then
-Phase 2: DiligentCore and the first frames. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
-done.
+**Phase 2 (core renderer) in progress, since 2026-10-13** (go: D14). With `--xenos_native=true`:
+- the SDK's command processor runs for synchronization only (`xenos_native/sdk_patches/0002`), and
+  XenosNative presents through its own DiligentCore (Vulkan) swap chain;
+- render targets, clears, resolves and Present work;
+- every draw goes through XenosNative's draw path (`xenos_native/src/draw.cpp`): the SDK's translator, its
+  `SharedMemory` and `PrimitiveProcessor` on DiligentCore buffers, DiligentCore pipelines;
+- textures are white placeholders except resolve results, so the menus and the Port Royal dock show
+  geometry, vertex colors and fog but not the game's art;
+- GPU time at the dock is 10.9 ms per frame at 1×, which is too much (Phase 3).
+
+Decisions D15–D21; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_native_draw_log=N`, DiligentCore
+messages in the log, RenderDoc captures of the Vulkan device (`tools/renderdoc/xn_inspect.py`).
+
+Next is Phase 2 step 7, **textures**, then the remaining Phase 2 items. Follow `xenos_native/docs/plan.md`
+and tick its boxes as work is done.
 
 ## Read first
 
