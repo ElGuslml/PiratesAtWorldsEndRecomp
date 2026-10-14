@@ -399,7 +399,11 @@ follows the screen:
   luminance chain's 1×1, 4×4, 16×16 and 64×64 targets (2×2 to 128×128 at 2×);
 - parity: at exactly 2× (a 2560×1440 monitor) the image matches the Xenos path at 2×2 more closely than
   at 1×;
-- the sun's occlusion counts stay at the game's scale (92–98 samples per query at 1.067×, 1.25× and 2×).
+- the sun's occlusion counts stay at the game's scale (92–98 samples per query at 1.067×, 1.25× and 2×);
+- the launcher: with XenosNative, its render quality row is disabled and shows the resolution XenosNative
+  will use, computed from the monitor or the window size the way the renderer computes it
+  (`NativeRenderSize` in `launcher/potcawe_launcher.cpp`). Its XenosNative hint says it renders at the
+  screen's resolution, in the five languages. The scale choices stay for the Xenos path.
 
 **The display gamma (found while checking D33, fixed by D36).** XenosNative's image was lighter in the
 darks than the Xenos path's, and Gustavo found it flat while playing. The SDK's presenters apply the

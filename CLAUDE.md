@@ -97,7 +97,9 @@ order: D31). Done:
   for the translator): 1366×768 renders at 1365×768, a 2560×1440 monitor at exactly 2×, which matches the
   Xenos path at 2×2.
 
-Next: the launcher shows the resulting resolution with XenosNative; then the A/B against the Xenos path.
+  The launcher shows that resolution with XenosNative instead of a scale choice.
+
+Next: the A/B against the Xenos path (`tools/gpu_ab.ps1`), then Phase 3's exit.
 
 The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
 Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D38; notes
