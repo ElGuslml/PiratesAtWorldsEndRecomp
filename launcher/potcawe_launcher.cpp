@@ -4,13 +4,15 @@
 //
 // Plain Win32, no SDK. Reads potcawe.toml and potcawe_options.toml (next to this exe and
 // potcawerecomp.exe), shows monitor, display, resolution, renderer, render quality, frame rate,
-// antialiasing and graphics API, and saves the choice to potcawe_options.toml, which
-// potcawerecomp.exe loads at startup (src/options.cpp).
+// antialiasing, anisotropic filtering and graphics API, and saves the choice to potcawe_options.toml,
+// which potcawerecomp.exe loads at startup (src/options.cpp).
 // Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at the
 // resolution of the screen or the window with no scale to choose (xenos_native/docs/decisions.md, D37):
 // the render quality row shows that resolution, disabled. XenosNative has its own antialiasing instead of
 // the game's MSAA (SMAA, FXAA or off, D41), fills screens of any aspect ratio (D43), and always uses Vulkan.
-// Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp).
+// Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
+// filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp); XenosNative applies it too
+// (D44).
 // "Play" also starts potcawerecomp.exe (with the arguments the launcher received) and waits for it
 // to exit, so Steam keeps seeing the game as running. Works with mouse, keyboard or controller
 // (XInput). The launcher texts follow the Windows display language (English, German, French,
@@ -64,6 +66,7 @@ struct Options {
   int scale = 0;                           // 0 = automatic; 1..kMaxScale = chosen
   bool fps60 = false;                      // potcawe_60fps (src/framerate.cpp)
   bool no_msaa = false;                    // potcawe_no_msaa (src/msaa.cpp)
+  int anisotropic = 5;                     // anisotropic_override (SDK): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
   bool native = false;                     // xenos_native: XenosNative draws instead of Xenos
   int native_aa = 0;                       // xenos_native_antialiasing: 0 SMAA, 1 FXAA, 2 off
@@ -175,6 +178,8 @@ struct Texts {
   const wchar_t* antialiasing;
   const wchar_t* aa_msaa;
   const wchar_t* aa_off;
+  const wchar_t* anisotropic;
+  const wchar_t* aniso_off;
   const wchar_t* graphics;
   const wchar_t* renderer;
   const wchar_t* renderer_xenos;
@@ -211,6 +216,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (original)",
       L"Off (faster)",
+      L"Anisotropic filtering",
+      L"Off",
       L"Graphics API",
       L"Renderer",
       L"Xenos (emulated)",
@@ -250,6 +257,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Kantenglättung",
       L"2× MSAA (Original)",
       L"Aus (schneller)",
+      L"Anisotrope Filterung",
+      L"Aus",
       L"Grafik-API",
       L"Renderer",
       L"Xenos (emuliert)",
@@ -289,6 +298,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Anticrénelage",
       L"2× MSAA (d'origine)",
       L"Désactivé (plus rapide)",
+      L"Filtrage anisotrope",
+      L"Désactivé",
       L"API graphique",
       L"Moteur de rendu",
       L"Xenos (émulé)",
@@ -329,6 +340,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (original)",
       L"Desactivado (más rápido)",
+      L"Filtrado anisotrópico",
+      L"Desactivado",
       L"API gráfica",
       L"Renderizador",
       L"Xenos (emulado)",
@@ -368,6 +381,8 @@ const Texts& TextsFor(uint32_t language) {
       L"Antialiasing",
       L"2× MSAA (originale)",
       L"Disattivato (più veloce)",
+      L"Filtro anisotropico",
+      L"Disattivato",
       L"API grafica",
       L"Renderer",
       L"Xenos (emulato)",
@@ -593,6 +608,8 @@ enum ControlId : int {
   kIdFramerate,
   kIdAntialiasingLabel,
   kIdAntialiasing,
+  kIdAnisotropicLabel,
+  kIdAnisotropic,
   kIdBackendLabel,
   kIdBackend,
   kIdHint,
@@ -601,8 +618,8 @@ enum ControlId : int {
 };
 
 // Option rows (top to bottom) and buttons (left to right), for the controller.
-constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay,      kIdResolution, kIdRenderer,
-                           kIdQuality,   kIdFramerate,    kIdAntialiasing, kIdBackend};
+constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay,      kIdResolution,  kIdRenderer, kIdQuality,
+                           kIdFramerate, kIdAntialiasing, kIdAnisotropic, kIdBackend};
 constexpr int kButtonIds[] = {IDOK, kIdSave, IDCANCEL};
 constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdDisplayLabel, kIdDisplay},
@@ -611,7 +628,11 @@ constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdQualityLabel, kIdQuality},
                             {kIdFramerateLabel, kIdFramerate},
                             {kIdAntialiasingLabel, kIdAntialiasing},
+                            {kIdAnisotropicLabel, kIdAnisotropic},
                             {kIdBackendLabel, kIdBackend}};
+
+// The anisotropic filtering row's values (anisotropic_override), top to bottom.
+constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
 
 enum class Result { kQuit, kSave, kPlay };
 
@@ -693,6 +714,7 @@ void Refresh(Launcher& l) {
   SetWindowTextW(Item(l, kIdQualityLabel), t.quality);
   SetWindowTextW(Item(l, kIdFramerateLabel), t.framerate);
   SetWindowTextW(Item(l, kIdAntialiasingLabel), t.antialiasing);
+  SetWindowTextW(Item(l, kIdAnisotropicLabel), t.anisotropic);
   SetWindowTextW(Item(l, kIdBackendLabel), t.graphics);
   SetWindowTextW(Item(l, kIdRendererLabel), t.renderer);
   SetWindowTextW(Item(l, kIdHint), o.native ? t.native_hint : o.vulkan ? t.vulkan_hint : t.quality_hint);
@@ -776,6 +798,10 @@ void Refresh(Launcher& l) {
   }
 
   FillCombo(Item(l, kIdFramerate), {t.fps30, t.fps60}, o.fps60 ? 1 : 0);
+  FillCombo(Item(l, kIdAnisotropic),
+            {L"16×", L"8×", std::wstring(L"4×  ") + t.original, L"2×", t.aniso_off},
+            int(std::find(std::begin(kAnisotropicValues), std::end(kAnisotropicValues), o.anisotropic) -
+                std::begin(kAnisotropicValues)));
 }
 
 // Copies the selection of list id into l.o and refreshes the window.
@@ -820,6 +846,9 @@ void OnSelectionChange(Launcher& l, int id) {
         o.no_msaa = index == 1;
       }
       break;
+    case kIdAnisotropic:
+      o.anisotropic = kAnisotropicValues[std::clamp(index, 0, int(std::size(kAnisotropicValues)) - 1)];
+      break;
     case kIdBackend:
       if (!o.native) {
         o.vulkan = l.has_vulkan && index == 1;
@@ -831,7 +860,7 @@ void OnSelectionChange(Launcher& l, int id) {
 
 // Positions in pixels at 96 DPI; scaled with the monitor DPI.
 constexpr int kClientWidth = 560;
-constexpr int kClientHeight = 510;
+constexpr int kClientHeight = 546;  // nine rows
 
 void Layout(Launcher& l, UINT dpi) {
   auto s = [dpi](int v) { return MulDiv(v, int(dpi), 96); };
@@ -1214,6 +1243,11 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   o.native = GetBool(c, "xenos_native", false);
   std::string native_aa = GetString(c, "xenos_native_antialiasing");
   o.native_aa = native_aa == "fxaa" ? 1 : native_aa == "off" ? 2 : 0;
+  // Without the key, the game's default (src/startup.cpp adds it to potcawe.toml at the next start): 16x.
+  // A value the row does not offer: -1 (only what the game asks: 4x on some textures) shows as 4x, 1 (1x)
+  // as off.
+  int anisotropic = GetInt(c, "anisotropic_override", 5);
+  o.anisotropic = anisotropic < 0 ? 3 : anisotropic == 1 ? 0 : std::min(anisotropic, 5);
   if (GetString(c, "launcher_render_scale") == "auto") {
     o.scale = 0;
   } else if (int scale = GetInt(c, "launcher_render_scale", 0); scale >= 1) {
@@ -1285,6 +1319,9 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing. The game
   // applies it with XenosNative whatever this says.
   f << "potcawe_no_msaa = " << boolean(o.no_msaa) << "\n";
+  // Anisotropic filtering for textures with mipmaps, sharper at oblique angles (SDK cvar; the game itself
+  // asks for 4x on some textures only): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off.
+  f << "anisotropic_override = " << o.anisotropic << "\n";
   // XenosNative (xenos_native/): draw natively on Vulkan instead of emulating the GPU (experimental).
   f << "xenos_native = " << boolean(o.native) << "\n";
   // XenosNative's own antialiasing of the finished scene, before the HUD: smaa, fxaa or off.

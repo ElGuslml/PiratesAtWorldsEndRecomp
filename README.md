@@ -60,7 +60,8 @@ first and merged here.
   which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
   [`docs/sun-glow.md`](docs/sun-glow.md)).
 - **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer (Xenos, or
-  XenosNative while it is in development), render quality and graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
+  XenosNative while it is in development), render quality, frame rate, antialiasing, anisotropic filtering and
+  graphics API. Works with mouse, keyboard or controller. The game always renders at 1280×720; ReXGlue renders
   it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
   scale that covers your screen. Wider screens get black bars for now (the camera keeps 16:9).
 - **60 FPS option** (launcher, `potcawe_60fps`): the game is capped at 30 FPS only by its Direct3D present
@@ -71,6 +72,11 @@ first and merged here.
   virtual: "Off (faster)" creates the surfaces without multisampling and in one tile, which cuts the GPU time
   by a third at a 2×2 render scale (89 % → 59 % at 60 FPS on an RTX 4070 Ti) at the cost of the 2× edge
   antialiasing. Off by default, so the first run matches the console ([`docs/gpu-load.md`](docs/gpu-load.md)).
+- **Anisotropic filtering option** (launcher, `anisotropic_override`): textures seen at an angle (floors,
+  roads, the dock's planks) stay sharp. The game itself asks for 4× on some textures only, and ReXGlue
+  applied 4× to the rest; the launcher offers 16×, 8×, 4×, 2× or off. 16× is the default, unlike the
+  options above, because it only adds sharpness: at the Port Royal dock it costs no measurable GPU time
+  against 4× (2×2 and 3×3, RTX 4070 Ti).
 - Next: play further and find out which settings and fixes the rest of the game needs.
 - [`docs/`](docs/README.md) has a short note on each problem found and what was done about it.
 

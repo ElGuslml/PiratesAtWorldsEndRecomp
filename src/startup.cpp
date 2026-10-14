@@ -60,6 +60,11 @@ render_target_draw_clears = true
 # 1 ms of GPU per frame at a 2x2 render scale here, 10-15 MB per frame in GRAW. false is the
 # original Xenia behavior (true is a hack for one game); GRAW runs with false as well.
 clear_memory_page_state = false
+# Anisotropic filtering for the textures with mipmaps: floors, roads and the dock's planks seen at an
+# angle stay sharp. 5 = 16x, 4 = 8x, 3 = 4x (the SDK default), 2 = 2x, 0 = off, -1 = only what the game
+# asks (4x on some textures, none on most of the dock's). POTCAWE Launcher's "Anisotropic filtering" row
+# sets it. 16x costs no measurable GPU time against 4x at the Port Royal dock (2x2 and 3x3, RTX 4070 Ti).
+anisotropic_override = 5
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {
