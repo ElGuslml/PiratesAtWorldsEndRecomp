@@ -373,6 +373,8 @@ RTSS.
 | 2026-10-13 | Phase 0 | 3×3, AA Off, 30 FPS | 51.2 % | |
 | 2026-10-13 | Phase 0 | 2×2, 2× MSAA, 60 FPS | 82.6 %, 60 FPS | |
 | 2026-10-13 | Phase 0 | 2×2, AA Off, 60 FPS | 50.8 %, 60 FPS | |
+| 2026-10-14 | Phase 2 close (`cc6003d`) | 1×, AA Off, 60 FPS | ~30 % (RTSS) | ~80 % (RTSS); 12.1 ms GPU (duration queries), 4 ms facing the sea |
+| 2026-10-14 | Phase 3, D30 | 1×, AA Off, 60 FPS | | 27 % (RTSS); 3.3 ms GPU, 1.8 ms facing the sea |
 | 2026-10-13 | Phase 0 | 3×3, 2× MSAA, 60 FPS | 90.5 %, 33 FPS (29.1 ms) | |
 | 2026-10-13 | Phase 0 | 3×3, AA Off, 60 FPS | 96.9 %, 60 FPS (17.1 ms) | |
 
