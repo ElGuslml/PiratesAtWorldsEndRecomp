@@ -70,6 +70,8 @@ const xenos_native::Profile& XenosNativeProfile() {
     xenos_native::Profile p;
     p.game = "Pirates of the Caribbean: At World's End (425607D1)";
     p.xdk_version = "2.0.5426";
+    p.output_width = 1280;  // 720p, 16:9, whatever the console's video mode
+    p.output_height = 720;
     xenos_native::DeviceLayout& d = p.device;
     d.dirty_masks = 0;
     d.command_buffer_write = 48;

@@ -93,10 +93,14 @@ order: D31). Done:
 - the guest's display gamma ramp applied when presenting (`xenos_native/sdk_patches/0004`, D36): the image
   has the Xenos path's contrast. Found while checking D33; done early at Gustavo's request.
 
-Next: render resolution at any scale.
+- the render resolution follows the screen at any scale, with no selector (D37, D38; `sdk_patches/0005`
+  for the translator): 1366×768 renders at 1365×768, a 2560×1440 monitor at exactly 2×, which matches the
+  Xenos path at 2×2.
+
+Next: the launcher shows the resulting resolution with XenosNative; then the A/B against the Xenos path.
 
 The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
-Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D36; notes
+Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D38; notes
 `local_docs/06-phase3-performance.md`. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
 done.
 

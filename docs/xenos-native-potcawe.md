@@ -393,6 +393,14 @@ them and the mirror's invalidation covers more than the write. Only 6–7 of the
 written just before draws 41, 607 and 1062–1122, and one index range. With unchanged pages skipped the dock
 makes 7–9 copies per frame, and its GPU time is 1.55–1.66 ms facing the town (3.3 ms before).
 
+**Render resolution (D37, D38).** The profile gives 1280×720 as the game's output size. The scale
+follows the screen:
+- what scales: every surface the game renders, including the 1024² shadow maps (2048² at 2×) and the
+  luminance chain's 1×1, 4×4, 16×16 and 64×64 targets (2×2 to 128×128 at 2×);
+- parity: at exactly 2× (a 2560×1440 monitor) the image matches the Xenos path at 2×2 more closely than
+  at 1×;
+- the sun's occlusion counts stay at the game's scale (92–98 samples per query at 1.067×, 1.25× and 2×).
+
 **The display gamma (found while checking D33, fixed by D36).** XenosNative's image was lighter in the
 darks than the Xenos path's, and Gustavo found it flat while playing. The SDK's presenters apply the
 guest's gamma ramp (`apply_gamma_table` / `apply_gamma_pwl`); XenosNative presented the front buffer as it
@@ -427,6 +435,7 @@ RTSS.
 | 2026-10-14 | Phase 2 close (`cc6003d`) | 1×, AA Off, 60 FPS | ~30 % (RTSS) | ~80 % (RTSS); 12.1 ms GPU (duration queries), 4 ms facing the sea |
 | 2026-10-14 | Phase 3, D30 | 1×, AA Off, 60 FPS | | 27 % (RTSS); 3.3 ms GPU, 1.8 ms facing the sea |
 | 2026-10-14 | Phase 3, D35 | 1×, AA Off, 60 FPS | | 14–19 % (RTSS); 1.55–1.66 ms GPU facing the town, 1.0–1.7 ms walking |
+| 2026-10-14 | Phase 3, D38 | 2× (2560×1440 fullscreen), AA Off, 60 FPS | (2×2) | 3.32–3.84 ms GPU facing the town; 1.25× 1.95 ms, 1.5× 2.35–2.51 ms |
 | 2026-10-13 | Phase 0 | 3×3, 2× MSAA, 60 FPS | 90.5 %, 33 FPS (29.1 ms) | |
 | 2026-10-13 | Phase 0 | 3×3, AA Off, 60 FPS | 96.9 %, 60 FPS (17.1 ms) | |
 
