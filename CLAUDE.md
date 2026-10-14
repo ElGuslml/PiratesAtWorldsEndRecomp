@@ -58,8 +58,9 @@ POTCAWERecomp.
 - **Open questions:** all answered in `docs/xenos-native-potcawe.md`.
 - **Decisions:** D11–D13.
 - **Notes:** `local_docs/02`–`04`.
-- **Analysis tools** (personal, in `tools/`): `ppc_index.py`, `pm4_consts.py`, `fn_summary.py`,
-  `rs_setters.py`, `xn_trace.py`. Run `python tools/ppc_index.py build` after a codegen.
+- **Analysis tools** (tracked, in `xenos_native/tools/`, see its README): `ppc_index.py`, `pm4_consts.py`,
+  `fn_summary.py`, `rs_setters.py`, `xn_trace.py`. Run `python xenos_native/tools/ppc_index.py build` after
+  a codegen.
 
 Next is the **go/no-go decision for Phase 2** (Gustavo; the recommendation in `plan.md` is go), then
 Phase 2: DiligentCore and the first frames. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
@@ -82,7 +83,7 @@ done.
 
 | Path | What it is |
 |---|---|
-| `xenos_native/` | The renderer library: `CMakeLists.txt` (target `xenos_native`), `include/xenos_native/`, `src/`, `docs/`. No game-specific code. |
+| `xenos_native/` | The renderer library: `CMakeLists.txt` (target `xenos_native`), `include/xenos_native/`, `src/`, `docs/`, `tools/` (analysis scripts for bringing up a game), `sdk_patches/`. No game-specific code. |
 | `docs/` | Published game notes (one per problem), plus `xenos-native-potcawe.md` (the game side of XenosNative). |
 | `src/` | The game: startup, launcher options, game hooks. The XenosNative hook file and profile for POTCAWE go here (`src/xenos_native_potcawe.cpp`, Phase 1). |
 | `thirdparty/rexglue-sdk` | Official ReXGlue SDK, submodule pinned to v0.10.0 (`c94f5eb`), with `patches/` applied at configure time. |

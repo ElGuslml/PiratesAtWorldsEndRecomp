@@ -12,8 +12,12 @@ out/
 # RenderDoc captures and their analysis (tools/renderdoc)
 captures/
 
-# Personal tools: investigation scripts, switch-table checker, gap finder (not published)
-tools/
+# Personal tools: investigation scripts, switch-table checker, gap finder (not published). Only the
+# repository root's tools/: XenosNative's own tools in xenos_native/tools/ are tracked.
+/tools/
+
+# Python caches of the tools
+__pycache__/
 
 # Personal notes for Claude Code: local paths, machine (CLAUDE.md is tracked)
 CLAUDE.local.md
