@@ -80,35 +80,36 @@ Decisions D15–D28; notes `local_docs/05-phase2.md`. Bring-up aids: `--xenos_na
 messages in the log, the frame trace (F9), RenderDoc captures of the Vulkan device
 (`tools/renderdoc/xn_inspect.py`, `xn_users.py`).
 
-**Phase 3 (performance and the renderer's own features) in progress, since 2026-10-14** (go: D29; scope and
-order: D31). Done:
-- GPU time at the dock 12.1 → 3.3 ms per frame: render targets bound only when they change (D30);
+**Phase 3 (performance and the renderer's own features) done, 2026-10-14** (go: D29; scope and order: D31;
+closed: D39). Results at the dock:
+- GPU time 12.1 → 1.65 ms per frame at 1×:
+  - render targets bound only when they change (D30);
+  - guest memory pages copied only when their data changed (D35), which replaced the planned upload
+    step A;
 - the occlusion queries (the sun glare) measured on the host and answered to the sync-only command
-  processor through `xenos_native/sdk_patches/0003` (D32);
-- DXT1 kept compressed as BC1 (`xenos_native/diligent_patches/0002`): texture memory at the dock
-  276–318 → 128–139 MB (D33);
+  processor (`xenos_native/sdk_patches/0003`, D32);
+- DXT1 kept compressed as BC1 (`xenos_native/diligent_patches/0002`): texture memory 276–318 →
+  128–139 MB (D33);
 - shader translation on two worker threads; a draw waits by being skipped (D34);
-- guest memory pages copied only when their data changed: 7–9 copies per frame instead of ~145, GPU time
-  at the dock 3.3 → 1.65 ms (D35, which replaces the planned upload step A);
-- the guest's display gamma ramp applied when presenting (`xenos_native/sdk_patches/0004`, D36): the image
-  has the Xenos path's contrast. Found while checking D33; done early at Gustavo's request.
-
+- the guest's display gamma ramp applied when presenting (`sdk_patches/0004`, D36);
 - the render resolution follows the screen at any scale, with no selector (D37, D38; `sdk_patches/0005`
-  for the translator): 1366×768 renders at 1365×768, a 2560×1440 monitor at exactly 2×, which matches the
-  Xenos path at 2×2.
+  for the translator). The launcher shows the resulting resolution with XenosNative;
+- the A/B against the Xenos path (`tools/gpu_ab.ps1`; the table in `plan.md`): at the same resolution
+  without antialiasing XenosNative uses 38–56 % less of the GPU; at 3× it holds 60 FPS where the Xenos
+  path with 2× MSAA drops to 33.
 
-  The launcher shows that resolution with XenosNative instead of a scale choice.
+Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
 
-- the A/B against the Xenos path (`tools/gpu_ab.ps1`, both paths in one session; the table in `plan.md`):
-  at the same resolution without antialiasing XenosNative uses 38–56 % less of the GPU (2×: 27 % against
-  51 %); at 3× it holds 60 FPS where the Xenos path with 2× MSAA drops to 33.
+**Phase 4 (POTCAWE polish) next.** Its items, in the order Gustavo chooses:
+- XenosNative's own antialiasing (the game's MSAA is not brought over, D31);
+- every level compared with the Xenos path;
+- any aspect ratio without bars;
+- a persistent pipeline cache;
+- long sessions;
+- the known limits from Phase 2.
 
-Phase 3's exit criteria hold; closing it is Gustavo's decision.
-
-The game's MSAA is not brought over. XenosNative's own AA, and the walk through the whole game, are
-Phase 4 (POTCAWE polish). The second game and the extraction are Phase 5. Decisions D29–D38; notes
-`local_docs/06-phase3-performance.md`. Follow `xenos_native/docs/plan.md` and tick its boxes as work is
-done.
+Phase 5 is the second game and the library's extraction. Follow `xenos_native/docs/plan.md` and tick its
+boxes as work is done.
 
 ## Read first
 
