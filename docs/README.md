@@ -11,3 +11,12 @@ the symptom, the cause, the fix and how to turn the fix off, so that you can che
 | [flat-colored-objects.md](flat-colored-objects.md) — lit objects in Port Royal drawn in one saturated color under GPU load | Fixed |
 | [gpu-load.md](gpu-load.md) — GPU at 95-100 % with a 2× render scale (the SDK's copies around the game's EDRAM clears) | Fixed |
 | [sun-glow.md](sun-glow.md) — the sun's glare at the top of the screen with the sun behind the camera (Port Royal) | Fixed |
+
+## XenosNative
+
+The renderer's own documents are in [`../xenos_native/docs/`](../xenos_native/docs/). This folder has the game
+side:
+
+| Document | Contents |
+|---|---|
+| [xenos-native-potcawe.md](xenos-native-potcawe.md) | POTCAWE's Direct3D map, device offsets, engine behavior, frame structure, measurements and the open questions of Phase 1 |

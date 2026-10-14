@@ -1,9 +1,31 @@
-# POTCAWERecomp
+# POTCAWERecompVulkan
 
-A static recompilation of **Pirates of the Caribbean: At World's End** (Xbox 360, 2007) to native Windows,
-built on the [ReXGlue SDK](https://github.com/rexglue/rexglue-sdk). The game's PowerPC code is translated to
-C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (derived from
-[Xenia](https://xenia.jp)).
+The development home of **XenosNative**, a native renderer for Xbox 360 games recompiled with the
+[ReXGlue SDK](https://github.com/rexglue/rexglue-sdk). The renderer is developed on
+**Pirates of the Caribbean: At World's End** (Xbox 360, 2007).
+
+This repository is a clone of POTCAWERecomp, a static recompilation of the game to native Windows. The
+game's PowerPC code is translated to C++ and compiled, and the Xbox 360 GPU is emulated by ReXGlue's Xenos
+backend (derived from [Xenia](https://xenia.jp)). XenosNative replaces that emulation with host rendering of
+the game's Direct3D calls, on [DiligentCore](https://github.com/DiligentGraphics/DiligentCore) (Vulkan). The
+Xenos backend stays as the fallback.
+
+## XenosNative
+
+- [`xenos_native/`](xenos_native/README.md): the renderer, a library meant to be reused by other ReXGlue
+  games (GRAWRecomp and KameoRecomp next). It contains no game-specific code.
+- [`xenos_native/docs/plan.md`](xenos_native/docs/plan.md): the work plan, in phases with checkboxes.
+- [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
+- [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
+  map, engine behavior, measurements).
+- Status: **Phase 0** (scaffolding, 2026-10-13). The library is linked but does not render yet; the game
+  runs on the Xenos backend exactly as in POTCAWERecomp.
+- Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
+  [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
+  [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md)).
+
+Everything below describes the game project as inherited from POTCAWERecomp. Game fixes are made there
+first and merged here.
 
 > [!WARNING]
 > Early work in progress: the game boots and reaches gameplay, but only the first minutes have been tested.
@@ -145,6 +167,10 @@ and the options they add are off by default. Each patch's commit message explain
 
 - [ReXGlue SDK](https://github.com/rexglue/rexglue-sdk), whose runtime is derived from [Xenia](https://xenia.jp).
 - [extract-xiso](https://github.com/XboxDev/extract-xiso), for extracting the game files.
+- XenosNative's design follows [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (Dante's
+  Inferno on ReXGlue with a DiligentCore renderer) and
+  [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp); no code was taken from them. Details in
+  [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md).
 - Developed by Gustavo Garcia with the help of Claude (Anthropic).
 
 ## License

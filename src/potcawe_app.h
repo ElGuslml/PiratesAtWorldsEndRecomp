@@ -12,6 +12,8 @@
 #include <rex/system/kernel_state.h>
 #include <rex/system/xthread.h>
 
+#include <xenos_native/xenos_native.h>
+
 #include "options.h"
 #include "startup.h"
 
@@ -59,6 +61,7 @@ class PotcaweApp : public rex::ReXApp {
     potcawe::EnsureDefaultConfig(exe_dir / "potcawe.toml");
     if (!rex::ReXApp::SetupEnvironment()) return false;
     REXLOG_INFO("[startup] User data: {}", user_data_root().string());
+    REXLOG_INFO("[startup] {}", xenos_native::Describe());
     if (!potcawe::CheckGameFiles(game_data_root())) return false;
     potcawe::LoadLauncherOptions(exe_dir / "potcawe_options.toml", potcawe::GpuPluginPath());
     return true;

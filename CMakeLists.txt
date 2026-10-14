@@ -1,5 +1,5 @@
-# POTCAWERecomp - static recompilation of Pirates of the Caribbean: At World's End (Xbox 360), built
-# on the ReXGlue SDK.
+# POTCAWERecompVulkan - static recompilation of Pirates of the Caribbean: At World's End (Xbox 360),
+# built on the ReXGlue SDK; the development home of the XenosNative renderer (xenos_native/).
 #
 # The SDK is the thirdparty/rexglue-sdk git submodule (official repository, pinned to v0.10.0);
 # the fixes in patches/ are applied to it at configure time (cmake/apply_sdk_patches.cmake).
@@ -74,6 +74,10 @@ endif()
 
 rexglue_setup_target(potcawe GPU_PLUGINS xenos)
 add_dependencies(potcawe potcawe_sources_marker)
+
+# XenosNative: the native renderer (xenos_native/README.md). The game side (hooks, profile) is in src/.
+add_subdirectory(xenos_native)
+target_link_libraries(potcawe PRIVATE xenos_native)
 
 # The target and the app keep the name "potcawe" (potcawe.toml, logs\potcawe_NNN.log); only the
 # executable gets a descriptive name.
