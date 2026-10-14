@@ -64,6 +64,7 @@ set(POTCAWE_SOURCES
     src/gpu_wait.cpp
     src/options.cpp
     src/startup.cpp
+    src/xenos_native_potcawe.cpp
 )
 
 if(WIN32)

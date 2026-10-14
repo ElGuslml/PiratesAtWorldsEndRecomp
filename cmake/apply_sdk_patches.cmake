@@ -1,5 +1,7 @@
 # Applies the patches in patches/ (a git format-patch series, in file name order) to the ReXGlue SDK
-# submodule (REXSDK_DIR) at configure time.
+# submodule (REXSDK_DIR) at configure time, then XenosNative's own SDK patches in
+# xenos_native/sdk_patches/ (xenos_native/docs/decisions.md, D10). The shared series in patches/ stays
+# identical to GRAWRecomp's and KameoRecomp's; changes only XenosNative needs travel with the library.
 #
 # - Pristine submodule (no changes to tracked files): every patch is applied in order and a stamp with
 #   the series hash is written to the submodule's git directory.
@@ -17,6 +19,9 @@ endif()
 
 file(GLOB _rex_patches "${CMAKE_CURRENT_LIST_DIR}/../patches/*.patch")
 list(SORT _rex_patches)
+file(GLOB _xenos_native_patches "${CMAKE_CURRENT_LIST_DIR}/../xenos_native/sdk_patches/*.patch")
+list(SORT _xenos_native_patches)
+list(APPEND _rex_patches ${_xenos_native_patches})
 list(LENGTH _rex_patches _rex_patch_count)
 
 set(_rex_series "")

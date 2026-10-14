@@ -16,6 +16,7 @@
 
 #include "options.h"
 #include "startup.h"
+#include "xenos_native_potcawe.h"
 
 class PotcaweApp : public rex::ReXApp {
  public:
@@ -67,11 +68,13 @@ class PotcaweApp : public rex::ReXApp {
     return true;
   }
 
-  // Window title (the SDK sets "<app name> <SDK build stamp>").
+  // Window title (the SDK sets "<app name> <SDK build stamp>"), then XenosNative, before the guest
+  // starts: its hooks (src/xenos_native_potcawe.cpp) are pass-throughs until it is initialized.
   void OnPostSetup() override {
     if (window()) {
       window()->SetTitle("Pirates of the Caribbean: At World's End");
     }
+    xenos_native::Initialize(potcawe::XenosNativeProfile(), runtime() ? runtime()->graphics_system() : nullptr);
   }
 
   // On exit, log whether the game asked to launch another executable.
