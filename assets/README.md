@@ -1,7 +1,7 @@
 # Game files
 
-Put the files of your own copy of **Pirates of the Caribbean: At World's End (Xbox 360)** here, so that this
-file exists:
+Put the files of your own copy of **Pirates of the Caribbean: At World's End (Xbox 360)** here. This project
+does not provide them: they come from your own disc, or from an image you made of it. This file must exist:
 
 ```
 assets/default.xex

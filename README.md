@@ -37,8 +37,16 @@ first and merged here.
 > Early work in progress: the game boots and reaches gameplay, but only the first minutes have been tested.
 > There are no releases.
 
-> This project is not affiliated with Disney or Eurocom. It contains no game files and no game code: you need
-> your own legally obtained copy of the game.
+> [!IMPORTANT]
+> **You need your own original copy of the game.** This project does not include the game's files, and never
+> will: not its executable, levels, textures, sounds, videos or text.
+> - To play, you need an Xbox 360 copy of *Pirates of the Caribbean: At World's End* that you own.
+> - You extract its files yourself, from your own disc or from an image you made of it (see
+>   [Game files](#game-files)).
+> - Do not ask for the game's files, and do not share them or links to them.
+>
+> This project is not affiliated with or endorsed by Disney, Eurocom or Microsoft. This repository contains no
+> game files and no game code.
 
 ## Status
 
@@ -105,10 +113,17 @@ To run:
 
 ## Game files
 
-Extract the content of your disc or ISO with
-[extract-xiso](https://github.com/XboxDev/extract-xiso/releases) and copy all of it into `assets/` so that
-`assets/default.xex` exists. The expected executable has CRC32 `A31B1069`; `PiratesAtWorldsEndRecomp.exe`
-warns you at startup if yours is a different version. See [`assets/README.md`](assets/README.md).
+Everything the game needs besides this project's code comes from your own copy of the game:
+1. Extract the content of your disc, or of an image (ISO) of your own disc, with
+   [extract-xiso](https://github.com/XboxDev/extract-xiso/releases).
+2. Copy all of it into the `assets` folder, so that `assets/default.xex` exists:
+   - next to `PiratesAtWorldsEndRecomp.exe` to play;
+   - in the repository to build.
+
+The expected executable has CRC32 `A31B1069`. `PiratesAtWorldsEndRecomp.exe` checks it at startup and warns you
+if yours is a different version. See [`assets/README.md`](assets/README.md).
+
+This project does not provide the game's files, or links to them.
 
 ## Building from source
 
