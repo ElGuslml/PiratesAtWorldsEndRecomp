@@ -135,7 +135,10 @@ The session's device memory growth is explained (D55):
   textures idle pipelines kept alive. Those pipelines now let go of their textures after 10 s;
 - the log shows the memory in use every 600 frames.
 
-Still to confirm in another long session.
+His third session (30 minutes, run 288) showed the memory flat within a level. It ended when the game
+closed itself: a Lua script error that the recompiled `longjmp` turned into `exit()`. The fix,
+`setjmp_address` / `longjmp_address` in `potcawe_functions.toml`, was made in POTCAWERecomp and merged
+(`docs/script-errors.md`). The long session is still to be completed.
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with

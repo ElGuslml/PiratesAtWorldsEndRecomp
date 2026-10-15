@@ -561,6 +561,13 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
 
   At 3840×2160, in Gustavo's long session (run 278), the guest textures stayed at the SDK cache's soft
   limit (about 383 MB) from level 1 on.
+- **A script error closed the game (run 288), not the renderer.**
+  - The log showed faults on three threads at once. They came from `exit()` running the game's static
+    destructors.
+  - The exit came from Lua's `luaD_throw`: the recompiled `longjmp` returned instead of jumping.
+  - Fixed on the game side and merged from POTCAWERecomp: `docs/script-errors.md`.
+  - **For other games:** a crash with faults on several threads at the same moment, inside destructors,
+    may be an `exit()`. Look for the C runtime's exit on the main thread's stack.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
 
