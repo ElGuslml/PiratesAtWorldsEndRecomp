@@ -870,7 +870,7 @@ void Refresh(Launcher& l) {
       if (l.native_heights[i] == o.native_height) selected = int(i);
     }
     FillCombo(Item(l, kIdQuality), sizes, selected);
-    std::vector<std::wstring> methods = {L"SMAA", L"DLAA (NVIDIA RTX)", L"FXAA", t.aa_off};
+    std::vector<std::wstring> methods = {L"SMAA", L"DLAA (NVIDIA DLSS)", L"FXAA", t.aa_off};
     if (o.native_aa_experimental >= 0) {
       methods.push_back(std::wstring(kExperimentalAntialiasing[o.native_aa_experimental].label) + L" (" +
                         t.experimental + L")");

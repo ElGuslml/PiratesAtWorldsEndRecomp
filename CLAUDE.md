@@ -1,23 +1,31 @@
-# CLAUDE.md — POTCAWERecompVulkan
+# CLAUDE.md — PiratesAtWorldsEndRecomp (POTCAWERecomp)
 
-The development home of **NativeXRenderer**, a native renderer for Xbox 360 games recompiled with the ReXGlue SDK
-(a PPC → C++ translator plus an Xbox 360 runtime derived from Xenia). NativeXRenderer hooks the game's XDK
-Direct3D library and draws on the host through DiligentCore (Vulkan), instead of emulating the Xenos GPU.
-The SDK's Xenos path stays as the fallback and the reference. It is developed on Pirates of the Caribbean:
-At World's End (Xbox 360, Eurocom, 2007), and is meant to be reused by GRAWRecomp, KameoRecomp and later
-projects.
+A static recompilation of Pirates of the Caribbean: At World's End (Xbox 360, Eurocom, 2007) to native Windows
+with the ReXGlue SDK (a PPC → C++ translator plus an Xbox 360 runtime derived from Xenia). It is drawn by
+**NativeXRenderer** (the `native_x_renderer` submodule, its own repository), a native renderer that hooks the
+game's XDK Direct3D library and draws on the host through DiligentCore (Vulkan) instead of emulating the
+Xenos GPU. The SDK's Xenos path stays as the alternative, the fallback and the reference. NativeXRenderer is
+developed on this game, and is meant to be reused by GRAWRecomp, KameoRecomp and later projects.
 
 Everything in the repository is written in **English**: code comments, log messages, documents, commit
 messages, tool output. Personal notes such as local paths go in `CLAUDE.local.md`, which is gitignored.
 
-## Origin and relation to POTCAWERecomp
+## History
 
-Created on 2026-10-13 as a clone of POTCAWERecomp, branch `rt-to-texture` at `c6be8a3` (SDK patches
-0001–0020), with its history. The remote `potcawe` is the local POTCAWERecomp, fetch-only. Game fixes
-(hooks, launcher, settings) are made in POTCAWERecomp first and merged here with `git fetch potcawe` plus a
-merge. POTCAWERecomp's `CLAUDE.md` and `local_docs/` hold the full history of the game work (CPU usage,
-stutters, 60 FPS, flat-colored objects, GPU load, sun glare). The parts NativeXRenderer needs are summarized in
-`docs/native-x-renderer-potcawe.md`.
+- **POTCAWERecomp** was the game's recompilation on the Xenos path (2026-10-11 to 2026-10-13, public as
+  `ElGuslml/PiratesAtWorldsEndRecomp`). Its own `CLAUDE.md` and `local_docs/` (in its old local clone, see
+  `CLAUDE.local.md`) hold the history of that work: CPU usage, stutters, 60 FPS, flat-colored objects, GPU
+  load and sun glare.
+- **On 2026-10-13 it was cloned** (branch `rt-to-texture` at `c6be8a3`, SDK patches 0001–0020, with its
+  history) into a private repository, POTCAWERecompVulkan, to develop the renderer, then called XenosNative.
+  Game fixes were made in POTCAWERecomp and merged in.
+- **On 2026-10-15 the renderer became NativeXRenderer,** a public repository of its own, used here as a
+  submodule (D58). This repository's `main` became the public repository's `main` for the first release,
+  v0.1.0.
+- **Since then everything is done here:** game fixes, launcher and settings. Library changes are done in the
+  submodule (rule 8 below).
+
+The parts of the game work NativeXRenderer needs are summarized in `docs/native-x-renderer-potcawe.md`.
 
 The game, as inherited:
 - **Executable:** `default.xex`, original name `PiratesXT_XE.exe`, title ID `425607D1`, CRC32 `A31B1069`,
@@ -196,7 +204,8 @@ work is done.
 | `native_x_renderer/sdk_patches/` | NativeXRenderer's own SDK patches (D10/D11), applied after `patches/`. |
 | `native_x_renderer/thirdparty/diligent-core` | DiligentCore (Vulkan backend only), the library's submodule, pinned to master `074060c`, with `native_x_renderer/diligent_patches/` (D22) applied at configure time. |
 | `potcawe_manifest.toml`, `potcawe_functions.toml`, `potcawe_functions_auto.toml` | Codegen input. |
-| `launcher/`, `res/`, `cmake/` | As in POTCAWERecomp. |
+| `launcher/`, `res/`, `cmake/` | The launcher, the Windows resources (icon, version in `res/version.h`), the SDK patch step. |
+| `scripts/` | `package-release.ps1`: the release folder and zip from a Release build (see "Releases"). |
 | `assets/` | The game files: a real copy, 6.4 GB, gitignored. |
 | `tools/` | Personal, gitignored, copied from POTCAWERecomp with paths repointed. Includes `game.ps1`, `level2.ps1`, `gpu_ab.ps1`, `renderdoc/`, `threadcpu.ps1`, `xdkver.mjs` and `peek.mjs`. |
 | `local_docs/` | Gitignored detailed notes, one numbered file per topic, plus `reference/`. |
@@ -242,6 +251,21 @@ cmake --build --preset win-amd64-relwithdebinfo
    commits the new submodule commit. Its documents (`plan.md`, `architecture.md`, `decisions.md`…) are in
    the library's repository; the game's (`docs/native-x-renderer-potcawe.md`, `local_docs/`) are here.
 
+## Releases
+
+1. Bump the version in `res/version.h` (`POTCAWERECOMP_VERSION` and `_STR`).
+2. Build the Release preset: `cmake --preset win-amd64-release`, then
+   `cmake --build --preset win-amd64-release`.
+3. Package it: `.\scripts\package-release.ps1`. It writes `out\release\PiratesAtWorldsEndRecomp-v<version>-windows-x64`
+   and its zip:
+   - the executables and the DLLs;
+   - the documents and `licenses\`;
+   - an empty `assets\` with its README;
+   - never `userdata\`, `logs\`, `.toml` or `.pdb`.
+4. Test the package from its own folder, with `--game_data_root` pointing at the game files.
+5. Push the library's `main` first, then this repository's `main`. Tag `v<version>`, push the tag, and attach
+   the zip to a GitHub release (Gustavo creates it on the website).
+
 ## Rules inherited from POTCAWERecomp
 
 1. **Do not remove the SDK fixes** (`patches/`): they are shared with GRAWRecomp and KameoRecomp.
@@ -262,7 +286,7 @@ As in POTCAWERecomp:
 3. Add a row to the README's patch table.
 4. Reconfigure, after `git -C thirdparty/rexglue-sdk checkout -- .`.
 
-A general fix also goes to POTCAWERecomp, GRAWRecomp and KameoRecomp. NativeXRenderer-only SDK changes follow
+A general fix also goes to GRAWRecomp and KameoRecomp. NativeXRenderer-only SDK changes follow
 rule 5 above:
 1. Use the submodule's branch `native-x-renderer`: the shared series with `git am`, then NativeXRenderer's patches.
    A `git worktree` in the scratchpad keeps the submodule's working tree untouched.
