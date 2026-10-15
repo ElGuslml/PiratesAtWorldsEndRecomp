@@ -1,7 +1,7 @@
 # The game closes after a script error
 
-**Status: fixed (2026-10-15)**, waiting for play to confirm it. The game's own error, the one that set it
-off, does not appear in automated runs. The log now names every script error, caught or not.
+**Status: fixed (2026-10-15), confirmed in play.** In Gustavo's next session (64 minutes, three level
+ends), the game caught four script errors and went on. Each one would have closed it before.
 
 ## Symptom
 
@@ -49,6 +49,24 @@ Script errors are rare: this was the first one in several hours of play.
     ```
     [lua] runtime error that no script catches (code 2), so the game exits: <script>:<line>: <message>
     ```
+
+## What the game's scripts raise
+
+The four errors of that session, all caught by the game:
+
+```
+[lua] runtime error caught by the game's protected call (code 2): ?:0: attempt to call method 'StartCountdownTimer' (a nil value)
+[lua] runtime error caught by the game's protected call (code 2): ?:0: attempt to call global 'PreLoad' (a nil value)
+```
+
+- **`StartCountdownTimer`** appears three times: twice as a method, once as a global.
+- **`PreLoad`** appears once.
+
+The scripts call functions that do not exist at that point. These are most likely the game's own errors,
+and on a console they would be just as silent: the game catches them and goes on.
+
+The game's compiled scripts carry no debug information, so the position reads `?:0`. The function name is
+what identifies them.
 
 ## How to turn it off
 
