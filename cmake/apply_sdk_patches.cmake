@@ -74,5 +74,5 @@ else()
         "in the submodule were edited).\n"
         "To start over from the pinned SDK with the current patches (this discards edits in the submodule):\n"
         "  git -C thirdparty/rexglue-sdk checkout -- .\n"
-        "then configure again. To change the SDK, see \"Changing the SDK\" in CLAUDE.md.")
+        "then configure again. To change the SDK, see \"How the SDK is modified\" in README.md.")
 endif()

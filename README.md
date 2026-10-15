@@ -40,12 +40,6 @@ Requirements:
   runs on Direct3D 12.
 - **Runtime:** the [Microsoft Visual C++ Redistributable 2015–2022 (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
-### Steam Big Picture
-
-Add `PiratesAtWorldsEndRecomp.exe` as a non-Steam game: it starts straight into the game with the options you
-saved in PiratesAtWorldsEnd Launcher. You can also add `PiratesAtWorldsEnd Launcher.exe` to change options
-from the couch with a controller.
-
 ## Game files
 
 Everything the game needs besides this project's code comes from your own copy of the game:

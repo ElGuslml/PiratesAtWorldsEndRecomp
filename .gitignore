@@ -19,7 +19,9 @@ captures/
 # Python caches of the tools
 __pycache__/
 
-# Personal notes for Claude Code: local paths, machine (CLAUDE.md is tracked)
+# Notes for Claude Code, kept local: the project's working notes and rules, and the personal ones (local
+# paths, machine)
+CLAUDE.md
 CLAUDE.local.md
 
 # Detailed investigation notes, per run (not published; the short public version is docs/)
