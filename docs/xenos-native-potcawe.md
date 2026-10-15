@@ -554,6 +554,13 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
   - **Animated props** use 12 registers; c4–c7 (the world matrix) change from frame to frame.
   - **Counts:** about 960 draws of the main view write depth. About 150 of them move: Jack, the NPCs and
     the props. That holds with the camera still or moving.
+- **Device memory at the dock (D55).** In a 1600×900 window, after 8 minutes:
+  - 851 MB in use in 880 MB of DiligentCore's pages;
+  - guest textures 128–142 MB, render targets 41 MB (12), resolved textures 64 MB (20);
+  - about 604 MB fixed, 512 MB of it the guest memory mirror.
+
+  At 3840×2160, in Gustavo's long session (run 278), the guest textures stayed at the SDK cache's soft
+  limit (about 383 MB) from level 1 on.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
 

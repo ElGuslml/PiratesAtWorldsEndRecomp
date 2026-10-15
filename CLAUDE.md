@@ -129,7 +129,13 @@ The launcher with XenosNative now chooses the image format (fill a wide screen, 
 internal resolution (automatic, or a lower height), in fullscreen and in a window (D54). Its Save keeps the
 window open, and its antialiasing row no longer offers the DLSS modes (D53).
 
-Device memory still grows over a session more than those explain: still to measure.
+The session's device memory growth is explained (D55):
+- the figure was DiligentCore's pages;
+- the use is the guest textures at the SDK cache's limit, the targets D52 frees, the fixed buffers, and
+  textures idle pipelines kept alive. Those pipelines now let go of their textures after 10 s;
+- the log shows the memory in use every 600 frames.
+
+Still to confirm in another long session.
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
