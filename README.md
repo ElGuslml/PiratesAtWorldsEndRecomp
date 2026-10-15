@@ -144,6 +144,9 @@ cmake --build --preset win-amd64-release
 
 - **Submodules:** the ReXGlue SDK (`thirdparty/rexglue-sdk`) and NativeXRenderer (`native_x_renderer`, with
   DiligentCore inside it). If you cloned without `--recursive`: `git submodule update --init --recursive`.
+- **Clone into a short path,** such as `C:\src`. The submodules nest deeply, and in a long folder Windows'
+  260-character path limit stops git with "'$GIT_DIR' too big". `git config --global core.longpaths true` also
+  avoids it.
 - **Configuring** applies the SDK fixes in [`patches/`](patches/) and NativeXRenderer's own SDK and
   DiligentCore patches.
 - **The first build** translates `default.xex` into C++ (`generated/`) and builds the SDK: it takes a while.
