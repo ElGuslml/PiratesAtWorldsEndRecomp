@@ -9,8 +9,8 @@
 // Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at the
 // resolution of the screen or the window with no scale to choose (xenos_native/docs/decisions.md, D37):
 // the render quality row shows that resolution, disabled. XenosNative has its own antialiasing instead of
-// the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47, or the DLSS modes, which draw the 3D view at a
-// lower resolution and upscale it, D49), fills screens of any aspect ratio (D43), and always uses Vulkan.
+// the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47; the DLSS modes, D49, only from
+// potcawe_options.toml: experimental, D53), fills screens of any aspect ratio (D43), and always uses Vulkan.
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
 // filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp); XenosNative applies it too
 // (D44).
@@ -70,7 +70,10 @@ struct Options {
   int anisotropic = 5;                     // anisotropic_override (SDK): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
   bool native = false;                     // xenos_native: XenosNative draws instead of Xenos
-  int native_aa = 0;                       // xenos_native_antialiasing, an index of kNativeAntialiasing
+  // xenos_native_antialiasing: an index of kNativeAntialiasing, or its size for the experimental mode
+  // potcawe_options.toml named (native_aa_experimental, an index of kExperimentalAntialiasing; -1: none).
+  int native_aa = 0;
+  int native_aa_experimental = -1;
 };
 
 // --- potcawe.toml / potcawe_options.toml ---
@@ -185,6 +188,7 @@ struct Texts {
   const wchar_t* renderer;
   const wchar_t* renderer_xenos;
   const wchar_t* renderer_native;
+  const wchar_t* experimental;  // a setting not finished, offered for testing
   const wchar_t* quality_hint;
   const wchar_t* vulkan_hint;
   const wchar_t* native_hint;
@@ -224,6 +228,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Renderer",
       L"Xenos (emulated)",
       L"XenosNative (experimental)",
+      L"experimental",
       L"The game renders at 1280 × 720 times a whole number (2×, 3×) and the image is fitted "
       L"to the screen. Automatic picks the smallest scale that covers the resolution. 60 FPS "
       L"presents every vblank instead of every second one; the game speed does not change.",
@@ -266,6 +271,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Renderer",
       L"Xenos (emuliert)",
       L"XenosNative (experimentell)",
+      L"experimentell",
       L"Das Spiel rendert in 1280 × 720 mal einer ganzen Zahl (2×, 3×), das Bild wird an den "
       L"Bildschirm angepasst. „Automatisch“ wählt die kleinste Stufe, die die Auflösung abdeckt. "
       L"60 FPS zeigt jedes Vblank ein Bild statt jedes zweite; die Spielgeschwindigkeit bleibt gleich.",
@@ -308,6 +314,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Moteur de rendu",
       L"Xenos (émulé)",
       L"XenosNative (expérimental)",
+      L"expérimental",
       L"Le jeu est rendu en 1280 × 720 multiplié par un nombre entier (2×, 3×) et l'image "
       L"s'adapte à l'écran. « Automatique » choisit la plus petite échelle qui couvre la "
       L"résolution. 60 FPS affiche une image à chaque vblank au lieu d'une sur deux ; la vitesse du "
@@ -351,6 +358,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Renderizador",
       L"Xenos (emulado)",
       L"XenosNative (experimental)",
+      L"experimental",
       L"El juego dibuja a 1280 × 720 por un número entero (2×, 3×) y la imagen se ajusta a la "
       L"pantalla. «Automática» elige la menor escala que cubre la resolución. 60 FPS presenta una "
       L"imagen por vblank en vez de una de cada dos; la velocidad del juego no cambia.",
@@ -393,6 +401,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Renderer",
       L"Xenos (emulato)",
       L"XenosNative (sperimentale)",
+      L"sperimentale",
       L"Il gioco disegna a 1280 × 720 per un numero intero (2×, 3×) e l'immagine si adatta "
       L"allo schermo. «Automatica» sceglie la scala più piccola che copre la risoluzione. 60 FPS "
       L"presenta un'immagine a ogni vblank invece di una su due; la velocità del gioco non cambia.",
@@ -639,10 +648,19 @@ constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdBackendLabel, kIdBackend}};
 
 // XenosNative's antialiasing row (xenos_native_antialiasing), top to bottom: SMAA or FXAA on the finished scene
-// (D41), DLAA with NVIDIA DLSS before the post-processing (D47), and the DLSS modes, the 3D view drawn at a
-// lower resolution and upscaled (D49); SMAA where DLSS is not available.
-constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "dlss_quality", "dlss_balanced", "dlss_performance",
-                                               "dlss_ultra_performance", "fxaa", "off"};
+// (D41), DLAA with NVIDIA DLSS before the post-processing (D47; SMAA where DLSS is not available), or off.
+constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "fxaa", "off"};
+
+// The DLSS modes (D49) draw the 3D view at a lower resolution and upscale it. They are not finished, and the
+// row does not offer them (D53): potcawe_options.toml can still name one, and the row then shows it last,
+// marked experimental, so that saving keeps it.
+constexpr struct {
+  const char* name;
+  const wchar_t* label;
+} kExperimentalAntialiasing[] = {{"dlss_quality", L"DLSS Quality"},
+                                 {"dlss_balanced", L"DLSS Balanced"},
+                                 {"dlss_performance", L"DLSS Performance"},
+                                 {"dlss_ultra_performance", L"DLSS Ultra Performance"}};
 
 // The anisotropic filtering row's values (anisotropic_override), top to bottom.
 constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
@@ -787,10 +805,12 @@ void Refresh(Launcher& l) {
     FillCombo(Item(l, kIdQuality),
               {SizeText(render) + L"  " + (render == Size{kGuestWidth, kGuestHeight} ? t.original : t.from_screen)},
               0);
-    FillCombo(Item(l, kIdAntialiasing),
-              {L"SMAA", L"DLAA (NVIDIA RTX)", L"DLSS Quality", L"DLSS Balanced", L"DLSS Performance",
-               L"DLSS Ultra Performance", L"FXAA", t.aa_off},
-              o.native_aa);
+    std::vector<std::wstring> methods = {L"SMAA", L"DLAA (NVIDIA RTX)", L"FXAA", t.aa_off};
+    if (o.native_aa_experimental >= 0) {
+      methods.push_back(std::wstring(kExperimentalAntialiasing[o.native_aa_experimental].label) + L" (" +
+                        t.experimental + L")");
+    }
+    FillCombo(Item(l, kIdAntialiasing), methods, o.native_aa);
     FillCombo(Item(l, kIdBackend), {L"Vulkan"}, 0);
   } else {
     std::vector<std::wstring> qualities = {std::wstring(t.automatic) + L" — " +
@@ -858,7 +878,8 @@ void OnSelectionChange(Launcher& l, int id) {
       break;
     case kIdAntialiasing:
       if (o.native) {
-        o.native_aa = std::clamp(index, 0, int(std::size(kNativeAntialiasing)) - 1);
+        int last = int(std::size(kNativeAntialiasing)) - (o.native_aa_experimental >= 0 ? 0 : 1);
+        o.native_aa = std::clamp(index, 0, last);
       } else {
         o.no_msaa = index == 1;
       }
@@ -1280,6 +1301,12 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   for (int i = 0; i < int(std::size(kNativeAntialiasing)); ++i) {
     if (native_aa == kNativeAntialiasing[i]) o.native_aa = i;
   }
+  for (int i = 0; i < int(std::size(kExperimentalAntialiasing)); ++i) {
+    if (native_aa == kExperimentalAntialiasing[i].name) {
+      o.native_aa_experimental = i;
+      o.native_aa = int(std::size(kNativeAntialiasing));
+    }
+  }
   // Without the key, the game's default (src/startup.cpp adds it to potcawe.toml at the next start): 16x.
   // A value the row does not offer: -1 (only what the game asks: 4x on some textures) shows as 4x, 1 (1x)
   // as off.
@@ -1361,9 +1388,16 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   f << "anisotropic_override = " << o.anisotropic << "\n";
   // XenosNative (xenos_native/): draw natively on Vulkan instead of emulating the GPU (experimental).
   f << "xenos_native = " << boolean(o.native) << "\n";
-  // XenosNative's own antialiasing: smaa, dlaa, fxaa or off.
-  int native_aa = std::clamp(o.native_aa, 0, int(std::size(kNativeAntialiasing)) - 1);
-  f << "xenos_native_antialiasing = \"" << kNativeAntialiasing[native_aa] << "\"\n";
+  // XenosNative's own antialiasing: smaa, dlaa, fxaa or off; or an experimental mode the file named (D53).
+  f << "# xenos_native_antialiasing: smaa, dlaa, fxaa or off, the launcher's choices. Experimental, for\n"
+       "# testing only (not finished, so the launcher does not offer them): dlss_quality, dlss_balanced,\n"
+       "# dlss_performance and dlss_ultra_performance, NVIDIA DLSS upscaling the 3D view from a lower\n"
+       "# resolution. The launcher keeps one written here.\n";
+  const char* native_aa = o.native_aa < int(std::size(kNativeAntialiasing))
+                              ? kNativeAntialiasing[std::max(o.native_aa, 0)]
+                          : o.native_aa_experimental >= 0 ? kExperimentalAntialiasing[o.native_aa_experimental].name
+                                                          : kNativeAntialiasing[0];
+  f << "xenos_native_antialiasing = \"" << native_aa << "\"\n";
   return bool(f);
 }
 
