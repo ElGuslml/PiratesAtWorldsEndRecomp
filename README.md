@@ -18,8 +18,8 @@ Xenos backend stays as the fallback.
 - [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
-- Status: Phases 0–3 done, Phase 4 (POTCAWE polish) nearly done, Phase 5 (temporal techniques) started
-  (2026-10-15). **XenosNative is the game's default renderer** (D56):
+- Status: Phases 0–4 done (Phase 4, POTCAWE polish, closed on 2026-10-15), and Phase 5 (temporal
+  techniques) in progress. **XenosNative is the game's default renderer** (D56):
   - it draws on DiligentCore (Vulkan), at any internal resolution and aspect ratio;
   - it antialiases with SMAA, FXAA or NVIDIA DLAA.
 

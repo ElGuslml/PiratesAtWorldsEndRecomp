@@ -100,7 +100,7 @@ closed: D39). Results at the dock:
 
 Decisions D29–D39; notes `local_docs/06-phase3-performance.md`.
 
-**Phase 4 (POTCAWE polish) in progress, since 2026-10-14** (D39, D40). First, in this order:
+**Phase 4 (POTCAWE polish) done, 2026-10-14 to 2026-10-15** (D39, D40; closed: D57). First, in this order:
 1. XenosNative's own antialiasing: done (D41). SMAA (default) or FXAA on the copy of the finished scene,
    before the HUD; the launcher's Antialiasing row chooses it with XenosNative;
 2. a persistent pipeline cache: done (D42). The shaders, translations and pipelines used are kept per
@@ -117,7 +117,13 @@ minutes.
 
 Notes: `local_docs/07-phase4.md`.
 
-Still open in Phase 4: every level compared with the Xenos path, the known limits from Phase 2. Gustavo's first long session (2026-10-15) found the journal showing the scene through its pages: a
+Moved to the plan's "Later" when Phase 4 closed (D57):
+- every level compared side by side with the Xenos path;
+- the known limits from Phase 2;
+- other levels and the cutscenes at 21:9;
+- HUD elements anchored to the screen's edges.
+
+Gustavo's first long session (2026-10-15) found the journal showing the scene through its pages: a
 resolve from a `2_10_10_10_FLOAT` target now takes the guest format's range (D50). His second (54 minutes,
 levels 1 to 3) ran at 60 FPS with hitches only at new content. It led to:
 - resolves into cube textures (D51);

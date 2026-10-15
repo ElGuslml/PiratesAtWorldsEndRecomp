@@ -425,6 +425,8 @@ linear ramp early on (384 DC_LUT writes). Red at 32, 64, 128 and 192 of 255 beco
 
 ## Phase 4 so far
 
+Phase 4 closed on 2026-10-15 (D57). Its open checks are in `plan.md`, "Later".
+
 **XenosNative is POTCAWE's default (D56):**
 - `xenos_native = true` is among the defaults in `src/startup.cpp`, and the launcher selects XenosNative when
   no file names a renderer;
