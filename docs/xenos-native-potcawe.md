@@ -525,6 +525,19 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
   - **The HUD view:** `BeginView` without a matrix, a clear `0x3f` (its own depth), 14 draws, the composite
     and the resolve to the front buffer.
   - **Parameter generation (VPOS):** no draw uses it.
+- **The journal (Back, D50; trace of frame 6323, run 272).** Per frame while it is open:
+  - **Each page is composed:**
+    - the page's parchment, map and text are drawn into the scene's surface (`0x40243E70`, cleared to
+      transparent black) and resolved to `0x0886B000`;
+    - a quad then copies that into a 1024×512 surface at EDRAM 0 (pitch 1040, `8_8_8_8`, not cleared);
+    - the result is resolved to the page texture (`0x0CC36000`, `0x0CE37000`).
+  - **Then the usual frame:** the reflection, the shadows, the scene, the post-processing and the HUD. The
+    scene copy `0x09B2E000` is resolved twice from `0x824583EC`, once without and once with the HUD
+    composited, so SMAA (D41) runs twice per frame there.
+  - **The journal view:** the scene's surface is cleared to alpha 0.627, then 36 draws, a depth copy,
+    10 draws, and a resolve to `0x0886B000` (`k_16_16_16_16_EXPAND`). The pages leave alpha above 1 there.
+  - **The final composite** draws the scene and HUD copy (`0x09B2E000`) and the journal over it, by its
+    alpha, into `0x40243200`, then resolves to the front buffer.
 - **Object motion (D48).** The main view's vertex shader constants, at the dock:
   - **Shared by the whole view:** c0–c3 (the view-projection matrix, from `sub_823B3C38`), c8, c9 and c27.
     c0–c3 and c9 change whenever the camera moves.

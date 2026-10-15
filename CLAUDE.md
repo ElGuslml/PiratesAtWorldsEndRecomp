@@ -118,7 +118,8 @@ minutes.
 Notes: `local_docs/07-phase4.md`.
 
 Still open in Phase 4: every level compared with the Xenos path, the hour-long session, the known limits from
-Phase 2.
+Phase 2. Gustavo's first long session (2026-10-15) found the journal showing the scene through its pages: a
+resolve from a `2_10_10_10_FLOAT` target now takes the guest format's range (D50).
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
