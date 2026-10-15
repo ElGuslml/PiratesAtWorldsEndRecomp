@@ -69,7 +69,7 @@ struct Options {
   int anisotropic = 5;                     // anisotropic_override (SDK): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
   bool native = false;                     // xenos_native: XenosNative draws instead of Xenos
-  int native_aa = 0;                       // xenos_native_antialiasing: 0 SMAA, 1 FXAA, 2 off
+  int native_aa = 0;                       // xenos_native_antialiasing, an index of kNativeAntialiasing
 };
 
 // --- potcawe.toml / potcawe_options.toml ---
@@ -631,6 +631,10 @@ constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdAnisotropicLabel, kIdAnisotropic},
                             {kIdBackendLabel, kIdBackend}};
 
+// XenosNative's antialiasing row (xenos_native_antialiasing), top to bottom: SMAA or FXAA on the finished scene
+// (D41), DLAA with NVIDIA DLSS before the post-processing (D47; SMAA where DLSS is not available).
+constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "fxaa", "off"};
+
 // The anisotropic filtering row's values (anisotropic_override), top to bottom.
 constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
 
@@ -773,7 +777,7 @@ void Refresh(Launcher& l) {
     FillCombo(Item(l, kIdQuality),
               {SizeText(render) + L"  " + (render == Size{kGuestWidth, kGuestHeight} ? t.original : t.from_screen)},
               0);
-    FillCombo(Item(l, kIdAntialiasing), {L"SMAA", L"FXAA", t.aa_off}, o.native_aa);
+    FillCombo(Item(l, kIdAntialiasing), {L"SMAA", L"DLAA (NVIDIA RTX)", L"FXAA", t.aa_off}, o.native_aa);
     FillCombo(Item(l, kIdBackend), {L"Vulkan"}, 0);
   } else {
     std::vector<std::wstring> qualities = {std::wstring(t.automatic) + L" — " +
@@ -841,7 +845,7 @@ void OnSelectionChange(Launcher& l, int id) {
       break;
     case kIdAntialiasing:
       if (o.native) {
-        o.native_aa = std::clamp(index, 0, 2);
+        o.native_aa = std::clamp(index, 0, int(std::size(kNativeAntialiasing)) - 1);
       } else {
         o.no_msaa = index == 1;
       }
@@ -1242,7 +1246,9 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
   o.native = GetBool(c, "xenos_native", false);
   std::string native_aa = GetString(c, "xenos_native_antialiasing");
-  o.native_aa = native_aa == "fxaa" ? 1 : native_aa == "off" ? 2 : 0;
+  for (int i = 0; i < int(std::size(kNativeAntialiasing)); ++i) {
+    if (native_aa == kNativeAntialiasing[i]) o.native_aa = i;
+  }
   // Without the key, the game's default (src/startup.cpp adds it to potcawe.toml at the next start): 16x.
   // A value the row does not offer: -1 (only what the game asks: 4x on some textures) shows as 4x, 1 (1x)
   // as off.
@@ -1324,9 +1330,9 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   f << "anisotropic_override = " << o.anisotropic << "\n";
   // XenosNative (xenos_native/): draw natively on Vulkan instead of emulating the GPU (experimental).
   f << "xenos_native = " << boolean(o.native) << "\n";
-  // XenosNative's own antialiasing of the finished scene, before the HUD: smaa, fxaa or off.
-  f << "xenos_native_antialiasing = \"" << (o.native_aa == 1 ? "fxaa" : o.native_aa == 2 ? "off" : "smaa")
-    << "\"\n";
+  // XenosNative's own antialiasing: smaa, dlaa, fxaa or off.
+  int native_aa = std::clamp(o.native_aa, 0, int(std::size(kNativeAntialiasing)) - 1);
+  f << "xenos_native_antialiasing = \"" << kNativeAntialiasing[native_aa] << "\"\n";
   return bool(f);
 }
 

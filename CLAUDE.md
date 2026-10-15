@@ -122,8 +122,10 @@ Phase 2.
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
-`xenos_native_antialiasing = dlaa`. Next: jitter, motion vectors, DLAA before the game's post-processing, then
-the upscaling modes. Notes: `local_docs/08-phase5.md`.
+`xenos_native_antialiasing = dlaa`. DLAA works (D47): the main 3D view jittered through its viewport, the camera's
+motion vectors (POTCAWE's depth is reversed), DLSS before the game's post-processing, a launcher choice;
++1.2 ms at 2×. Next: motion vectors of moving objects, then the upscaling modes. Notes:
+`local_docs/08-phase5.md`.
 
 Phase 5 is temporal upscaling and frame generation (motion vectors, DLSS / DLAA, FSR 3), and Phase 6 the
 second game and the library's extraction (D40). Follow `xenos_native/docs/plan.md` and tick its boxes as

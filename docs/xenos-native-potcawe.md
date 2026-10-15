@@ -500,6 +500,16 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
 
   The SDK's `anisotropic_override` (16x by default here, `src/startup.cpp`) applies to the trilinear ones
   on both paths. At 16x the GPU time is unchanged: 3.46 ms at 2×, 6.22 ms at 3×.
+- **DLAA (D47).** What `src/views.cpp` and the renderer rely on:
+  - **The main view's targets.** The main 3D view draws into surface `0x40243E70` with depth `0x40243EB0`,
+    1280×720. Its reflection draws into a 128×128 target, and its shadow maps into 1024² ones.
+  - **The main view's passes:** a clear (depth to 0), 992 opaque draws, the sun's occlusion quad, a copy of
+    the color (Resolve flags 0x10 from `0x823FB79C`) and of the depth, 24 transparent draws (the haze, the
+    water), the sun's quad again. The post-processing then starts at the hook point `0x823B6B20`.
+  - **Reversed depth.** ClearF to z = 0, and the transparent draws test `GreaterEqual`; the viewport's z
+    goes from 1 (near) to 0 (far).
+  - **The camera moves a little every frame,** even standing still. The motion vectors average 0.21 px at
+    the dock's idle view, and DLSS needs them.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
 

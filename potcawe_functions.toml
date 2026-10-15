@@ -53,13 +53,15 @@ registers = ["r10"]
 address = 0x82328B84   # fmr f0,f1: perspective branch, f29 = tan(width / 2), f1 = tan(height / 2)
 name = "PotcawePerspectiveAspectHook"
 registers = ["f1", "f29"]
+# The game's views for XenosNative (src/views.cpp): 2D views in the 16:9 box (D43), the 3D views' matrices
+# and the start of their post-processing for DLAA (D47).
 [[midasm_hook]]
 address = 0x823B3E48   # bl 0x822b7848 in sub_823B3C38: the view's matrix to c0-c3, r5 = the matrix
-name = "PotcaweViewAspectHook"
+name = "PotcaweViewHook"
 registers = ["r5"]
 [[midasm_hook]]
 address = 0x823B6B20   # li r5,112 in sub_823B6290: the view's post-processing starts
-name = "PotcawePostProcessingAspectHook"
+name = "PotcawePostProcessingHook"
 [[midasm_hook]]
 address = 0x823F8838   # fmadds f12,f12,f0,f6 in sub_823F8750: a draw's screen rectangle, f12 f10 f11 f9
 name = "PotcaweScissorAspectHook"

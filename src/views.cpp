@@ -1,0 +1,81 @@
+// potcawe - the game's views, marked for XenosNative (xenos_native/docs/decisions.md, D43, D47).
+//
+// The engine draws a frame as a series of views (sub_823B6290, once per view): the water's reflection, the
+// 3D scene (its shadow maps inside it), then the HUD's 2D view; in the menus, the video's view and the menu's.
+// Each view starts in sub_823B3C38, which gives the view's matrix to the vertex shaders (c0-c3), and ends
+// with its post-processing (sub_823D2160), which composites its layers over the screen. XenosNative is told:
+//   - which views are 2D (a square parallel projection): drawn in a 16:9 box when the output is not 16:9
+//     (D43, xenos_native::SetGameAspectBox);
+//   - the 3D views and their matrices, and where their post-processing starts: DLAA jitters the main 3D view
+//     and antialiases it before the post-processing (D47, xenos_native::BeginView / EndViewGeometry).
+//
+// docs/xenos-native-potcawe.md has the evidence (the views' matrices and call stacks, runs 174-176).
+
+#include "views.h"
+
+#include <rex/logging.h>
+#include <rex/ppc/context.h>
+#include <rex/system/kernel_state.h>
+#include <rex/system/xmemory.h>
+#include <xenos_native/xenos_native.h>
+
+#include <atomic>
+#include <cmath>
+#include <cstring>
+
+namespace {
+
+bool g_2d_view = false;
+
+float LoadFloat(const uint8_t* base, uint32_t address) {
+  uint32_t value;
+  std::memcpy(&value, base + address, 4);
+  value = __builtin_bswap32(value);
+  float f;
+  std::memcpy(&f, &value, 4);
+  return f;
+}
+
+}  // namespace
+
+namespace potcawe {
+
+bool In2DView() { return g_2d_view; }
+
+}  // namespace potcawe
+
+// [[midasm_hook]] at 0x823B3E48 in sub_823B3C38, which sets up a view's constants: the call that gives the
+// view's matrix to the vertex shaders as c0-c3 (r5: 16 floats, rows for a row vector). A 3D view's has a
+// perspective column; a 2D view's is a square parallel projection: no perspective column, w = 1, the same
+// scale on x and y (the 1000x1000 camera).
+void PotcaweViewHook(PPCRegister& r5) {
+  if (!xenos_native::Renders()) return;
+  auto* kernel = rex::system::kernel_state();
+  if (!kernel || !kernel->memory()) return;
+  const uint8_t* base = kernel->memory()->virtual_membase();
+  float m[16];
+  for (uint32_t i = 0; i < 16; ++i) m[i] = LoadFloat(base, r5.u32 + i * 4);
+  bool parallel = m[3] == 0.0f && m[7] == 0.0f && m[11] == 0.0f && std::abs(m[15] - 1.0f) < 1e-4f;
+  float scale_x = std::sqrt(m[0] * m[0] + m[4] * m[4] + m[8] * m[8]);
+  float scale_y = std::sqrt(m[1] * m[1] + m[5] * m[5] + m[9] * m[9]);
+  g_2d_view = parallel && scale_y > 0.0f && std::abs(scale_x / scale_y - 1.0f) < 0.01f;
+  if (xenos_native::AspectFactor() != 1.0) {
+    xenos_native::SetGameAspectBox(g_2d_view);
+    if (g_2d_view) {
+      static std::atomic<bool> logged{false};
+      if (!logged.exchange(true)) {
+        REXLOG_INFO("[aspect] 2D views kept at 16:9 in the middle of the screen ({:.4f})",
+                    xenos_native::AspectFactor());
+      }
+    }
+  }
+  xenos_native::BeginView(parallel ? nullptr : m);
+}
+
+// [[midasm_hook]] at 0x823B6B20 in sub_823B6290, which draws a view: the view's post-processing starts
+// (sub_823D2160), which composites its layers over the whole screen.
+void PotcawePostProcessingHook() {
+  if (!xenos_native::Renders()) return;
+  xenos_native::SetGameAspectBox(false);
+  xenos_native::EndViewGeometry();
+}
