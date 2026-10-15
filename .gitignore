@@ -13,7 +13,7 @@ out/
 captures/
 
 # Personal tools: investigation scripts, switch-table checker, gap finder (not published). Only the
-# repository root's tools/: XenosNative's own tools in xenos_native/tools/ are tracked.
+# repository root's tools/: NativeXRenderer's own tools in native_x_renderer/tools/ are tracked.
 /tools/
 
 # Python caches of the tools

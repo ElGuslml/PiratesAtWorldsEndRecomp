@@ -11,26 +11,26 @@
 // force the number of tiles, which the engine computes from the antialiasing level, to one.
 // Dock of Port Royal at 2x2 and 60 FPS on an RTX 4070 Ti: GPU 89 % -> 59 %. The image loses only
 // the 2x edge antialiasing. The sun flare also reads the level (see PotcaweFlareAaLevelHook).
-// XenosNative draws each pass once at its surface's size and does not join the two tiles yet, so
+// NativeXRenderer draws each pass once at its surface's size and does not join the two tiles yet, so
 // with it the hooks always apply, whatever potcawe_no_msaa says.
 
 #include <rex/cvar.h>
 #include <rex/logging.h>
 #include <rex/ppc/context.h>
-#include <xenos_native/xenos_native.h>
+#include <native_x_renderer/native_x_renderer.h>
 
 #include <atomic>
 #include <cstdint>
 
 REXCVAR_DEFINE_BOOL(potcawe_no_msaa, false, "Potcawe",
                     "Create the game's render surfaces without multisampling (no 2x MSAA edge "
-                    "antialiasing; less GPU work at high render scales). Always on with XenosNative");
+                    "antialiasing; less GPU work at high render scales). Always on with NativeXRenderer");
 
 namespace {
 
 // Why the surfaces are created without multisampling, or nullptr if they are not.
 const char* NoMsaaReason() {
-  if (xenos_native::Renders()) return "XenosNative";
+  if (native_x_renderer::Renders()) return "NativeXRenderer";
   return REXCVAR_GET(potcawe_no_msaa) ? "potcawe_no_msaa" : nullptr;
 }
 

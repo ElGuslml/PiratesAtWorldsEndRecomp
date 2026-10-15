@@ -54,15 +54,15 @@ address = 0x822B5968   # cmplwi r10,0 (after lwz r10,13444(r31) in sub_822B58B0)
 name = "PotcawePresentIntervalHook"
 registers = ["r10"]
 
-# Any aspect ratio without bars, with XenosNative (src/aspect.cpp): the 16:9 3D views are widened by
-# xenos_native::AspectFactor() (their projection and culling frustum, built by sub_823288C8), the 2D views
+# Any aspect ratio without bars, with NativeXRenderer (src/aspect.cpp): the 16:9 3D views are widened by
+# native_x_renderer::AspectFactor() (their projection and culling frustum, built by sub_823288C8), the 2D views
 # (HUD, menus, videos) are drawn in a 16:9 box in the middle, and 3D effects' screen rectangles are opened
 # on the wider axis.
 [[midasm_hook]]
 address = 0x82328B84   # fmr f0,f1: perspective branch, f29 = tan(width / 2), f1 = tan(height / 2)
 name = "PotcawePerspectiveAspectHook"
 registers = ["f1", "f29"]
-# The game's views for XenosNative (src/views.cpp): 2D views in the 16:9 box (D43), the 3D views' matrices
+# The game's views for NativeXRenderer (src/views.cpp): 2D views in the 16:9 box (D43), the 3D views' matrices
 # and the start of their post-processing for DLAA (D47).
 [[midasm_hook]]
 address = 0x823B3E48   # bl 0x822b7848 in sub_823B3C38: the view's matrix to c0-c3, r5 = the matrix

@@ -67,10 +67,10 @@ clear_memory_page_state = false
 # filtering" row sets it. 16x costs no measurable GPU time against 4x at the Port Royal dock (2x2 and
 # 3x3, RTX 4070 Ti).
 anisotropic_override = 5
-# Draw the game with XenosNative, a native renderer on Vulkan (DiligentCore), instead of the SDK's emulation
-# of the Xbox 360 GPU (xenos_native/docs/decisions.md, D56). PiratesAtWorldsEnd Launcher's "Renderer" row
-# sets it. false = the Xenos path, as in POTCAWERecomp. If XenosNative cannot start, the Xenos path draws.
-xenos_native = true
+# Draw the game with NativeXRenderer, a native renderer on Vulkan (DiligentCore), instead of the SDK's emulation
+# of the Xbox 360 GPU (native_x_renderer/docs/decisions.md, D56). PiratesAtWorldsEnd Launcher's "Renderer" row
+# sets it. false = the Xenos path, as in POTCAWERecomp. If NativeXRenderer cannot start, the Xenos path draws.
+native_x_renderer = true
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {

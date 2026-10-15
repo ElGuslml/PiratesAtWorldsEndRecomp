@@ -1,4 +1,4 @@
-// potcawe - the game's views, marked for XenosNative (src/views.cpp).
+// potcawe - the game's views, marked for NativeXRenderer (src/views.cpp).
 
 #pragma once
 

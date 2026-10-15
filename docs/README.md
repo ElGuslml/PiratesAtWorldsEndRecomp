@@ -13,11 +13,11 @@ the symptom, the cause, the fix and how to turn the fix off, so that you can che
 | [sun-glow.md](sun-glow.md) — the sun's glare at the top of the screen with the sun behind the camera (Port Royal) | Fixed |
 | [script-errors.md](script-errors.md) — the game closes after a script error, with faults on several threads | Fixed |
 
-## XenosNative
+## NativeXRenderer
 
-The renderer's own documents are in [`../xenos_native/docs/`](../xenos_native/docs/). This folder has the game
+The renderer's own documents are in [`../native_x_renderer/docs/`](../native_x_renderer/docs/). This folder has the game
 side:
 
 | Document | Contents |
 |---|---|
-| [xenos-native-potcawe.md](xenos-native-potcawe.md) | POTCAWE's Direct3D map (39 entry points), device layout, engine behavior, frame structure from the trace, the observer's results, the answers to Phase 1's questions, and the measurements |
+| [native-x-renderer-potcawe.md](native-x-renderer-potcawe.md) | POTCAWE's Direct3D map (39 entry points), device layout, engine behavior, frame structure from the trace, the observer's results, the answers to Phase 1's questions, and the measurements |

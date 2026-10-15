@@ -5,7 +5,7 @@ ends), the game caught four script errors and went on. Each one would have close
 
 ## Symptom
 
-After 30 minutes of play the game closed (Gustavo, 2026-10-15, with the XenosNative renderer). The log ends
+After 30 minutes of play the game closed (Gustavo, 2026-10-15, with the NativeXRenderer renderer). The log ends
 with three faults at the same moment:
 - access violations on two game threads, reading near-null addresses;
 - a call to the invalid address `0x56657273` on a third thread. That value is the text "Vers".

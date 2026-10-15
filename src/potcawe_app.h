@@ -12,11 +12,11 @@
 #include <rex/system/kernel_state.h>
 #include <rex/system/xthread.h>
 
-#include <xenos_native/xenos_native.h>
+#include <native_x_renderer/native_x_renderer.h>
 
 #include "options.h"
 #include "startup.h"
-#include "xenos_native_potcawe.h"
+#include "native_x_renderer_potcawe.h"
 
 class PotcaweApp : public rex::ReXApp {
  public:
@@ -62,19 +62,19 @@ class PotcaweApp : public rex::ReXApp {
     potcawe::EnsureDefaultConfig(exe_dir / "potcawe.toml");
     if (!rex::ReXApp::SetupEnvironment()) return false;
     REXLOG_INFO("[startup] User data: {}", user_data_root().string());
-    REXLOG_INFO("[startup] {}", xenos_native::Describe());
+    REXLOG_INFO("[startup] {}", native_x_renderer::Describe());
     if (!potcawe::CheckGameFiles(game_data_root())) return false;
     potcawe::LoadLauncherOptions(exe_dir / "potcawe_options.toml", potcawe::GpuPluginPath());
     return true;
   }
 
-  // Window title (the SDK sets "<app name> <SDK build stamp>"), then XenosNative, before the guest
-  // starts: its hooks (src/xenos_native_potcawe.cpp) are pass-throughs until it is initialized.
+  // Window title (the SDK sets "<app name> <SDK build stamp>"), then NativeXRenderer, before the guest
+  // starts: its hooks (src/native_x_renderer_potcawe.cpp) are pass-throughs until it is initialized.
   void OnPostSetup() override {
     if (window()) {
       window()->SetTitle("Pirates of the Caribbean: At World's End");
     }
-    xenos_native::Initialize(potcawe::XenosNativeProfile(), runtime() ? runtime()->graphics_system() : nullptr,
+    native_x_renderer::Initialize(potcawe::NativeXRendererProfile(), runtime() ? runtime()->graphics_system() : nullptr,
                              window(), runtime() ? runtime()->cache_root() : std::filesystem::path());
   }
 

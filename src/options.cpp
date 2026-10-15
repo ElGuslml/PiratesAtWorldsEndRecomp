@@ -39,17 +39,17 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
         options_path.string());
   }
 
-  // XenosNative draws through its own Vulkan device (DiligentCore), and the SDK's backend only keeps the
+  // NativeXRenderer draws through its own Vulkan device (DiligentCore), and the SDK's backend only keeps the
   // GPU in sync then. Its Vulkan backend keeps the process on one graphics API: no idle D3D12 device next
-  // to XenosNative's, and overlays such as RTSS report the API that presents.
-  if (rex::cvar::Query<bool>("xenos_native") && rex::cvar::Query<std::string>("gpu_backend") != "vulkan") {
+  // to NativeXRenderer's, and overlays such as RTSS report the API that presents.
+  if (rex::cvar::Query<bool>("native_x_renderer") && rex::cvar::Query<std::string>("gpu_backend") != "vulkan") {
     rex::cvar::SetFlagByName("gpu_backend", "vulkan");
-    REXLOG_INFO("[options] gpu_backend set to vulkan: XenosNative draws");
+    REXLOG_INFO("[options] gpu_backend set to vulkan: NativeXRenderer draws");
   }
 
   bool fullscreen = rex::cvar::Query<bool>("fullscreen");
   REXLOG_INFO("[options] monitor={} scale={}x{} display={} window={}x{} video_mode={}x{} "
-              "letterbox={} 60fps={} no_msaa={} gpu_backend={} xenos_native={}",
+              "letterbox={} 60fps={} no_msaa={} gpu_backend={} native_x_renderer={}",
               rex::cvar::Query<int32_t>("monitor"),
               rex::cvar::Query<int32_t>("draw_resolution_scale_x"),
               rex::cvar::Query<int32_t>("draw_resolution_scale_y"),
@@ -61,7 +61,7 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
               rex::cvar::Query<int32_t>("video_mode_height"),
               rex::cvar::Query<bool>("present_letterbox"), rex::cvar::Query<bool>("potcawe_60fps"),
               rex::cvar::Query<bool>("potcawe_no_msaa"), rex::cvar::Query<std::string>("gpu_backend"),
-              rex::cvar::Query<bool>("xenos_native"));
+              rex::cvar::Query<bool>("native_x_renderer"));
 }
 
 std::filesystem::path GpuPluginPath() {

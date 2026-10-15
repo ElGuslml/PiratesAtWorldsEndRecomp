@@ -1,34 +1,34 @@
 # POTCAWERecompVulkan
 
-The development home of **XenosNative**, a native renderer for Xbox 360 games recompiled with the
+The development home of **NativeXRenderer**, a native renderer for Xbox 360 games recompiled with the
 [ReXGlue SDK](https://github.com/rexglue/rexglue-sdk). The renderer is developed on
 **Pirates of the Caribbean: At World's End** (Xbox 360, 2007).
 
 This repository is a clone of POTCAWERecomp, a static recompilation of the game to native Windows. The
 game's PowerPC code is translated to C++ and compiled, and the Xbox 360 GPU is emulated by ReXGlue's Xenos
-backend (derived from [Xenia](https://xenia.jp)). XenosNative replaces that emulation with host rendering of
+backend (derived from [Xenia](https://xenia.jp)). NativeXRenderer replaces that emulation with host rendering of
 the game's Direct3D calls, on [DiligentCore](https://github.com/DiligentGraphics/DiligentCore) (Vulkan). The
 Xenos backend stays as the fallback.
 
-## XenosNative
+## NativeXRenderer
 
-- [`xenos_native/`](xenos_native/README.md): the renderer, a library meant to be reused by other ReXGlue
+- [`native_x_renderer/`](native_x_renderer/README.md): the renderer, a library meant to be reused by other ReXGlue
   games (GRAWRecomp and KameoRecomp next). It contains no game-specific code.
-- [`xenos_native/docs/plan.md`](xenos_native/docs/plan.md): the work plan, in phases with checkboxes.
-- [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
-- [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
+- [`native_x_renderer/docs/plan.md`](native_x_renderer/docs/plan.md): the work plan, in phases with checkboxes.
+- [`native_x_renderer/docs/architecture.md`](native_x_renderer/docs/architecture.md): how it works.
+- [`docs/native-x-renderer-potcawe.md`](docs/native-x-renderer-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
 - Status: Phases 0–4 done (Phase 4, POTCAWE polish, closed on 2026-10-15), and Phase 5 (temporal
-  techniques) in progress. **XenosNative is the game's default renderer** (D56):
+  techniques) in progress. **NativeXRenderer is the game's default renderer** (D56):
   - it draws on DiligentCore (Vulkan), at any internal resolution and aspect ratio;
   - it antialiases with SMAA, FXAA or NVIDIA DLAA.
 
-  The launcher's Renderer row (or `xenos_native = false`) selects the Xenos backend, as in POTCAWERecomp.
-  The Xenos backend also draws if XenosNative cannot start. The trace (`--xenos_native_trace=true`, F9) and
-  the observer (`--xenos_native_verify=true`, F10) are off by default.
+  The launcher's Renderer row (or `native_x_renderer = false`) selects the Xenos backend, as in POTCAWERecomp.
+  The Xenos backend also draws if NativeXRenderer cannot start. The trace (`--native_x_renderer_trace=true`, F9) and
+  the observer (`--native_x_renderer_verify=true`, F10) are off by default.
 - Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
   [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
-  [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md)).
+  [`native_x_renderer/docs/credits.md`](native_x_renderer/docs/credits.md)).
 
 Everything below describes the game project as inherited from POTCAWERecomp. Game fixes are made there
 first and merged here.
@@ -74,8 +74,8 @@ first and merged here.
   host's (`potcawe_functions.toml`), and the log names each script error (`src/lua_errors.cpp`, see
   [`docs/script-errors.md`](docs/script-errors.md)).
 - **PiratesAtWorldsEnd Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer
-  (XenosNative by default, or the Xenos emulation), image format, internal resolution, frame rate,
-  antialiasing, anisotropic filtering and graphics API. With XenosNative the game renders at the internal
+  (NativeXRenderer by default, or the Xenos emulation), image format, internal resolution, frame rate,
+  antialiasing, anisotropic filtering and graphics API. With NativeXRenderer the game renders at the internal
   resolution and fills wide screens; what follows describes the Xenos path. Works with mouse, keyboard or controller. Save writes the options
   and keeps the launcher open; Play saves them and starts the game. The game always renders at 1280×720;
   ReXGlue renders it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic"
@@ -128,8 +128,8 @@ This project does not provide the game's files, or links to them.
 ## Building from source
 
 ```powershell
-git clone --recursive https://github.com/ElGuslml/PiratesAtWorldsEndRecompXenosNative.git
-cd PiratesAtWorldsEndRecompXenosNative
+git clone --recursive https://github.com/ElGuslml/PiratesAtWorldsEndRecompNativeXRenderer.git
+cd PiratesAtWorldsEndRecompNativeXRenderer
 # copy your game files into assets\ first: the build recompiles assets\default.xex
 cmake --preset win-amd64-release
 cmake --build --preset win-amd64-release
@@ -203,10 +203,10 @@ and the options they add are off by default. Each patch's commit message explain
 
 - [ReXGlue SDK](https://github.com/rexglue/rexglue-sdk), whose runtime is derived from [Xenia](https://xenia.jp).
 - [extract-xiso](https://github.com/XboxDev/extract-xiso), for extracting the game files.
-- XenosNative's design follows [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (Dante's
+- NativeXRenderer's design follows [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (Dante's
   Inferno on ReXGlue with a DiligentCore renderer) and
   [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp); no code was taken from them. Details in
-  [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md).
+  [`native_x_renderer/docs/credits.md`](native_x_renderer/docs/credits.md).
 - Developed by Gustavo Garcia with the help of Claude (Anthropic).
 
 ## License
