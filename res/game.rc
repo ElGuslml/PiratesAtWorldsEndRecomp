@@ -1,4 +1,4 @@
-// Resources of potcawerecomp.exe: icon (res/icon.ico, when present) and file properties.
+// Resources of PiratesAtWorldsEndRecomp.exe: icon (res/icon.ico, when present) and file properties.
 #include <winver.h>
 #include "version.h"
 
@@ -20,7 +20,7 @@ BEGIN
       VALUE "FileVersion", POTCAWERECOMP_VERSION_STR
       VALUE "ProductName", "POTCAWERecomp"
       VALUE "ProductVersion", POTCAWERECOMP_VERSION_STR
-      VALUE "OriginalFilename", "potcawerecomp.exe"
+      VALUE "OriginalFilename", "PiratesAtWorldsEndRecomp.exe"
       VALUE "LegalCopyright", "POTCAWERecomp code: MIT License. Game content belongs to its owners."
     END
   END

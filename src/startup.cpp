@@ -30,9 +30,10 @@ constexpr const char* kGameExecutable = "default.xex";
 constexpr uint32_t kGameExecutableCrc32 = 0xA31B1069;
 
 constexpr const char kDefaultConfig[] =
-    R"(# potcawerecomp.exe runtime configuration, loaded at startup. The game recreates this file with
-# these defaults if it is missing. POTCAWE Launcher saves its choices to potcawe_options.toml, which
-# is loaded after this file; command line options (--name=value) win over both.
+    R"(# PiratesAtWorldsEndRecomp.exe runtime configuration, loaded at startup. The game recreates this
+# file with these defaults if it is missing. PiratesAtWorldsEnd Launcher saves its choices to
+# potcawe_options.toml, which is loaded after this file; command line options (--name=value) win over
+# both.
 log_level = "info"
 # Do not wait at the end of the frame for new D3D12 pipelines (50-250 ms stutter the first time an
 # effect appears): the object appears a few frames later. false = wait.
@@ -62,8 +63,9 @@ render_target_draw_clears = true
 clear_memory_page_state = false
 # Anisotropic filtering for the textures with mipmaps: floors, roads and the dock's planks seen at an
 # angle stay sharp. 5 = 16x, 4 = 8x, 3 = 4x (the SDK default), 2 = 2x, 0 = off, -1 = only what the game
-# asks (4x on some textures, none on most of the dock's). POTCAWE Launcher's "Anisotropic filtering" row
-# sets it. 16x costs no measurable GPU time against 4x at the Port Royal dock (2x2 and 3x3, RTX 4070 Ti).
+# asks (4x on some textures, none on most of the dock's). PiratesAtWorldsEnd Launcher's "Anisotropic
+# filtering" row sets it. 16x costs no measurable GPU time against 4x at the Port Royal dock (2x2 and
+# 3x3, RTX 4070 Ti).
 anisotropic_override = 5
 )";
 

@@ -86,23 +86,24 @@ xenos_native_copy_runtime(potcawe)
 
 # The target and the app keep the name "potcawe" (potcawe.toml, logs\potcawe_NNN.log); only the
 # executable gets a descriptive name.
-set_target_properties(potcawe PROPERTIES OUTPUT_NAME "potcawerecomp")
+set_target_properties(potcawe PROPERTIES OUTPUT_NAME "PiratesAtWorldsEndRecomp")
 
 # With the SDK built from source, rexruntime does not pass the Dear ImGui include directory on to the
 # host target (the installed SDK ships imgui.h in include/); rex_app.cpp and potcawe_app.h need it. The
 # symbols still come from rexruntime.dll.
 target_include_directories(potcawe PRIVATE "${REXSDK_DIR}/thirdparty/imgui")
 
-# Game files: assets/ next to potcawerecomp.exe (release layout) or, if absent, the repository's
-# assets/.
+# Game files: assets/ next to PiratesAtWorldsEndRecomp.exe (release layout) or, if absent, the
+# repository's assets/.
 target_compile_definitions(potcawe PRIVATE
     POTCAWE_DEFAULT_GAME_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
-# POTCAWE Launcher: game options in a separate executable (Win32, no SDK) so that potcawerecomp.exe
-# starts right away. It writes potcawe_options.toml next to potcawerecomp.exe and starts it on "Play".
+# PiratesAtWorldsEnd Launcher: game options in a separate executable (Win32, no SDK) so that
+# PiratesAtWorldsEndRecomp.exe starts right away. It writes potcawe_options.toml next to
+# PiratesAtWorldsEndRecomp.exe and starts it on "Play".
 if(WIN32)
     add_executable(potcawe_launcher WIN32 launcher/potcawe_launcher.cpp)
-    set_target_properties(potcawe_launcher PROPERTIES OUTPUT_NAME "POTCAWE Launcher")
+    set_target_properties(potcawe_launcher PROPERTIES OUTPUT_NAME "PiratesAtWorldsEnd Launcher")
     target_compile_definitions(potcawe_launcher PRIVATE UNICODE _UNICODE NOMINMAX)
     target_link_libraries(potcawe_launcher PRIVATE comctl32 shcore)
 endif()

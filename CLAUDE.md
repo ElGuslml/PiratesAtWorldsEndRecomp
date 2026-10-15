@@ -183,7 +183,7 @@ work is done.
 ```powershell
 cmake --preset win-amd64-relwithdebinfo        # applies patches/ to the submodule, configures the SDK too
 cmake --build --preset win-amd64-relwithdebinfo
-.\out\build\win-amd64-relwithdebinfo\potcawerecomp.exe
+.\out\build\win-amd64-relwithdebinfo\PiratesAtWorldsEndRecomp.exe   # or "PiratesAtWorldsEnd Launcher.exe"
 ```
 
 - **Toolchain:** LLVM/Clang, Ninja and the Windows SDK. Python 3 at configure time.

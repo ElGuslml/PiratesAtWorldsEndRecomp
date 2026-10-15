@@ -1,4 +1,4 @@
-// potcawe - POTCAWE Launcher options (see options.h).
+// potcawe - PiratesAtWorldsEnd Launcher options (see options.h).
 
 #include "options.h"
 
@@ -34,8 +34,9 @@ void LoadLauncherOptions(const std::filesystem::path& options_path,
   if (std::filesystem::exists(options_path)) {
     rex::cvar::LoadConfig(options_path);
   } else {
-    REXLOG_INFO("[options] {} does not exist: using potcawe.toml (POTCAWE Launcher creates it)",
-                options_path.string());
+    REXLOG_INFO(
+        "[options] {} does not exist: using potcawe.toml (PiratesAtWorldsEnd Launcher creates it)",
+        options_path.string());
   }
 
   // XenosNative draws through its own Vulkan device (DiligentCore), and the SDK's backend only keeps the

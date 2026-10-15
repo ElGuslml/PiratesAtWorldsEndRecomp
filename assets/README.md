@@ -11,7 +11,7 @@ The whole disc content goes in this folder. Extract it from your disc or ISO wit
 [extract-xiso](https://github.com/XboxDev/extract-xiso/releases).
 
 The build needs `default.xex` (the code is recompiled from it); the game needs everything else.
-The expected executable has CRC32 `A31B1069` (6,041,600 bytes, title ID `425607D1`); `potcawerecomp.exe`
-warns at startup if yours is different.
+The expected executable has CRC32 `A31B1069` (6,041,600 bytes, title ID `425607D1`);
+`PiratesAtWorldsEndRecomp.exe` warns at startup if yours is different.
 
 Nothing in this folder is tracked by git.
