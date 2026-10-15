@@ -510,6 +510,21 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
     goes from 1 (near) to 0 (far).
   - **The camera moves a little every frame,** even standing still. The motion vectors average 0.21 px at
     the dock's idle view, and DLSS needs them.
+- **The frame's views and surfaces (D49, probe, run 248).** At the dock, per frame:
+  - **The water reflection view:** `BeginView` with a matrix, a clear, 40 draws into 128×128, a resolve to
+    `0x0BEA5000`. No `EndViewGeometry`.
+  - **The main view:** `BeginView`, then the two shadow maps (1024², resolved into slices 0 and 1 of
+    `0x08FAA000`). Then, inside the view, the scene's clear (`0x3f`) of `0x40243E70` and `0x40243EB0`, and
+    994 draws, 37 of them sampling resolved textures.
+  - **The copies inside the view:** the color to `0x07DA1000` (from `0x823FB79C`) and the depth to
+    `0x084D2000` (from `0x823FB7E0`). Then the sun's quad, the depth copy again, and 24 draws (the haze,
+    the water), 12 of them sampling resolved textures.
+  - **After `EndViewGeometry`:** the post-processing resolves the scene's depth (from `0x82457ED8`) and color
+    (to `0x0886B000`). Then the bloom and luminance chain, from 320×180 down to 1×1, the composite, and the
+    copy of the finished scene to `0x09B2E000`.
+  - **The HUD view:** `BeginView` without a matrix, a clear `0x3f` (its own depth), 14 draws, the composite
+    and the resolve to the front buffer.
+  - **Parameter generation (VPOS):** no draw uses it.
 - **Object motion (D48).** The main view's vertex shader constants, at the dock:
   - **Shared by the whole view:** c0–c3 (the view-projection matrix, from `sub_823B3C38`), c8, c9 and c27.
     c0–c3 and c9 change whenever the camera moves.

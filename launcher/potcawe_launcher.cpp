@@ -9,7 +9,8 @@
 // Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at the
 // resolution of the screen or the window with no scale to choose (xenos_native/docs/decisions.md, D37):
 // the render quality row shows that resolution, disabled. XenosNative has its own antialiasing instead of
-// the game's MSAA (SMAA, FXAA or off, D41), fills screens of any aspect ratio (D43), and always uses Vulkan.
+// the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47, or the DLSS modes, which draw the 3D view at a
+// lower resolution and upscale it, D49), fills screens of any aspect ratio (D43), and always uses Vulkan.
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
 // filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp); XenosNative applies it too
 // (D44).
@@ -632,8 +633,10 @@ constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdBackendLabel, kIdBackend}};
 
 // XenosNative's antialiasing row (xenos_native_antialiasing), top to bottom: SMAA or FXAA on the finished scene
-// (D41), DLAA with NVIDIA DLSS before the post-processing (D47; SMAA where DLSS is not available).
-constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "fxaa", "off"};
+// (D41), DLAA with NVIDIA DLSS before the post-processing (D47), and the DLSS modes, the 3D view drawn at a
+// lower resolution and upscaled (D49); SMAA where DLSS is not available.
+constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "dlss_quality", "dlss_balanced", "dlss_performance",
+                                               "dlss_ultra_performance", "fxaa", "off"};
 
 // The anisotropic filtering row's values (anisotropic_override), top to bottom.
 constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
@@ -777,7 +780,10 @@ void Refresh(Launcher& l) {
     FillCombo(Item(l, kIdQuality),
               {SizeText(render) + L"  " + (render == Size{kGuestWidth, kGuestHeight} ? t.original : t.from_screen)},
               0);
-    FillCombo(Item(l, kIdAntialiasing), {L"SMAA", L"DLAA (NVIDIA RTX)", L"FXAA", t.aa_off}, o.native_aa);
+    FillCombo(Item(l, kIdAntialiasing),
+              {L"SMAA", L"DLAA (NVIDIA RTX)", L"DLSS Quality", L"DLSS Balanced", L"DLSS Performance",
+               L"DLSS Ultra Performance", L"FXAA", t.aa_off},
+              o.native_aa);
     FillCombo(Item(l, kIdBackend), {L"Vulkan"}, 0);
   } else {
     std::vector<std::wstring> qualities = {std::wstring(t.automatic) + L" — " +

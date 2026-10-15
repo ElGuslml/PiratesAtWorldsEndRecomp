@@ -126,8 +126,10 @@ request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); fo
 motion vectors (POTCAWE's depth is reversed), DLSS before the game's post-processing, a launcher choice;
 +1.2 ms at 2×. Objects that move on their own have motion vectors of their own (D48): the draws are matched
 across frames, and those that moved are drawn again with their vertex shader run on both frames' constants.
-No measurable GPU cost; the render thread spends 0.65 ms more. Next: the upscaling modes. Notes:
-`local_docs/08-phase5.md`.
+No measurable GPU cost; the render thread spends 0.65 ms more. The DLSS modes (Quality, Balanced,
+Performance, Ultra Performance) draw the main 3D view at NGX's input resolution and upscale it before the
+post-processing (D49, DiligentCore patch 0005). At 3×: DLAA 60.5 % of the GPU, Quality 51.4 %, Ultra
+Performance 46.3 %, SMAA 45.9 %. Notes: `local_docs/08-phase5.md`.
 
 Phase 5 is temporal upscaling and frame generation (motion vectors, DLSS / DLAA, FSR 3), and Phase 6 the
 second game and the library's extraction (D40). Follow `xenos_native/docs/plan.md` and tick its boxes as
