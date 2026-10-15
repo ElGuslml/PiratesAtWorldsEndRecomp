@@ -117,8 +117,7 @@ minutes.
 
 Notes: `local_docs/07-phase4.md`.
 
-Still open in Phase 4: every level compared with the Xenos path, the hour-long session, the known limits from
-Phase 2. Gustavo's first long session (2026-10-15) found the journal showing the scene through its pages: a
+Still open in Phase 4: every level compared with the Xenos path, the known limits from Phase 2. Gustavo's first long session (2026-10-15) found the journal showing the scene through its pages: a
 resolve from a `2_10_10_10_FLOAT` target now takes the guest format's range (D50). His second (54 minutes,
 levels 1 to 3) ran at 60 FPS with hitches only at new content. It led to:
 - resolves into cube textures (D51);
@@ -138,7 +137,11 @@ The session's device memory growth is explained (D55):
 His third session (30 minutes, run 288) showed the memory flat within a level. It ended when the game
 closed itself: a Lua script error that the recompiled `longjmp` turned into `exit()`. The fix,
 `setjmp_address` / `longjmp_address` in `potcawe_functions.toml`, was made in POTCAWERecomp and merged
-(`docs/script-errors.md`). The long session is still to be completed.
+(`docs/script-errors.md`). His fourth (64 minutes, run 291) completed the hour-long session:
+- no problem in play;
+- four script errors caught by the game, which it survived;
+- the memory in use bounded at 1.64–1.77 GB;
+- no message from the renderer.
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
