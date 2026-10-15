@@ -163,6 +163,14 @@ As passed to the library (`potcawe::NativeXRendererProfile()`). The device point
 **Correction:** the notes inherited from POTCAWERecomp called `+10780` the ring write pointer. It is the
 fence counter; the write pointer is `+48`.
 
+Since NativeXRenderer 0.5 (D59, when GRAW showed that both change between XDK versions), the profile names the
+three dirty masks the state tracker reads (VS constants `+0`, PS constants `+8`, fetch slots `+24` with slot 0
+in bit 31) and the resource objects' layout, which were the library's constants until then:
+- **Texture:** its fetch constant at `+28`.
+- **Surface:** RB_SURFACE_INFO `+24`, RB_COLOR_INFO / RB_DEPTH_INFO `+28`, the size at `+36` (width − 1 in
+  bits 18–31, height − 1 in bits 3–17).
+- **Vertex / index buffer:** base address `+24`, size `+28`.
+
 Shader objects (as in Dante's Inferno):
 - **Pixel shader:** program block at `PS + [PS+64]`. Microcode at `[PS+24] + [block+40]`, size
   `[block+44]` bytes. `SQ_INTERPOLATOR_CNTL` is `[block+64]`. Literal constants are loaded from `PS+40`.

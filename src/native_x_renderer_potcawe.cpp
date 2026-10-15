@@ -78,7 +78,12 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     // src/aspect.cpp widens the game's 16:9 cameras: NativeXRenderer fills outputs of any aspect ratio.
     p.widens_cameras = true;
     native_x_renderer::DeviceLayout& d = p.device;
-    d.dirty_masks = 0;
+    // Six dirty masks from +0: VS constants, PS constants, register groups, fetch slots (low half, slot 0
+    // in bit 31), misc, tiling-dependent state.
+    d.vs_constants_dirty = 0;
+    d.ps_constants_dirty = 8;
+    d.fetch_constants_dirty = 24;
+    d.fetch_dirty_slot0_bit = 31;
     d.command_buffer_write = 48;
     d.fetch_constants = 1024;
     d.vs_float_constants = 1792;
@@ -108,6 +113,15 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     d.predication_mask = 12572;
     d.tile_count = 12612;
     d.tile_rects = 12616;
+    native_x_renderer::ObjectLayout& o = p.objects;
+    o.texture_fetch = 28;
+    o.surface_info = 24;
+    o.surface_color_depth_info = 28;
+    o.surface_size = 36;
+    o.surface_width_minus_one = {18, 14};
+    o.surface_height_minus_one = {3, 15};
+    o.buffer_address = 24;
+    o.buffer_size = 28;
     return p;
   }();
   return profile;
