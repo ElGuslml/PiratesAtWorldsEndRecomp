@@ -59,6 +59,10 @@ first and merged here.
 - The sun's glare follows the sun: the game measures how much of the sun is visible with an occlusion query,
   which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
   [`docs/sun-glow.md`](docs/sun-glow.md)).
+- A script error no longer closes the game: the recompiled `longjmp` did not jump, so Lua treated even the
+  errors the game catches as fatal and called `exit()`. The C runtime's `setjmp` and `longjmp` now map to the
+  host's (`potcawe_functions.toml`), and the log names each script error (`src/lua_errors.cpp`, see
+  [`docs/script-errors.md`](docs/script-errors.md)).
 - **PiratesAtWorldsEnd Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer
   (Xenos, or XenosNative while it is in development), internal resolution, frame rate, antialiasing,
   anisotropic filtering and graphics API. Works with mouse, keyboard or controller. Save writes the options

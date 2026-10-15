@@ -2,6 +2,15 @@
 # [[switch_tables]] the codegen mistranslates and [[midasm_hook]]s into src/. See GRAWRecomp's
 # yeti_functions.toml for examples of each.
 
+# The C runtime's setjmp and longjmp (sub_8249A2B0, sub_8249A380). The codegen turns calls to them into the
+# host's setjmp and longjmp, keyed by the guest jmp_buf. Translated as plain functions, longjmp restores the
+# registers and returns to its caller instead of jumping: Lua's luaD_throw then went on into its path for an
+# uncaught error and called exit(), so a script error the game catches closed the game
+# (docs/script-errors.md). Lua uses them for every protected call; two other libraries use them too (around
+# 0x824AD000 and 0x824C0000).
+setjmp_address = 0x8249A2B0
+longjmp_address = 0x8249A380
+
 [functions]
 # Branch (b) targets that the automatic analysis did not assign to any function. All are small
 # functions reached only through tail calls: getters that return the address of a static object
@@ -114,3 +123,15 @@ registers = ["r3"]
 address = 0x824522E4   # lis r11,-32256 (after bl sub_823B1E58 in sub_824521F8)
 name = "PotcaweFlareAaLevelHook"
 registers = ["r3"]
+
+# Lua errors in the log (src/lua_errors.cpp): the game sets no panic function and prints nothing. One hook
+# logs the errors its protected calls catch (luaD_pcall, sub_8247AB70); the other, an error nothing catches,
+# before luaD_throw (sub_8247A5E0) calls exit(EXIT_FAILURE).
+[[midasm_hook]]
+address = 0x8247ABD0   # lwz r11,48(r31) (in luaD_pcall, after bl luaD_seterrorobj)
+name = "PotcaweLuaCaughtErrorHook"
+registers = ["r29", "r30"]
+[[midasm_hook]]
+address = 0x8247A61C   # stb r11,6(r31) (in luaD_throw, with no error handler: L->status = errcode)
+name = "PotcaweLuaUnhandledErrorHook"
+registers = ["r31", "r11"]
