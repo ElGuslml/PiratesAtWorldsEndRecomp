@@ -192,6 +192,7 @@ struct Texts {
   const wchar_t* pad_hint;
   const wchar_t* play;
   const wchar_t* save;
+  const wchar_t* saved;  // on the Save button for a moment after saving
   const wchar_t* quit;
   const wchar_t* game_missing;
   const wchar_t* save_failed;
@@ -235,6 +236,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Controller: ↑↓ choose · ←→ change · A play · B quit",
       L"Play",
       L"Save",
+      L"Saved",
       L"Quit",
       L"potcawerecomp.exe was not found next to POTCAWE Launcher.",
       L"Could not save the options to potcawe_options.toml.",
@@ -276,6 +278,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Controller: ↑↓ wählen · ←→ ändern · A spielen · B beenden",
       L"Spielen",
       L"Speichern",
+      L"Gespeichert",
       L"Beenden",
       L"potcawerecomp.exe wurde neben POTCAWE Launcher nicht gefunden.",
       L"Die Optionen konnten nicht in potcawe_options.toml gespeichert werden.",
@@ -318,6 +321,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Manette : ↑↓ choisir · ←→ modifier · A jouer · B quitter",
       L"Jouer",
       L"Enregistrer",
+      L"Enregistré",
       L"Quitter",
       L"potcawerecomp.exe est introuvable à côté de POTCAWE Launcher.",
       L"Impossible d'enregistrer les options dans potcawe_options.toml.",
@@ -359,6 +363,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Mando: ↑↓ elegir · ←→ cambiar · A jugar · B salir",
       L"Jugar",
       L"Guardar",
+      L"Guardado",
       L"Salir",
       L"No se encontró potcawerecomp.exe junto a POTCAWE Launcher.",
       L"No se pudieron guardar las opciones en potcawe_options.toml.",
@@ -401,6 +406,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Controller: ↑↓ scegli · ←→ cambia · A gioca · B esci",
       L"Gioca",
       L"Salva",
+      L"Salvato",
       L"Esci",
       L"potcawerecomp.exe non trovato accanto a POTCAWE Launcher.",
       L"Impossibile salvare le opzioni in potcawe_options.toml.",
@@ -641,7 +647,7 @@ constexpr const char* kNativeAntialiasing[] = {"smaa", "dlaa", "dlss_quality", "
 // The anisotropic filtering row's values (anisotropic_override), top to bottom.
 constexpr int kAnisotropicValues[] = {5, 4, 3, 2, 0};
 
-enum class Result { kQuit, kSave, kPlay };
+enum class Result { kQuit, kPlay };
 
 enum PadDirection : int { kPadNone, kPadUp, kPadDown, kPadLeft, kPadRight };
 
@@ -654,6 +660,7 @@ struct Launcher {
   std::vector<Size> window_sizes;  // of the chosen monitor (physical pixels)
   UINT primary_dpi = 96;           // the SDK converts window_width/height with the primary's DPI
   bool has_vulkan = false;         // vulkan-1.dll present (ships with the video driver)
+  std::filesystem::path options_path;  // potcawe_options.toml: Save writes it at once
   HWND hwnd = nullptr;
   HFONT font = nullptr;
   HFONT title_font = nullptr;
@@ -1079,6 +1086,11 @@ void PollPad(Launcher& l) {
   }
 }
 
+bool SaveOptions(const std::filesystem::path& path, const Launcher& l);
+
+// Timers: the controller's polling, and the Save button's "saved" text.
+constexpr UINT_PTR kPadTimer = 1, kSavedTimer = 2;
+
 LRESULT CALLBACK LauncherProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   if (msg == WM_NCCREATE) {
     auto* create = reinterpret_cast<CREATESTRUCTW*>(lparam);
@@ -1096,10 +1108,17 @@ LRESULT CALLBACK LauncherProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
           l->result = Result::kPlay;
           DestroyWindow(hwnd);
           return 0;
-        case kIdSave:
-          l->result = Result::kSave;
-          DestroyWindow(hwnd);
+        case kIdSave: {
+          // Saved at once, and the window stays open: the button says so for a moment.
+          const Texts& t = TextsFor(l->ui_language);
+          if (SaveOptions(l->options_path, *l)) {
+            SetWindowTextW(Item(*l, kIdSave), t.saved);
+            SetTimer(hwnd, kSavedTimer, 1500, nullptr);
+          } else {
+            MessageBoxW(hwnd, t.save_failed, L"POTCAWE Launcher", MB_OK | MB_ICONERROR);
+          }
           return 0;
+        }
         case IDCANCEL:
           l->result = Result::kQuit;
           DestroyWindow(hwnd);
@@ -1113,6 +1132,11 @@ LRESULT CALLBACK LauncherProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       break;
     }
     case WM_TIMER:
+      if (wparam == kSavedTimer) {
+        KillTimer(hwnd, kSavedTimer);
+        SetWindowTextW(Item(*l, kIdSave), TextsFor(l->ui_language).save);
+        return 0;
+      }
       PollPad(*l);
       return 0;
     case DM_GETDEFID:
@@ -1137,7 +1161,8 @@ LRESULT CALLBACK LauncherProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       DestroyWindow(hwnd);
       return 0;
     case WM_DESTROY:
-      KillTimer(hwnd, 1);
+      KillTimer(hwnd, kPadTimer);
+      KillTimer(hwnd, kSavedTimer);
       PostQuitMessage(0);
       return 0;
   }
@@ -1206,7 +1231,7 @@ void ShowLauncher(Launcher& l, HINSTANCE instance) {
   Refresh(l);
   Layout(l, GetDpiForWindow(l.hwnd));
   if (l.xinput_get_state) {
-    SetTimer(l.hwnd, 1, 16, nullptr);
+    SetTimer(l.hwnd, kPadTimer, 16, nullptr);
   }
 
   ShowWindow(l.hwnd, SW_SHOWNORMAL);
@@ -1414,6 +1439,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   ReadToml(options_path, config);
 
   Launcher l;
+  l.options_path = options_path;
   l.ui_language = SystemLanguage();
   l.monitors = EnumerateMonitors();
   l.primary_dpi = l.monitors.front().dpi;
