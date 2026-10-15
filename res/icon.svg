@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 256 256" width="256" height="256">
+  <!-- The POTCAWERecomp icon: a gold compass coin with a skull over crossed cutlasses, generic pirate
+       imagery drawn for this project (no art from the film or the game). res/make_icon.mjs builds
+       res/icon.ico from this file (40 px and up) and icon_small.svg (16-32 px). -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbe7a1"/>
+      <stop offset="0.45" stop-color="#d6a640"/>
+      <stop offset="1" stop-color="#7a4d12"/>
+    </linearGradient>
+    <linearGradient id="goldPart" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d888"/>
+      <stop offset="1" stop-color="#a87422"/>
+    </linearGradient>
+    <radialGradient id="sea" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#2c5869"/>
+      <stop offset="0.65" stop-color="#12303d"/>
+      <stop offset="1" stop-color="#06141b"/>
+    </radialGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="0.6" stop-color="#eadfc6"/>
+      <stop offset="1" stop-color="#c9b991"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7d8d99"/>
+      <stop offset="0.45" stop-color="#f2f6f8"/>
+      <stop offset="1" stop-color="#9aa9b4"/>
+    </linearGradient>
+
+    <!-- A cutlass pointing up, its crossing point at the origin. -->
+    <g id="cutlass">
+      <path d="M -7,58 C -9,10 -8,-60 -3,-110 C 1,-121 12,-119 14,-104 C 17,-60 13,10 7,58 Z"
+            fill="url(#steel)" stroke="#1b1610" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M -1,54 C -2,10 -1,-60 3,-100" fill="none" stroke="#66767f" stroke-width="2.5"/>
+      <path d="M 18,62 C 34,78 32,102 8,110" fill="none" stroke="#1b1610" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 18,62 C 34,78 32,102 8,110" fill="none" stroke="url(#goldPart)" stroke-width="5" stroke-linecap="round"/>
+      <rect x="-6" y="64" width="12" height="42" rx="3" fill="#5a2a16" stroke="#1b1610" stroke-width="3.5"/>
+      <path d="M -5,73 L 5,77 M -5,82 L 5,86 M -5,91 L 5,95" stroke="#2e140a" stroke-width="2.5"/>
+      <rect x="-23" y="55" width="46" height="12" rx="6" fill="url(#goldPart)" stroke="#1b1610" stroke-width="3.5"/>
+      <circle cx="0" cy="112" r="9" fill="url(#goldPart)" stroke="#1b1610" stroke-width="3.5"/>
+    </g>
+  </defs>
+
+  <!-- Compass rose: the four cardinal points behind the coin. -->
+  <g stroke="#3a2408" stroke-width="2.5" stroke-linejoin="round">
+    <g id="cardinal">
+      <path d="M 128,128 L 128,4 L 146,128 Z" fill="#9c6a1c"/>
+      <path d="M 128,128 L 128,4 L 110,128 Z" fill="#fae2a0"/>
+    </g>
+    <use xlink:href="#cardinal" transform="rotate(90 128 128)"/>
+    <use xlink:href="#cardinal" transform="rotate(180 128 128)"/>
+    <use xlink:href="#cardinal" transform="rotate(270 128 128)"/>
+  </g>
+
+  <!-- The coin: gold rim with compass ticks, dark sea in the middle. -->
+  <circle cx="128" cy="128" r="96" fill="url(#gold)" stroke="#3a2408" stroke-width="4"/>
+  <g stroke="#5c3a0c" stroke-width="2.5" stroke-linecap="round">
+    <g id="ticks">
+      <line x1="128" y1="36" x2="128" y2="43"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(10 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(20 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(30 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(40 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(50 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(60 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(70 128 128)"/>
+      <line x1="128" y1="36" x2="128" y2="40" transform="rotate(80 128 128)"/>
+    </g>
+    <use xlink:href="#ticks" transform="rotate(90 128 128)"/>
+    <use xlink:href="#ticks" transform="rotate(180 128 128)"/>
+    <use xlink:href="#ticks" transform="rotate(270 128 128)"/>
+  </g>
+  <circle cx="128" cy="128" r="82" fill="url(#sea)" stroke="#3a2408" stroke-width="4"/>
+
+  <!-- Crossed cutlasses on the diagonals, over the coin. -->
+  <use xlink:href="#cutlass" transform="translate(128 128) rotate(-45)"/>
+  <use xlink:href="#cutlass" transform="translate(128 128) scale(-1 1) rotate(-45)"/>
+
+  <!-- The skull. -->
+  <path d="M 128,62 C 157,62 172,82 172,104 C 172,120 166,128 161,134 C 156,140 152,142 151,148
+           L 151,162 Q 151,171 142,171 L 114,171 Q 105,171 105,162 L 105,148
+           C 104,142 100,140 95,134 C 90,128 84,120 84,104 C 84,82 99,62 128,62 Z"
+        fill="url(#bone)" stroke="#1b1610" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="#10232c">
+    <path d="M 134,105 C 140,98 157,97 161,106 C 164,115 158,125 148,125 C 138,125 132,115 134,105 Z"/>
+    <path d="M 122,105 C 116,98 99,97 95,106 C 92,115 98,125 108,125 C 118,125 124,115 122,105 Z"/>
+    <path d="M 128,126 L 135,140 Q 128,144 121,140 Z"/>
+  </g>
+  <g stroke="#1b1610" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 108,158 L 148,158"/>
+    <path d="M 117,150 L 117,169 M 128,150 L 128,169 M 139,150 L 139,169"/>
+    <path d="M 111,70 L 116,78 L 112,84 L 117,92"/>
+  </g>
+</svg>
