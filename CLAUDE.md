@@ -124,7 +124,9 @@ Phase 2.
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
 `xenos_native_antialiasing = dlaa`. DLAA works (D47): the main 3D view jittered through its viewport, the camera's
 motion vectors (POTCAWE's depth is reversed), DLSS before the game's post-processing, a launcher choice;
-+1.2 ms at 2×. Next: motion vectors of moving objects, then the upscaling modes. Notes:
++1.2 ms at 2×. Objects that move on their own have motion vectors of their own (D48): the draws are matched
+across frames, and those that moved are drawn again with their vertex shader run on both frames' constants.
+No measurable GPU cost; the render thread spends 0.65 ms more. Next: the upscaling modes. Notes:
 `local_docs/08-phase5.md`.
 
 Phase 5 is temporal upscaling and frame generation (motion vectors, DLSS / DLAA, FSR 3), and Phase 6 the

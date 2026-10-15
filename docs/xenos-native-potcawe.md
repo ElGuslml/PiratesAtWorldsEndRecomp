@@ -510,6 +510,15 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
     goes from 1 (near) to 0 (far).
   - **The camera moves a little every frame,** even standing still. The motion vectors average 0.21 px at
     the dock's idle view, and DLSS needs them.
+- **Object motion (D48).** The main view's vertex shader constants, at the dock:
+  - **Shared by the whole view:** c0–c3 (the view-projection matrix, from `sub_823B3C38`), c8, c9 and c27.
+    c0–c3 and c9 change whenever the camera moves.
+  - **Characters are skinned on the GPU.** Their vertex shaders (`64DBDAAEED0A33A0`, the most common one,
+    and `9227FA5CA9D8D397`, `C454E3FEAE46D6E9`) use all 256 registers: the bones in c31–c219, the world
+    matrix in c4–c7. Their vertex buffers do not change.
+  - **Animated props** use 12 registers; c4–c7 (the world matrix) change from frame to frame.
+  - **Counts:** about 960 draws of the main view write depth. About 150 of them move: Jack, the NPCs and
+    the props. That holds with the camera still or moving.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
 
