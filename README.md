@@ -18,12 +18,14 @@ Xenos backend stays as the fallback.
 - [`xenos_native/docs/architecture.md`](xenos_native/docs/architecture.md): how it works.
 - [`docs/xenos-native-potcawe.md`](docs/xenos-native-potcawe.md): the game side for POTCAWE (its Direct3D
   map, engine behavior, measurements).
-- Status: **Phase 2 done** (2026-10-14), Phase 3 next. By default the game runs on the Xenos backend exactly as in
-  POTCAWERecomp. With the launcher's Renderer row on "XenosNative (experimental)" (or `--xenos_native=true`),
-  XenosNative draws the frames on DiligentCore (Vulkan), with the game's textures, at 1280×720 without
-  antialiasing; the menus and the Port Royal dock look as on the Xenos path, but it is still experimental
-  (slower on the GPU, only those scenes checked). The trace (`--xenos_native_trace=true`, F9)
-  and the observer (`--xenos_native_verify=true`, F10) are off by default.
+- Status: Phases 0–3 done, Phase 4 (POTCAWE polish) nearly done, Phase 5 (temporal techniques) started
+  (2026-10-15). **XenosNative is the game's default renderer** (D56):
+  - it draws on DiligentCore (Vulkan), at any internal resolution and aspect ratio;
+  - it antialiases with SMAA, FXAA or NVIDIA DLAA.
+
+  The launcher's Renderer row (or `xenos_native = false`) selects the Xenos backend, as in POTCAWERecomp.
+  The Xenos backend also draws if XenosNative cannot start. The trace (`--xenos_native_trace=true`, F9) and
+  the observer (`--xenos_native_verify=true`, F10) are off by default.
 - Credits: the approach comes from [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp) and
   [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (see
   [`xenos_native/docs/credits.md`](xenos_native/docs/credits.md)).
@@ -64,8 +66,9 @@ first and merged here.
   host's (`potcawe_functions.toml`), and the log names each script error (`src/lua_errors.cpp`, see
   [`docs/script-errors.md`](docs/script-errors.md)).
 - **PiratesAtWorldsEnd Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer
-  (Xenos, or XenosNative while it is in development), internal resolution, frame rate, antialiasing,
-  anisotropic filtering and graphics API. Works with mouse, keyboard or controller. Save writes the options
+  (XenosNative by default, or the Xenos emulation), image format, internal resolution, frame rate,
+  antialiasing, anisotropic filtering and graphics API. With XenosNative the game renders at the internal
+  resolution and fills wide screens; what follows describes the Xenos path. Works with mouse, keyboard or controller. Save writes the options
   and keeps the launcher open; Play saves them and starts the game. The game always renders at 1280×720;
   ReXGlue renders it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic"
   picks the smallest scale that covers your screen. Wider screens get black bars for now (the camera keeps

@@ -425,6 +425,12 @@ linear ramp early on (384 DC_LUT writes). Red at 32, 64, 128 and 192 of 255 beco
 
 ## Phase 4 so far
 
+**XenosNative is POTCAWE's default (D56):**
+- `xenos_native = true` is among the defaults in `src/startup.cpp`, and the launcher selects XenosNative when
+  no file names a renderer;
+- `xenos_native = false`, or the launcher's Renderer row, gives the Xenos path;
+- the Xenos path also draws if XenosNative cannot start.
+
 **The end of the frame** (trace of frame 4500 at the dock, run 156, with the callers):
 1. **The post-processing** draws the scene into the composite surface (`0x40243200`, 2_10_10_10_FLOAT,
    pitch 1280, EDRAM 0), and the engine copies it to `0x0886B000`, 8_8_8_8 (Resolve from `0x8245E180`).

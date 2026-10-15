@@ -143,6 +143,12 @@ closed itself: a Lua script error that the recompiled `longjmp` turned into `exi
 - the memory in use bounded at 1.64–1.77 GB;
 - no message from the renderer.
 
+XenosNative is now POTCAWE's default renderer (D56):
+- `xenos_native = true` in `src/startup.cpp`, and the launcher's default;
+- the Xenos path stays in the launcher, and draws if XenosNative cannot start.
+
+Anchoring HUD elements to the screen's edges is left for a later phase (`plan.md`, "Later").
+
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's
 request): DLSS through DiligentCore's SuperResolution module (NGX on Vulkan); found and reported with
 `xenos_native_antialiasing = dlaa`. DLAA works (D47): the main 3D view jittered through its viewport, the camera's
