@@ -60,11 +60,11 @@ first and merged here.
   which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
   [`docs/sun-glow.md`](docs/sun-glow.md)).
 - **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, renderer (Xenos, or
-  XenosNative while it is in development), render quality, frame rate, antialiasing, anisotropic filtering and
-  graphics API. Works with mouse, keyboard or controller. Save writes the options and keeps the launcher open;
-  Play saves them and starts the game. The game always renders at 1280×720; ReXGlue renders it at a whole
-  multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest scale that covers
-  your screen. Wider screens get black bars for now (the camera keeps 16:9).
+  XenosNative while it is in development), internal resolution, frame rate, antialiasing, anisotropic
+  filtering and graphics API. Works with mouse, keyboard or controller. Save writes the options and keeps the
+  launcher open; Play saves them and starts the game. The game always renders at 1280×720; ReXGlue renders
+  it at a whole multiple per axis (2×, 3×) and fits the image to the screen. "Automatic" picks the smallest
+  scale that covers your screen. Wider screens get black bars for now (the camera keeps 16:9).
 - **60 FPS option** (launcher, `potcawe_60fps`): the game is capped at 30 FPS only by its Direct3D present
   interval; the engine's clock measures real time, so the option just presents every vblank. Off by default,
   so the first run matches the console ([`docs/frame-rate.md`](docs/frame-rate.md)).

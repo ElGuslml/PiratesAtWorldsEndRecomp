@@ -3,13 +3,13 @@
 // Picture).
 //
 // Plain Win32, no SDK. Reads potcawe.toml and potcawe_options.toml (next to this exe and
-// potcawerecomp.exe), shows monitor, display, resolution, renderer, render quality, frame rate,
+// potcawerecomp.exe), shows monitor, display, resolution, renderer, internal resolution, frame rate,
 // antialiasing, anisotropic filtering and graphics API, and saves the choice to potcawe_options.toml,
 // which potcawerecomp.exe loads at startup (src/options.cpp).
 // Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at the
 // resolution of the screen or the window with no scale to choose (xenos_native/docs/decisions.md, D37):
-// the render quality row shows that resolution, disabled. XenosNative has its own antialiasing instead of
-// the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47; the DLSS modes, D49, only from
+// the internal resolution row shows that resolution, disabled. XenosNative has its own antialiasing instead
+// of the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47; the DLSS modes, D49, only from
 // potcawe_options.toml: experimental, D53), fills screens of any aspect ratio (D43), and always uses Vulkan.
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
 // filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp); XenosNative applies it too
@@ -213,7 +213,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Window",
       L"Resolution",
       L"(monitor resolution)",
-      L"Render quality",
+      L"Internal resolution",
       L"Automatic",
       L"(original)",
       L"Frame rate",
@@ -256,7 +256,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Fenster",
       L"Auflösung",
       L"(Monitorauflösung)",
-      L"Renderqualität",
+      L"Interne Auflösung",
       L"Automatisch",
       L"(Original)",
       L"Bildrate",
@@ -299,7 +299,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Fenêtre",
       L"Résolution",
       L"(résolution du moniteur)",
-      L"Qualité de rendu",
+      L"Résolution interne",
       L"Automatique",
       L"(d'origine)",
       L"Fréquence d'images",
@@ -343,7 +343,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Ventana",
       L"Resolución",
       L"(resolución del monitor)",
-      L"Calidad de render",
+      L"Resolución interna",
       L"Automática",
       L"(original)",
       L"Frecuencia de imagen",
@@ -386,7 +386,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Finestra",
       L"Risoluzione",
       L"(risoluzione del monitor)",
-      L"Qualità di rendering",
+      L"Risoluzione interna",
       L"Automatica",
       L"(originale)",
       L"Frequenza fotogrammi",
