@@ -538,6 +538,11 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
     10 draws, and a resolve to `0x0886B000` (`k_16_16_16_16_EXPAND`). The pages leave alpha above 1 there.
   - **The final composite** draws the scene and HUD copy (`0x09B2E000`) and the journal over it, by its
     alpha, into `0x40243200`, then resolves to the front buffer.
+- **A cube map rendered every frame (D51).** In an area of level 3 (Gustavo's session, run 278,
+  01:54–02:00, after a loading screen):
+  - the game draws a 256×256 target (EDRAM base 0, pitch 320, `k_32_FLOAT`);
+  - it resolves the target into the six faces of a cube texture, six resolves per frame;
+  - it is likely a point light's shadow map.
 - **Object motion (D48).** The main view's vertex shader constants, at the dock:
   - **Shared by the whole view:** c0–c3 (the view-projection matrix, from `sub_823B3C38`), c8, c9 and c27.
     c0–c3 and c9 change whenever the camera moves.
