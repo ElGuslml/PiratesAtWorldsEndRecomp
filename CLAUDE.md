@@ -125,6 +125,10 @@ levels 1 to 3) ran at 60 FPS with hitches only at new content. It led to:
 - freeing render targets and resolved textures unused for a minute, and saving the pipeline cache at most
   every 5 minutes (D52).
 
+The launcher with XenosNative now chooses the image format (fill a wide screen, or 16:9 with bars) and the
+internal resolution (automatic, or a lower height), in fullscreen and in a window (D54). Its Save keeps the
+window open, and its antialiasing row no longer offers the DLSS modes (D53).
+
 Device memory still grows over a session more than those explain: still to measure.
 
 **Phase 5 (temporal techniques) started on 2026-10-14, with DLSS, before Phase 4 closes** (D46, at Gustavo's

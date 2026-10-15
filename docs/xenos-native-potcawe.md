@@ -405,6 +405,8 @@ follows the screen:
   will use, computed from the monitor or the window size the way the renderer computes it
   (`NativeRenderSize` in `launcher/potcawe_launcher.cpp`). Its XenosNative hint says it renders at the
   screen's resolution, in the five languages. The scale choices stay for the Xenos path.
+  - **Since D54** the row is "Internal resolution", and with XenosNative it offers automatic or a lower
+    height. A new "Image format" row chooses filling a wide screen or 16:9 with bars.
 
 **The display gamma (found while checking D33, fixed by D36).** XenosNative's image was lighter in the
 darks than the Xenos path's, and Gustavo found it flat while playing. The SDK's presenters apply the

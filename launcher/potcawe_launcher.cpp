@@ -6,11 +6,12 @@
 // potcawerecomp.exe), shows monitor, display, resolution, renderer, internal resolution, frame rate,
 // antialiasing, anisotropic filtering and graphics API, and saves the choice to potcawe_options.toml,
 // which potcawerecomp.exe loads at startup (src/options.cpp).
-// Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at the
-// resolution of the screen or the window with no scale to choose (xenos_native/docs/decisions.md, D37):
-// the internal resolution row shows that resolution, disabled. XenosNative has its own antialiasing instead
-// of the game's MSAA (SMAA, FXAA or off, D41; NVIDIA DLAA, D47; the DLSS modes, D49, only from
-// potcawe_options.toml: experimental, D53), fills screens of any aspect ratio (D43), and always uses Vulkan.
+// Renderer: the SDK's Xenos emulation, or XenosNative (xenos_native, experimental), which renders at any
+// resolution (xenos_native/docs/decisions.md, D37): its image format row fills a screen or window that is
+// not 16:9 or keeps 16:9 with bars (D43), and its internal resolution row is the screen's or the window's,
+// or a lower height in that format (D54). XenosNative has its own antialiasing instead of the game's MSAA
+// (SMAA, FXAA or off, D41; NVIDIA DLAA, D47; the DLSS modes, D49, only from potcawe_options.toml:
+// experimental, D53), and always uses Vulkan.
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
 // filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp); XenosNative applies it too
 // (D44).
@@ -33,6 +34,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -74,6 +76,8 @@ struct Options {
   // potcawe_options.toml named (native_aa_experimental, an index of kExperimentalAntialiasing; -1: none).
   int native_aa = 0;
   int native_aa_experimental = -1;
+  bool native_fill = true;  // xenos_native_fill_screen: fill an output that is not 16:9, or 16:9 with bars
+  int native_height = 0;    // xenos_native_resolution_scale × 720: the internal resolution's height; 0 = automatic
 };
 
 // --- potcawe.toml / potcawe_options.toml ---
@@ -192,7 +196,9 @@ struct Texts {
   const wchar_t* quality_hint;
   const wchar_t* vulkan_hint;
   const wchar_t* native_hint;
-  const wchar_t* from_screen;  // XenosNative's render resolution: computed, not chosen
+  const wchar_t* format;       // XenosNative's image format row (D54)
+  const wchar_t* format_fill;  // fill the screen
+  const wchar_t* format_bars;  // 16:9 with black bars
   const wchar_t* pad_hint;
   const wchar_t* play;
   const wchar_t* save;
@@ -235,9 +241,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Vulkan has been tested less than DirectX 12 in this game: use it if DirectX 12 gives you "
       L"problems.",
       L"XenosNative draws the game natively with Vulkan instead of emulating the Xbox 360 GPU, at the "
-      L"resolution of the screen or the window, filling it without bars (ultrawide, 16:10), with its own "
+      L"internal resolution you choose, filling wide screens or in 16:9 with bars, with its own "
       L"antialiasing. It is experimental: some effects may look different than with Xenos.",
-      L"(from the screen)",
+      L"Image format",
+      L"Fill the screen",
+      L"16:9 with bars",
       L"Controller: ↑↓ choose · ←→ change · A play · B quit",
       L"Play",
       L"Save",
@@ -277,10 +285,12 @@ const Texts& TextsFor(uint32_t language) {
       L"60 FPS zeigt jedes Vblank ein Bild statt jedes zweite; die Spielgeschwindigkeit bleibt gleich.",
       L"Vulkan ist in diesem Spiel weniger getestet als DirectX 12: nutze es, wenn DirectX 12 "
       L"Probleme macht.",
-      L"XenosNative zeichnet das Spiel nativ mit Vulkan, statt die GPU der Xbox 360 zu emulieren, in "
-      L"der Auflösung des Bildschirms oder Fensters, ohne schwarze Balken (Ultrawide, 16:10), mit eigener "
+      L"XenosNative zeichnet das Spiel nativ mit Vulkan, statt die GPU der Xbox 360 zu emulieren, in der "
+      L"gewählten internen Auflösung, breite Bildschirme füllend oder in 16:9 mit Balken, mit eigener "
       L"Kantenglättung. Es ist experimentell: manche Effekte können anders aussehen als mit Xenos.",
-      L"(nach Bildschirm)",
+      L"Bildformat",
+      L"Bildschirm füllen",
+      L"16:9 mit Balken",
       L"Controller: ↑↓ wählen · ←→ ändern · A spielen · B beenden",
       L"Spielen",
       L"Speichern",
@@ -322,9 +332,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Vulkan a été moins testé que DirectX 12 dans ce jeu : utilisez-le si DirectX 12 pose "
       L"problème.",
       L"XenosNative dessine le jeu nativement avec Vulkan au lieu d'émuler le GPU de la Xbox 360, à la "
-      L"résolution de l'écran ou de la fenêtre, sans bandes noires (ultra-large, 16:10), avec son propre "
+      L"résolution interne choisie, en remplissant les écrans larges ou en 16:9 avec bandes, avec son propre "
       L"anticrénelage. Il est expérimental : certains effets peuvent différer de Xenos.",
-      L"(selon l'écran)",
+      L"Format d'image",
+      L"Remplir l'écran",
+      L"16:9 avec bandes",
       L"Manette : ↑↓ choisir · ←→ modifier · A jouer · B quitter",
       L"Jouer",
       L"Enregistrer",
@@ -365,9 +377,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Vulkan está menos probado que DirectX 12 en este juego: úsalo si DirectX 12 te da "
       L"problemas.",
       L"XenosNative dibuja el juego de forma nativa con Vulkan en vez de emular la GPU de Xbox 360, a "
-      L"la resolución de la pantalla o la ventana, llenándola sin bandas (ultrawide, 16:10), con su propio "
+      L"la resolución interna que elijas, llenando las pantallas anchas o en 16:9 con bandas, con su propio "
       L"antialiasing. Es experimental: algunos efectos pueden verse distintos que con Xenos.",
-      L"(según la pantalla)",
+      L"Formato de imagen",
+      L"Llenar la pantalla",
+      L"16:9 con bandas",
       L"Mando: ↑↓ elegir · ←→ cambiar · A jugar · B salir",
       L"Jugar",
       L"Guardar",
@@ -408,10 +422,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Vulkan è meno collaudato di DirectX 12 in questo gioco: usalo se DirectX 12 dà "
       L"problemi.",
       L"XenosNative disegna il gioco in modo nativo con Vulkan invece di emulare la GPU della Xbox "
-      L"360, alla risoluzione dello schermo o della finestra, riempiendolo senza bande (ultrawide, 16:10), "
-      L"con un proprio antialiasing. È sperimentale: alcuni effetti possono apparire diversi rispetto a "
-      L"Xenos.",
-      L"(in base allo schermo)",
+      L"360, alla risoluzione interna scelta, riempiendo gli schermi larghi o in 16:9 con bande, con un "
+      L"proprio antialiasing. È sperimentale: alcuni effetti possono apparire diversi rispetto a Xenos.",
+      L"Formato immagine",
+      L"Riempi lo schermo",
+      L"16:9 con bande",
       L"Controller: ↑↓ scegli · ←→ cambia · A gioca · B esci",
       L"Gioca",
       L"Salva",
@@ -591,18 +606,39 @@ Size AutoScale(Size output) {
   return {axis(width, kGuestWidth), axis(height, kGuestHeight)};
 }
 
-// XenosNative's render size (D37): the 16:9 image that fits the output, at least the game's own
-// 1280x720, at a scale that need not be a whole number; an output that is not 16:9 is filled (D43): the
-// height sets the scale, the width follows from the output's aspect ratio (xenos_native_fill_screen, on
-// by default). The renderer computes it the same way from its swap chain (xenos_native/src/renderer.cpp).
-Size NativeRenderSize(Size output) {
-  double factor = output.second ? (double(output.first) / output.second) / (double(kGuestWidth) / kGuestHeight) : 1.0;
-  if (std::abs(factor - 1.0) > 0.01) {
-    double scale_y = std::max(double(output.second) / kGuestHeight, 1.0 / std::min(factor, 1.0));
-    return {int(std::floor(kGuestWidth * scale_y * factor + 0.5)), int(std::floor(kGuestHeight * scale_y + 0.5))};
+// XenosNative's render size (D37, D43, D54), as the renderer computes it from its swap chain
+// (xenos_native/src/renderer.cpp). The image fills an output that is not 16:9 (`fill`,
+// xenos_native_fill_screen: the height sets the scale, the width follows from the output's aspect ratio),
+// or is the 16:9 rectangle inside it. Its height is the output's (or the rectangle's), or `height` when one
+// is chosen (xenos_native_resolution_scale = height / 720); at least the game's own 1280x720 on each axis.
+Size NativeRenderSize(Size output, bool fill, int height) {
+  double guest_aspect = double(kGuestWidth) / kGuestHeight;
+  double output_aspect = output.second ? double(output.first) / output.second : guest_aspect;
+  fill = fill && std::abs(output_aspect / guest_aspect - 1.0) > 0.01;
+  double factor = fill ? output_aspect / guest_aspect : 1.0;
+  double fit = fill ? double(output.second) / kGuestHeight
+                    : std::min(double(output.first) / kGuestWidth, double(output.second) / kGuestHeight);
+  double scale = std::max(height > 0 ? double(height) / kGuestHeight : fit, 1.0 / std::min(factor, 1.0));
+  return {int(std::floor(kGuestWidth * scale * factor + 0.5)), int(std::floor(kGuestHeight * scale + 0.5))};
+}
+
+// The internal resolutions XenosNative's row offers, as heights (D54): 0 (automatic: the output's), then the
+// usual heights below it, down to the lowest the image allows (720 lines; more for an output narrower than
+// 16:9). `keep` (a height the options file named) is offered too if it is in that range. Nothing above the
+// output's: no supersampling.
+std::vector<int> NativeHeights(Size output, bool fill, int keep) {
+  int highest = NativeRenderSize(output, fill, 0).second;
+  int lowest = NativeRenderSize(output, fill, kGuestHeight).second;
+  std::vector<int> heights;
+  for (int height : {2160, 1800, 1440, 1080, 900, 720, lowest, keep}) {
+    if (height >= lowest && height < highest &&
+        std::find(heights.begin(), heights.end(), height) == heights.end()) {
+      heights.push_back(height);
+    }
   }
-  double scale = std::max(1.0, std::min(double(output.first) / kGuestWidth, double(output.second) / kGuestHeight));
-  return {int(std::floor(kGuestWidth * scale + 0.5)), int(std::floor(kGuestHeight * scale + 0.5))};
+  std::sort(heights.begin(), heights.end(), std::greater<>());
+  heights.insert(heights.begin(), 0);
+  return heights;
 }
 
 // --- Window ---
@@ -618,6 +654,8 @@ enum ControlId : int {
   kIdResolution,
   kIdRendererLabel,
   kIdRenderer,
+  kIdFormatLabel,
+  kIdFormat,
   kIdQualityLabel,
   kIdQuality,
   kIdFramerateLabel,
@@ -634,13 +672,14 @@ enum ControlId : int {
 };
 
 // Option rows (top to bottom) and buttons (left to right), for the controller.
-constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay,      kIdResolution,  kIdRenderer, kIdQuality,
-                           kIdFramerate, kIdAntialiasing, kIdAnisotropic, kIdBackend};
+constexpr int kRowIds[] = {kIdMonitor,   kIdDisplay, kIdResolution,   kIdRenderer,    kIdFormat,
+                           kIdQuality,   kIdFramerate, kIdAntialiasing, kIdAnisotropic, kIdBackend};
 constexpr int kButtonIds[] = {IDOK, kIdSave, IDCANCEL};
 constexpr int kRows[][2] = {{kIdMonitorLabel, kIdMonitor},
                             {kIdDisplayLabel, kIdDisplay},
                             {kIdResolutionLabel, kIdResolution},
                             {kIdRendererLabel, kIdRenderer},
+                            {kIdFormatLabel, kIdFormat},
                             {kIdQualityLabel, kIdQuality},
                             {kIdFramerateLabel, kIdFramerate},
                             {kIdAntialiasingLabel, kIdAntialiasing},
@@ -679,6 +718,7 @@ struct Launcher {
   UINT primary_dpi = 96;           // the SDK converts window_width/height with the primary's DPI
   bool has_vulkan = false;         // vulkan-1.dll present (ships with the video driver)
   std::filesystem::path options_path;  // potcawe_options.toml: Save writes it at once
+  std::vector<int> native_heights;     // XenosNative's internal resolution row, as heights (0: automatic)
   HWND hwnd = nullptr;
   HFONT font = nullptr;
   HFONT title_font = nullptr;
@@ -749,6 +789,7 @@ void Refresh(Launcher& l) {
   SetWindowTextW(Item(l, kIdAnisotropicLabel), t.anisotropic);
   SetWindowTextW(Item(l, kIdBackendLabel), t.graphics);
   SetWindowTextW(Item(l, kIdRendererLabel), t.renderer);
+  SetWindowTextW(Item(l, kIdFormatLabel), t.format);
   SetWindowTextW(Item(l, kIdHint), o.native ? t.native_hint : o.vulkan ? t.vulkan_hint : t.quality_hint);
   SetWindowTextW(Item(l, kIdPadHint), t.pad_hint);
   SetWindowTextW(Item(l, IDOK), t.play);
@@ -797,14 +838,38 @@ void Refresh(Launcher& l) {
   }
   FillCombo(Item(l, kIdRenderer), renderers, o.native ? 1 : 0);
 
-  // With XenosNative the render quality and graphics API rows show what it uses (the resolution computed
-  // from the screen, Vulkan), disabled, and the antialiasing row offers its own methods (proper names, the
-  // same in every language); the choices for Xenos are kept.
+  // With XenosNative the image format and internal resolution rows are its own (D54), the graphics API row
+  // shows what it uses (Vulkan), disabled, and the antialiasing row offers its own methods (proper names, the
+  // same in every language); the choices for Xenos are kept. The image format matters only for an output that
+  // is not 16:9; Xenos always keeps 16:9 with bars.
+  Size output = OutputSize(l);
+  bool wide = !Is16x9(output);
+  if (o.native && wide) {
+    FillCombo(Item(l, kIdFormat), {t.format_fill, t.format_bars}, o.native_fill ? 0 : 1);
+  } else {
+    FillCombo(Item(l, kIdFormat), {wide ? std::wstring(t.format_bars) : std::wstring(L"16:9")}, 0);
+  }
   if (o.native) {
-    Size render = NativeRenderSize(OutputSize(l));
-    FillCombo(Item(l, kIdQuality),
-              {SizeText(render) + L"  " + (render == Size{kGuestWidth, kGuestHeight} ? t.original : t.from_screen)},
-              0);
+    // Automatic, then lower heights in the chosen format; a height that is no longer offered (another
+    // monitor or window) becomes automatic.
+    l.native_heights = NativeHeights(output, l.o.native_fill, l.o.native_height);
+    if (std::find(l.native_heights.begin(), l.native_heights.end(), l.o.native_height) == l.native_heights.end()) {
+      l.o.native_height = 0;
+    }
+    std::vector<std::wstring> sizes;
+    int selected = 0;
+    for (size_t i = 0; i < l.native_heights.size(); ++i) {
+      Size size = NativeRenderSize(output, o.native_fill, l.native_heights[i]);
+      std::wstring text = SizeText(size);
+      if (!l.native_heights[i]) {
+        text = std::wstring(t.automatic) + L" — " + text;
+      } else if (size == Size{kGuestWidth, kGuestHeight}) {
+        text += std::wstring(L"  ") + t.original;
+      }
+      sizes.push_back(text);
+      if (l.native_heights[i] == o.native_height) selected = int(i);
+    }
+    FillCombo(Item(l, kIdQuality), sizes, selected);
     std::vector<std::wstring> methods = {L"SMAA", L"DLAA (NVIDIA RTX)", L"FXAA", t.aa_off};
     if (o.native_aa_experimental >= 0) {
       methods.push_back(std::wstring(kExperimentalAntialiasing[o.native_aa_experimental].label) + L" (" +
@@ -827,11 +892,11 @@ void Refresh(Launcher& l) {
     }
     FillCombo(Item(l, kIdBackend), backends, o.vulkan ? 1 : 0);
   }
-  for (int id : {kIdQuality, kIdBackend}) {
-    if (o.native && GetFocus() == Item(l, id)) {
+  for (auto [id, enabled] : {std::pair{kIdBackend, !o.native}, std::pair{kIdFormat, o.native && wide}}) {
+    if (!enabled && GetFocus() == Item(l, id)) {
       SetFocus(Item(l, kIdRenderer));
     }
-    EnableWindow(Item(l, id), !o.native);
+    EnableWindow(Item(l, id), enabled);
   }
 
   FillCombo(Item(l, kIdFramerate), {t.fps30, t.fps60}, o.fps60 ? 1 : 0);
@@ -868,8 +933,15 @@ void OnSelectionChange(Launcher& l, int id) {
     case kIdRenderer:
       o.native = l.has_vulkan && index == 1;
       break;
+    case kIdFormat:
+      if (o.native && !Is16x9(OutputSize(l))) {
+        o.native_fill = index == 0;
+      }
+      break;
     case kIdQuality:
-      if (!o.native) {
+      if (o.native) {
+        if (index < int(l.native_heights.size())) o.native_height = l.native_heights[index];
+      } else {
         o.scale = std::clamp(index, 0, kMaxScale);
       }
       break;
@@ -898,7 +970,7 @@ void OnSelectionChange(Launcher& l, int id) {
 
 // Positions in pixels at 96 DPI; scaled with the monitor DPI.
 constexpr int kClientWidth = 560;
-constexpr int kClientHeight = 546;  // nine rows
+constexpr int kClientHeight = 582;  // ten rows
 
 void Layout(Launcher& l, UINT dpi) {
   auto s = [dpi](int v) { return MulDiv(v, int(dpi), 96); };
@@ -1297,6 +1369,9 @@ Options OptionsFromConfig(const Config& c, UINT primary_dpi) {
   o.fps60 = GetBool(c, "potcawe_60fps", false);
   o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
   o.native = GetBool(c, "xenos_native", false);
+  o.native_fill = GetBool(c, "xenos_native_fill_screen", true);
+  double native_scale = std::strtod(GetString(c, "xenos_native_resolution_scale").c_str(), nullptr);
+  o.native_height = native_scale > 0.0 ? int(std::lround(native_scale * kGuestHeight)) : 0;
   std::string native_aa = GetString(c, "xenos_native_antialiasing");
   for (int i = 0; i < int(std::size(kNativeAntialiasing)); ++i) {
     if (native_aa == kNativeAntialiasing[i]) o.native_aa = i;
@@ -1388,6 +1463,19 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
   f << "anisotropic_override = " << o.anisotropic << "\n";
   // XenosNative (xenos_native/): draw natively on Vulkan instead of emulating the GPU (experimental).
   f << "xenos_native = " << boolean(o.native) << "\n";
+  // XenosNative's image format and internal resolution (D54).
+  f << "# xenos_native_fill_screen: XenosNative fills a screen or window that is not 16:9 (true), or keeps\n"
+       "# 16:9 with bars (false). xenos_native_resolution_scale: its internal resolution, as the height over\n"
+       "# 720 (2 = 1440 lines); 0 = the screen's or the window's.\n";
+  f << "xenos_native_fill_screen = " << boolean(o.native_fill) << "\n";
+  {
+    char scale[32];
+    std::snprintf(scale, sizeof(scale), "%.6f", o.native_height > 0 ? double(o.native_height) / kGuestHeight : 0.0);
+    std::string text = scale;
+    text.erase(text.find_last_not_of('0') + 1);
+    if (text.back() == '.') text.pop_back();
+    f << "xenos_native_resolution_scale = " << text << "\n";
+  }
   // XenosNative's own antialiasing: smaa, dlaa, fxaa or off; or an experimental mode the file named (D53).
   f << "# xenos_native_antialiasing: smaa, dlaa, fxaa or off, the launcher's choices. Experimental, for\n"
        "# testing only (not finished, so the launcher does not offer them): dlss_quality, dlss_balanced,\n"
