@@ -188,14 +188,13 @@ work is done.
 
 | Path | What it is |
 |---|---|
-| `native_x_renderer/` | The renderer library: `CMakeLists.txt` (target `native_x_renderer`), `include/native_x_renderer/`, `src/`, `docs/`, `tools/` (analysis scripts for bringing up a game), `sdk_patches/`. No game-specific code. |
+| `native_x_renderer/` | The renderer library, a submodule: its own repository, `ElGuslml/NativeXRenderer` (D58; the local clone it was created from is `G:\dev\NativeXRenderer`). `CMakeLists.txt` (target `native_x_renderer`), `include/native_x_renderer/`, `src/`, `docs/`, `tools/` (analysis scripts for bringing up a game), `sdk_patches/`, `diligent_patches/`, and DiligentCore as its own submodule. No game-specific code. |
 | `docs/` | Published game notes (one per problem), plus `native-x-renderer-potcawe.md` (the game side of NativeXRenderer). |
 | `src/` | The game: startup, launcher options, game hooks. The NativeXRenderer hook file and profile for POTCAWE go here (`src/native_x_renderer_potcawe.cpp`, Phase 1). |
 | `thirdparty/rexglue-sdk` | Official ReXGlue SDK, submodule pinned to v0.10.0 (`c94f5eb`), with `patches/` applied at configure time. |
-| `thirdparty/diligent-core` | DiligentCore (Vulkan backend only), a submodule pinned to master `074060c`, with `native_x_renderer/diligent_patches/` applied at configure time. |
 | `patches/` | The shared SDK series (identical to GRAWRecomp and KameoRecomp). |
 | `native_x_renderer/sdk_patches/` | NativeXRenderer's own SDK patches (D10/D11), applied after `patches/`. |
-| `native_x_renderer/diligent_patches/` | NativeXRenderer's DiligentCore patches (D22), applied to `thirdparty/diligent-core` at configure time. |
+| `native_x_renderer/thirdparty/diligent-core` | DiligentCore (Vulkan backend only), the library's submodule, pinned to master `074060c`, with `native_x_renderer/diligent_patches/` (D22) applied at configure time. |
 | `potcawe_manifest.toml`, `potcawe_functions.toml`, `potcawe_functions_auto.toml` | Codegen input. |
 | `launcher/`, `res/`, `cmake/` | As in POTCAWERecomp. |
 | `assets/` | The game files: a real copy, 6.4 GB, gitignored. |
@@ -238,6 +237,10 @@ cmake --build --preset win-amd64-relwithdebinfo
    per topic for runs and logs, as in POTCAWERecomp.
 7. **The trace mode and the observer are library features** (off by default, free when off), not debug
    instrumentation. Ad-hoc instrumentation still never goes into `src/`, `native_x_renderer/` or `patches/`.
+8. **The library is its own repository (D58).** A change to it is committed inside `native_x_renderer/` (the
+   submodule, on its `main` branch) and pushed to the library's repository. Then the game's repository
+   commits the new submodule commit. Its documents (`plan.md`, `architecture.md`, `decisions.md`…) are in
+   the library's repository; the game's (`docs/native-x-renderer-potcawe.md`, `local_docs/`) are here.
 
 ## Rules inherited from POTCAWERecomp
 
@@ -265,17 +268,19 @@ rule 5 above:
    A `git worktree` in the scratchpad keeps the submodule's working tree untouched.
 2. Commit the change.
 3. Export only NativeXRenderer's commits:
-   `git format-patch <last shared commit>..HEAD -o <repo>/native_x_renderer/sdk_patches`.
+   `git format-patch <last shared commit>..HEAD -o <repo>/native_x_renderer/sdk_patches`, and commit them in
+   the library (rule 8).
 4. Reconfigure as above. `cmake/apply_sdk_patches.cmake` applies `native_x_renderer/sdk_patches/` after
    `patches/`.
 
 ## Changing DiligentCore
 
-The submodule stays at its pinned commit; NativeXRenderer's changes are `native_x_renderer/diligent_patches/` (D22),
-applied by `native_x_renderer/cmake/apply_diligent_patches.cmake` when configuring:
-1. Use the submodule's branch `native-x-renderer` (pinned commit plus the series), checked out in a
-   `git worktree` in the scratchpad.
+DiligentCore is the library's submodule (`native_x_renderer/thirdparty/diligent-core`) and stays at its pinned
+commit; NativeXRenderer's changes are `native_x_renderer/diligent_patches/` (D22), applied by
+`native_x_renderer/cmake/apply_diligent_patches.cmake` when configuring:
+1. Use a branch `native-x-renderer` at the pinned commit with the series applied (`git am`), checked out in
+   a `git worktree` in the scratchpad.
 2. Commit the change there.
 3. `git format-patch <pinned commit>..HEAD -o <repo>/native_x_renderer/diligent_patches` (delete the old files
-   first).
-4. `git -C thirdparty/diligent-core checkout -- .`, then configure again.
+   first), and commit them in the library (rule 8).
+4. `git -C native_x_renderer/thirdparty/diligent-core checkout -- .`, then configure again.

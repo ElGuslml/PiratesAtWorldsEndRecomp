@@ -1,5 +1,5 @@
 # POTCAWERecompVulkan - static recompilation of Pirates of the Caribbean: At World's End (Xbox 360),
-# built on the ReXGlue SDK; the development home of the NativeXRenderer renderer (native_x_renderer/).
+# built on the ReXGlue SDK, drawn by NativeXRenderer (native_x_renderer/, a submodule).
 #
 # The SDK is the thirdparty/rexglue-sdk git submodule (official repository, pinned to v0.10.0);
 # the fixes in patches/ are applied to it at configure time (cmake/apply_sdk_patches.cmake).
