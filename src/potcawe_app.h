@@ -40,9 +40,9 @@ class PotcaweApp : public rex::ReXApp {
   // std::unique_ptr<rex::ui::AchievementNotificationDialog>
   // CreateAchievementNotificationDialog() override;
   // void OnShutdown() override {}
-  // Game files: without --game_data_root, assets/ next to potcawerecomp.exe or the repository's
-  // assets/. User data (saves, profile, shader cache): userdata/ next to the executable
-  // (src/startup.cpp).
+  // Game files: without --game_data_root, assets/ next to PiratesAtWorldsEndRecomp.exe or the
+  // repository's assets/. User data (saves, profile, shader cache): userdata/ next to the
+  // executable (src/startup.cpp).
   void OnConfigurePaths(rex::PathConfig& paths) override {
     if (paths.game_data_root.empty()) {
       paths.game_data_root = potcawe::DefaultGameRoot();
@@ -51,7 +51,7 @@ class PotcaweApp : public rex::ReXApp {
   }
 
   // potcawe.toml with the built-in defaults if it is missing, then (after the SDK loads it) the game
-  // files check and the POTCAWE Launcher options (separate executable,
+  // files check and the PiratesAtWorldsEnd Launcher options (separate executable,
   // launcher/potcawe_launcher.cpp): potcawe_options.toml, before the window and the GPU are
   // created. The game shows no window of its own.
   bool SetupEnvironment() override {

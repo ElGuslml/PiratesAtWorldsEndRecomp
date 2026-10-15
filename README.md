@@ -33,9 +33,9 @@ C++ and compiled; the Xbox 360 GPU is emulated by ReXGlue's Xenos backend (deriv
 - The sun's glare follows the sun: the game measures how much of the sun is visible with an occlusion query,
   which ReXGlue now answers with the host GPU's count instead of a fixed "fully visible" (SDK patch 0020, see
   [`docs/sun-glow.md`](docs/sun-glow.md)).
-- **POTCAWE Launcher**: monitor, fullscreen / borderless / window, window resolution, internal resolution,
-  frame rate, antialiasing, anisotropic filtering and graphics API. Works with mouse, keyboard or controller.
-  Save writes the options and keeps the launcher open; Play saves them and starts the game. The
+- **PiratesAtWorldsEnd Launcher**: monitor, fullscreen / borderless / window, window resolution, internal
+  resolution, frame rate, antialiasing, anisotropic filtering and graphics API. Works with mouse, keyboard or
+  controller. Save writes the options and keeps the launcher open; Play saves them and starts the game. The
   game always renders at 1280×720; ReXGlue renders it at a whole multiple per axis (2×, 3×) and fits the
   image to the screen. "Automatic" picks the smallest scale that covers your screen. Wider screens get black
   bars for now (the camera keeps 16:9).
@@ -73,8 +73,8 @@ To run:
 
 Extract the content of your disc or ISO with
 [extract-xiso](https://github.com/XboxDev/extract-xiso/releases) and copy all of it into `assets/` so that
-`assets/default.xex` exists. The expected executable has CRC32 `A31B1069`; `potcawerecomp.exe` warns you at
-startup if yours is a different version. See [`assets/README.md`](assets/README.md).
+`assets/default.xex` exists. The expected executable has CRC32 `A31B1069`; `PiratesAtWorldsEndRecomp.exe`
+warns you at startup if yours is a different version. See [`assets/README.md`](assets/README.md).
 
 ## Building from source
 
@@ -94,26 +94,28 @@ cmake --build --preset win-amd64-release
 ## Running
 
 ```powershell
-.\out\build\win-amd64-release\"POTCAWE Launcher.exe"   # choose the options, then Play
-.\out\build\win-amd64-release\potcawerecomp.exe        # or start the game directly with the saved options
+.\out\build\win-amd64-release\"PiratesAtWorldsEnd Launcher.exe"  # choose the options, then Play
+.\out\build\win-amd64-release\PiratesAtWorldsEndRecomp.exe        # or start the game with the saved options
 ```
 
-- Game files are found in `assets\` next to `potcawerecomp.exe`, otherwise in the repository's `assets\`.
-  Use `--game_data_root=<folder>` to point somewhere else.
-- Saves, the profile and the shader cache go to `userdata\` next to `potcawerecomp.exe` (if that folder
-  cannot be written, for example under Program Files, they go to `Documents\potcawe`). Logs go to `logs\`.
+- Game files are found in `assets\` next to `PiratesAtWorldsEndRecomp.exe`, otherwise in the repository's
+  `assets\`. Use `--game_data_root=<folder>` to point somewhere else.
+- Saves, the profile and the shader cache go to `userdata\` next to `PiratesAtWorldsEndRecomp.exe` (if that
+  folder cannot be written, for example under Program Files, they go to `Documents\potcawe`). Logs go to
+  `logs\`.
 
 ### Steam Big Picture
 
-Add `potcawerecomp.exe` as a non-Steam game: it starts straight into the game with the options you saved in
-POTCAWE Launcher. You can also add `POTCAWE Launcher.exe` to change options from the couch with a controller.
+Add `PiratesAtWorldsEndRecomp.exe` as a non-Steam game: it starts straight into the game with the options you
+saved in PiratesAtWorldsEnd Launcher. You can also add `PiratesAtWorldsEnd Launcher.exe` to change options
+from the couch with a controller.
 
 ## Configuration
 
-| File (next to `potcawerecomp.exe`) | What it holds |
+| File (next to `PiratesAtWorldsEndRecomp.exe`) | What it holds |
 |---|---|
 | `potcawe.toml` | Base settings. Created with the defaults this game needs if it is missing. |
-| `potcawe_options.toml` | What POTCAWE Launcher saves (monitor, display, window size, render scale, frame rate, antialiasing, API). Loaded after `potcawe.toml`. |
+| `potcawe_options.toml` | What PiratesAtWorldsEnd Launcher saves (monitor, display, window size, render scale, frame rate, antialiasing, API). Loaded after `potcawe.toml`. |
 
 Command-line options (`--name=value`, for example Steam launch options) win over both files:
 `--fullscreen=false --window_width=1920 --window_height=1080`,

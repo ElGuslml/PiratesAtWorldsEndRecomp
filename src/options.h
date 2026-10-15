@@ -1,10 +1,10 @@
-// potcawe - POTCAWE Launcher options.
+// potcawe - PiratesAtWorldsEnd Launcher options.
 //
-// The launcher is a separate executable ("POTCAWE Launcher.exe", launcher/potcawe_launcher.cpp)
-// that writes potcawe_options.toml next to potcawerecomp.exe. The game executable only loads it,
-// after potcawe.toml and before the window and the GPU are created (which is when those options
-// are read), and starts right away without showing anything, so it can be launched from Steam Big
-// Picture without a mouse.
+// The launcher is a separate executable ("PiratesAtWorldsEnd Launcher.exe",
+// launcher/potcawe_launcher.cpp) that writes potcawe_options.toml next to
+// PiratesAtWorldsEndRecomp.exe. The game executable only loads it, after potcawe.toml and before the
+// window and the GPU are created (which is when those options are read), and starts right away
+// without showing anything, so it can be launched from Steam Big Picture without a mouse.
 
 #pragma once
 

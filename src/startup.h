@@ -6,10 +6,10 @@
 
 namespace potcawe {
 
-// Game files folder when --game_data_root is not given: assets/ next to potcawerecomp.exe (release
-// layout) if it holds the game, otherwise the repository's assets/ (POTCAWE_DEFAULT_GAME_ROOT, set in
-// CMake); if neither does, assets/ next to the executable, so the "files not found" message names
-// that folder.
+// Game files folder when --game_data_root is not given: assets/ next to PiratesAtWorldsEndRecomp.exe
+// (release layout) if it holds the game, otherwise the repository's assets/
+// (POTCAWE_DEFAULT_GAME_ROOT, set in CMake); if neither does, assets/ next to the executable, so the
+// "files not found" message names that folder.
 std::filesystem::path DefaultGameRoot();
 
 // User data (profile, saves, achievements, shader cache) in userdata\ next to the executable, so the

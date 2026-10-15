@@ -1,17 +1,17 @@
-// POTCAWE Launcher: options for potcawe (recompiled Pirates of the Caribbean: At World's End) in a
-// separate executable, so that potcawerecomp.exe starts right away (for example from Steam Big
-// Picture).
+// PiratesAtWorldsEnd Launcher: options for potcawe (recompiled Pirates of the Caribbean: At World's
+// End) in a separate executable, so that PiratesAtWorldsEndRecomp.exe starts right away (for example
+// from Steam Big Picture).
 //
 // Plain Win32, no SDK. Reads potcawe.toml and potcawe_options.toml (next to this exe and
-// potcawerecomp.exe), shows monitor, display, resolution, internal resolution, frame rate,
-// antialiasing, anisotropic filtering and graphics API, and saves the choice to
-// potcawe_options.toml, which potcawerecomp.exe loads at startup (src/options.cpp).
+// PiratesAtWorldsEndRecomp.exe), shows monitor, display, resolution, internal resolution, frame
+// rate, antialiasing, anisotropic filtering and graphics API, and saves the choice to
+// potcawe_options.toml, which PiratesAtWorldsEndRecomp.exe loads at startup (src/options.cpp).
 // Frame rate: 30 FPS (the original present interval) or 60 FPS (src/framerate.cpp). Anisotropic
 // filtering: the SDK's anisotropic_override, 16x by default (src/startup.cpp).
-// "Play" also starts potcawerecomp.exe (with the arguments the launcher received) and waits for it
-// to exit, so Steam keeps seeing the game as running. Works with mouse, keyboard or controller
-// (XInput). The launcher texts follow the Windows display language (English, German, French,
-// Spanish, Italian); the game asks for its own language in its first menu.
+// "Play" also starts PiratesAtWorldsEndRecomp.exe (with the arguments the launcher received) and
+// waits for it to exit, so Steam keeps seeing the game as running. Works with mouse, keyboard or
+// controller (XInput). The launcher texts follow the Windows display language (English, German,
+// French, Spanish, Italian); the game asks for its own language in its first menu.
 //
 // Ported from GRAWRecomp's launcher (launcher/graw_launcher.cpp), without its language and aspect
 // ratio options.
@@ -187,7 +187,7 @@ struct Texts {
 
 const Texts& TextsFor(uint32_t language) {
   static const Texts kEnglish = {
-      L"Options are saved; potcawerecomp.exe starts straight away with them.",
+      L"Options are saved; PiratesAtWorldsEndRecomp.exe starts straight away with them.",
       L"Monitor",
       L"primary",
       L"Display",
@@ -218,11 +218,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Save",
       L"Saved",
       L"Quit",
-      L"potcawerecomp.exe was not found next to POTCAWE Launcher.",
+      L"PiratesAtWorldsEndRecomp.exe was not found next to PiratesAtWorldsEnd Launcher.",
       L"Could not save the options to potcawe_options.toml.",
   };
   static const Texts kGerman = {
-      L"Die Optionen werden gespeichert; potcawerecomp.exe startet direkt mit ihnen.",
+      L"Die Optionen werden gespeichert; PiratesAtWorldsEndRecomp.exe startet direkt mit ihnen.",
       L"Monitor",
       L"Hauptmonitor",
       L"Anzeige",
@@ -253,11 +253,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Speichern",
       L"Gespeichert",
       L"Beenden",
-      L"potcawerecomp.exe wurde neben POTCAWE Launcher nicht gefunden.",
+      L"PiratesAtWorldsEndRecomp.exe wurde neben PiratesAtWorldsEnd Launcher nicht gefunden.",
       L"Die Optionen konnten nicht in potcawe_options.toml gespeichert werden.",
   };
   static const Texts kFrench = {
-      L"Les options sont enregistrées ; potcawerecomp.exe démarre directement avec elles.",
+      L"Les options sont enregistrées ; PiratesAtWorldsEndRecomp.exe démarre directement avec elles.",
       L"Moniteur",
       L"principal",
       L"Affichage",
@@ -289,11 +289,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Enregistrer",
       L"Enregistré",
       L"Quitter",
-      L"potcawerecomp.exe est introuvable à côté de POTCAWE Launcher.",
+      L"PiratesAtWorldsEndRecomp.exe est introuvable à côté de PiratesAtWorldsEnd Launcher.",
       L"Impossible d'enregistrer les options dans potcawe_options.toml.",
   };
   static const Texts kSpanish = {
-      L"Las opciones se guardan y potcawerecomp.exe arranca directo con ellas.",
+      L"Las opciones se guardan y PiratesAtWorldsEndRecomp.exe arranca directo con ellas.",
       L"Monitor",
       L"principal",
       L"Pantalla",
@@ -324,11 +324,11 @@ const Texts& TextsFor(uint32_t language) {
       L"Guardar",
       L"Guardado",
       L"Salir",
-      L"No se encontró potcawerecomp.exe junto a POTCAWE Launcher.",
+      L"No se encontró PiratesAtWorldsEndRecomp.exe junto a PiratesAtWorldsEnd Launcher.",
       L"No se pudieron guardar las opciones en potcawe_options.toml.",
   };
   static const Texts kItalian = {
-      L"Le opzioni vengono salvate; potcawerecomp.exe si avvia direttamente con esse.",
+      L"Le opzioni vengono salvate; PiratesAtWorldsEndRecomp.exe si avvia direttamente con esse.",
       L"Monitor",
       L"principale",
       L"Schermo",
@@ -359,7 +359,7 @@ const Texts& TextsFor(uint32_t language) {
       L"Salva",
       L"Salvato",
       L"Esci",
-      L"potcawerecomp.exe non trovato accanto a POTCAWE Launcher.",
+      L"PiratesAtWorldsEndRecomp.exe non trovato accanto a PiratesAtWorldsEnd Launcher.",
       L"Impossibile salvare le opzioni in potcawe_options.toml.",
   };
   switch (language) {
@@ -1004,7 +1004,7 @@ LRESULT CALLBACK LauncherProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             SetWindowTextW(Item(*l, kIdSave), t.saved);
             SetTimer(hwnd, kSavedTimer, 1500, nullptr);
           } else {
-            MessageBoxW(hwnd, t.save_failed, L"POTCAWE Launcher", MB_OK | MB_ICONERROR);
+            MessageBoxW(hwnd, t.save_failed, L"PiratesAtWorldsEnd Launcher", MB_OK | MB_ICONERROR);
           }
           return 0;
         }
@@ -1093,7 +1093,7 @@ void ShowLauncher(Launcher& l, HINSTANCE instance) {
   int x = work.left + (work.right - work.left - window_width) / 2;
   int y = work.top + (work.bottom - work.top - window_height) / 2;
 
-  l.hwnd = CreateWindowExW(ex_style, wc.lpszClassName, L"POTCAWE Launcher", style, x, y,
+  l.hwnd = CreateWindowExW(ex_style, wc.lpszClassName, L"PiratesAtWorldsEnd Launcher", style, x, y,
                            window_width, window_height, nullptr, nullptr, instance, &l);
   if (!l.hwnd) {
     return;
@@ -1190,9 +1190,9 @@ bool SaveOptions(const std::filesystem::path& path, const Launcher& l) {
     return false;
   }
   auto boolean = [](bool value) { return value ? "true" : "false"; };
-  f << "# POTCAWE Launcher options (\"POTCAWE Launcher.exe\"): written when \"Play\" or \"Save\" is\n"
-       "# pressed. potcawerecomp.exe loads them at startup, after potcawe.toml, without showing\n"
-       "# any window.\n"
+  f << "# PiratesAtWorldsEnd Launcher options (\"PiratesAtWorldsEnd Launcher.exe\"): written when\n"
+       "# \"Play\" or \"Save\" is pressed. PiratesAtWorldsEndRecomp.exe loads them at startup, after\n"
+       "# potcawe.toml, without showing any window.\n"
        "# Command line options (for example those of a Steam shortcut) win over these.\n"
        "# monitor: 1 = primary, 2.. = the others (SDL order).\n"
        "# launcher_*: launcher only. launcher_render_scale is the choice (\"auto\" or 1-3); the\n"
@@ -1260,12 +1260,12 @@ std::wstring ForwardedArguments() {
   return p;
 }
 
-// Starts potcawerecomp.exe and waits for it to exit: meanwhile Steam keeps seeing the game as
-// running.
+// Starts PiratesAtWorldsEndRecomp.exe and waits for it to exit: meanwhile Steam keeps seeing the
+// game as running.
 int LaunchGame(const std::filesystem::path& exe_dir, const Texts& t) {
-  std::filesystem::path game = exe_dir / L"potcawerecomp.exe";
+  std::filesystem::path game = exe_dir / L"PiratesAtWorldsEndRecomp.exe";
   if (!std::filesystem::exists(game)) {
-    MessageBoxW(nullptr, t.game_missing, L"POTCAWE Launcher", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, t.game_missing, L"PiratesAtWorldsEnd Launcher", MB_OK | MB_ICONERROR);
     return 1;
   }
   std::wstring command_line = L"\"" + game.wstring() + L"\"" + ForwardedArguments();
@@ -1275,7 +1275,7 @@ int LaunchGame(const std::filesystem::path& exe_dir, const Texts& t) {
   if (!CreateProcessW(game.c_str(), command_line.data(), nullptr, nullptr, FALSE, 0, nullptr,
                       exe_dir.c_str(), &startup, &process)) {
     std::wstring text = std::wstring(L"CreateProcess: ") + std::to_wstring(GetLastError());
-    MessageBoxW(nullptr, text.c_str(), L"POTCAWE Launcher", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, text.c_str(), L"PiratesAtWorldsEnd Launcher", MB_OK | MB_ICONERROR);
     return 1;
   }
   CloseHandle(process.hThread);
@@ -1307,7 +1307,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
 
   std::filesystem::path exe_dir = ExecutableFolder();
   std::filesystem::path options_path = exe_dir / L"potcawe_options.toml";
-  // The same potcawerecomp.exe will see: potcawe.toml, then what the launcher saved on top.
+  // The same PiratesAtWorldsEndRecomp.exe will see: potcawe.toml, then what the launcher saved on top.
   Config config;
   ReadToml(exe_dir / L"potcawe.toml", config);
   ReadToml(options_path, config);
@@ -1343,7 +1343,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   }
   const Texts& t = TextsFor(l.ui_language);
   if (!SaveOptions(options_path, l)) {
-    MessageBoxW(nullptr, t.save_failed, L"POTCAWE Launcher", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, t.save_failed, L"PiratesAtWorldsEnd Launcher", MB_OK | MB_ICONERROR);
   }
   return l.result == Result::kPlay ? LaunchGame(exe_dir, t) : 0;
 }

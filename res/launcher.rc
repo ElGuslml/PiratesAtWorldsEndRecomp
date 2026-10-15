@@ -1,4 +1,5 @@
-// Resources of POTCAWE Launcher.exe: icon (res/icon.ico, when present) and file properties.
+// Resources of "PiratesAtWorldsEnd Launcher.exe": icon (res/icon.ico, when present) and file
+// properties.
 #include <winver.h>
 #include "version.h"
 
@@ -16,11 +17,11 @@ BEGIN
   BEGIN
     BLOCK "040904B0"
     BEGIN
-      VALUE "FileDescription", "POTCAWE Launcher - options for POTCAWERecomp"
+      VALUE "FileDescription", "PiratesAtWorldsEnd Launcher - options for POTCAWERecomp"
       VALUE "FileVersion", POTCAWERECOMP_VERSION_STR
       VALUE "ProductName", "POTCAWERecomp"
       VALUE "ProductVersion", POTCAWERECOMP_VERSION_STR
-      VALUE "OriginalFilename", "POTCAWE Launcher.exe"
+      VALUE "OriginalFilename", "PiratesAtWorldsEnd Launcher.exe"
       VALUE "LegalCopyright", "POTCAWERecomp code: MIT License."
     END
   END

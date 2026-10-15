@@ -29,7 +29,7 @@ immediately if late" threshold keeps working, and the game sees half the delta t
 
 Measured at the title screen with a temporary frame counter: 30.0 frames/s without the option, 60.0 with it.
 
-Choose **Frame rate: 60 FPS** in POTCAWE Launcher (it writes `potcawe_60fps = true` to
+Choose **Frame rate: 60 FPS** in PiratesAtWorldsEnd Launcher (it writes `potcawe_60fps = true` to
 `potcawe_options.toml`) or start the game with `--potcawe_60fps=true`.
 
 ## What to watch for
