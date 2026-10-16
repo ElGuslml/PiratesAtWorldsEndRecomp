@@ -1,7 +1,7 @@
-From 9a391b8784724af35c93ac46714221c0c826af37 Mon Sep 17 00:00:00 2001
+From ca60de570c3c096e2b078bce5cc4f25152ae1b95 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:03 -0600
-Subject: [PATCH 06/20] ui: add gpu_backend cvar to choose the GPU plugin
+Subject: [PATCH 06/21] ui: add gpu_backend cvar to choose the GPU plugin
  backend
 
 ReXApp::SetupPresentation called LoadGpuPlugin without a backend, so the

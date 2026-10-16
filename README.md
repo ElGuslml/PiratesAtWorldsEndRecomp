@@ -174,6 +174,7 @@ after these (its `sdk_patches/`).
 | 0018 | `render_target_draw_clears`: a draw that writes constant values to a rectangle of its render targets is done as a clear of the render targets owning that EDRAM, never through the alias |
 | 0019 | `d3d12_lazy_resolve`: color resolves kept as host render target copies and textures filled from them by copying, the shared memory written only on demand. Off: it measured no gain on an RTX 4070 Ti (the two host copies cost what the SDK's three passes cost) |
 | 0020 | Occlusion queries: the end pairs with the begin whatever its address and in every EDRAM tile, so host queries are no longer turned off at the first query (D3D12 and Vulkan) |
+| 0021 | SPIR-V: cube maps sampled at a LOD computed in the shader, not with gradients (NVIDIA's Vulkan driver returned garbage in one pixel of each quad: GRAW's false colors on the Vulkan `fbo` path and with NativeXRenderer; from GRAWRecomp), and the LOD bias scale kept finite |
 
 ## Documentation
 

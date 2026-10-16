@@ -1,7 +1,7 @@
-From 6987dc665f6e9394004fff9b70b1320a92f7c3ae Mon Sep 17 00:00:00 2001
+From d904d1ae786e4c0585f835122260b3c1ba58a846 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Mon, 12 Oct 2026 00:16:22 -0600
-Subject: [PATCH 18/20] gpu: perform constant full-coverage draws as clears of
+Subject: [PATCH 18/21] gpu: perform constant full-coverage draws as clears of
  the owning render targets
 
 Patch 0017 stopped copying EDRAM into a render target that a draw

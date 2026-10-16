@@ -1,7 +1,7 @@
-From 2049391cea59b2132b538d96f09fac18bc138994 Mon Sep 17 00:00:00 2001
+From 561663de08a4010fb961b1e3f9036c8d477d519b Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:49:03 -0600
-Subject: [PATCH 05/20] ui: add fullscreen_borderless_window option
+Subject: [PATCH 05/21] ui: add fullscreen_borderless_window option
 
 In fullscreen, optionally use a borderless window that covers the display
 instead of SDL fullscreen. Drivers then treat the game as a normal
