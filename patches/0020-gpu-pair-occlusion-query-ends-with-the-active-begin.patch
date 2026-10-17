@@ -1,7 +1,7 @@
-From b449ba4dbbb6731bd775faef6d4c2a1279355f8a Mon Sep 17 00:00:00 2001
+From 463db1568af7c05adce7c9cbbe23357705157207 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Tue, 13 Oct 2026 00:22:37 -0600
-Subject: [PATCH 20/21] gpu: pair occlusion query ends with the active begin
+Subject: [PATCH 20/24] gpu: pair occlusion query ends with the active begin
 
 The host occlusion queries of the D3D12 and Vulkan command processors
 required the begin and the end EVENT_WRITE_ZPD to use the same

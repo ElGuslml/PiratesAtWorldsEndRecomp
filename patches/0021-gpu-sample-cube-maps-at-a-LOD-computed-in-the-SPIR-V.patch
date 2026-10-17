@@ -1,7 +1,7 @@
-From 6de7e7f2b6977081cd70ebcaad05eceb504c3114 Mon Sep 17 00:00:00 2001
+From 2a3dfc965b2af2540e92a4862f40cabc08a7f51c Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Fri, 16 Oct 2026 01:40:15 -0600
-Subject: [PATCH 21/21] gpu: sample cube maps at a LOD computed in the SPIR-V
+Subject: [PATCH 21/24] gpu: sample cube maps at a LOD computed in the SPIR-V
  shader
 
 The SPIR-V translator samples textures whose LOD the GPU computes with

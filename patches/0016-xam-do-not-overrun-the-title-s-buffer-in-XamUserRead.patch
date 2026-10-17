@@ -1,7 +1,7 @@
-From 0b306e2424d4191cf04b429130e212e07c3e2b03 Mon Sep 17 00:00:00 2001
+From 01d4cba848aa2d9cf0ba5cb7498fbc2af5d78e76 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sun, 11 Oct 2026 12:47:48 -0600
-Subject: [PATCH 16/21] xam: do not overrun the title's buffer in
+Subject: [PATCH 16/24] xam: do not overrun the title's buffer in
  XamUserReadProfileSettings
 
 The size reported by the first call (buffer == NULL) added the nominal

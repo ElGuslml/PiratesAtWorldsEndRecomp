@@ -1,7 +1,7 @@
-From 5484a7790656de149df7ecd538d4b77657fe4c7d Mon Sep 17 00:00:00 2001
+From 1e051e5c9bdacd1265d05bf4c31ab270d709b384 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:47:04 -0600
-Subject: [PATCH 01/21] ppc: keep host FP exceptions masked when updating the
+Subject: [PATCH 01/24] ppc: keep host FP exceptions masked when updating the
  FPSCR
 
 storeFromGuest (mtfsf) and the flush-mode helpers started from the cached

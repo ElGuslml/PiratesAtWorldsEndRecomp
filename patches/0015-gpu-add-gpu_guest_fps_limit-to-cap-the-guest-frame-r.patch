@@ -1,7 +1,7 @@
-From 5dbb1a523efdeb7e4f234ed57e0b8b1724048e05 Mon Sep 17 00:00:00 2001
+From 04c7066f62c4d423a3348950dc7943ba70b89094 Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Sat, 10 Oct 2026 23:52:54 -0600
-Subject: [PATCH 15/21] gpu: add gpu_guest_fps_limit to cap the guest frame
+Subject: [PATCH 15/24] gpu: add gpu_guest_fps_limit to cap the guest frame
  rate
 
 Some game logic may depend on the frame rate the game ran at on the

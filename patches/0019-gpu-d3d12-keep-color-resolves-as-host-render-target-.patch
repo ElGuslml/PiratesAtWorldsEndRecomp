@@ -1,7 +1,7 @@
-From fe303b411844c6df4bc93dbdd925aeda6542bbb9 Mon Sep 17 00:00:00 2001
+From 7042c7caaa14945ce9654349d1e9207e677c2ebd Mon Sep 17 00:00:00 2001
 From: Gustavo Garcia <44309076+ElGuslml@users.noreply.github.com>
 Date: Mon, 12 Oct 2026 03:32:14 -0600
-Subject: [PATCH 19/21] gpu: d3d12: keep color resolves as host render target
+Subject: [PATCH 19/24] gpu: d3d12: keep color resolves as host render target
  copies (lazy resolves)
 
 A resolve of a color render target to memory costs three or four
