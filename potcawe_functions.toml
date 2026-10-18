@@ -11,7 +11,24 @@
 setjmp_address = 0x8249A2B0
 longjmp_address = 0x8249A380
 
+# Codegen: the registers no call passes on are local variables of each function, not fields of the PPCContext,
+# so the compiler keeps them in host registers and the __savegprlr/__restgprlr helpers are elided (SDK patch
+# 0022 keeps the return address they store in the frame). As in GRAWRecomp (its local_docs/12 and 14).
+# non_argument_as_local (r0, r2, r11, r12) stays off: the SEH funclets read r12, which the SDK does not pass them.
+non_volatile_as_local = true
+cr_as_local = true
+ctr_as_local = true
+xer_as_local = true
+reserved_as_local = true
+
 [functions]
+# The functions that call setjmp keep their registers in the context (share_registers): the host longjmp
+# returns into their C++ frame, and the codegen restores the context it saved at the setjmp, not local
+# variables. The PPC longjmp restored r14-r31 to their values at the setjmp.
+0x824AEAA8 = { share_registers = true }   # Lua's protected calls (luaD_rawrunprotected and the like)
+0x824AECD0 = { share_registers = true }
+0x82479C18 = { share_registers = true }   # the two other libraries' guards
+0x824C1DF0 = { share_registers = true }
 # Branch (b) targets that the automatic analysis did not assign to any function. All are small
 # functions reached only through tail calls: getters that return the address of a static object
 # (lis r11 / addi r3,r11,X / blr) and one this-adjusting thunk (addi r3,r3,4 / b).
