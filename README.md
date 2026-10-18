@@ -175,9 +175,10 @@ after these (its `sdk_patches/`).
 | 0019 | `d3d12_lazy_resolve`: color resolves kept as host render target copies and textures filled from them by copying, the shared memory written only on demand. Off: it measured no gain on an RTX 4070 Ti (the two host copies cost what the SDK's three passes cost) |
 | 0020 | Occlusion queries: the end pairs with the begin whatever its address and in every EDRAM tile, so host queries are no longer turned off at the first query (D3D12 and Vulkan) |
 | 0021 | SPIR-V: cube maps sampled at a LOD computed in the shader, not with gradients (NVIDIA's Vulkan driver returned garbage in one pixel of each quad: GRAW's false colors on the Vulkan `fbo` path and with NativeXRenderer; from GRAWRecomp), and the LOD bias scale kept finite |
-| 0022 | Codegen: with `non_volatile_as_local` the elided `__savegprlr_N` still stores the return address in the frame's LR slot, which the guest's stack walks (and NativeXRenderer's caller checks) read (from GRAWRecomp; this game does not enable the option yet) |
+| 0022 | Codegen: with `non_volatile_as_local` the elided `__savegprlr_N` still stores the return address in the frame's LR slot, which the guest's stack walks (and NativeXRenderer's caller checks) read (from GRAWRecomp) |
 | 0023 | `WAIT_REG_MEM` polls every 100 µs with the high-resolution timer instead of sleeping 1 ms (from GRAWRecomp, which waits once a frame for a word the CPU clears) |
 | 0024 | CMake: rexruntime and the GPU plugins are copied next to the executable on every build, not only when it links again (a change to the SDK alone left the old DLLs there) |
+| 0025 | Codegen: a `share_registers` function (an SEH funclet, a setjmp caller) keeps its registers across calls: a caller that hands its own through `ctx` puts back what `ctx` held, and the register save/restore helpers are done on `ctx` instead of elided. Here the callers of Lua's protected call took back r27-r30 from it (from GRAWRecomp) |
 
 ## Documentation
 
