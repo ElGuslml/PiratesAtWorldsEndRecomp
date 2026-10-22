@@ -3,8 +3,9 @@
 #   - README.md, LICENSE, THIRD_PARTY_NOTICES.md;
 #   - assets\README.md (the user copies the game files there);
 #   - licenses\: the license text of every component in the binaries (the ReXGlue SDK and its components,
-#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS, and the launcher's Barlow fonts and
-#     nanosvg).
+#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS, and the launcher's Barlow fonts,
+#     nanosvg and JSON for Modern C++);
+#   - the zip's SHA-256 next to it (<zip>.sha256), for the launcher's updater and anyone checking the download.
 # It never takes userdata\, logs\, *.toml or *.pdb from the build folder: those are the builder's saves,
 # caches (the game's shaders among them), settings and debug data.
 #
@@ -55,6 +56,8 @@ Add-License "ReXGlue-SDK" "$repo\thirdparty\rexglue-sdk\LICENSE"
 # The launcher's fonts and SVG rasterizer (launcher\).
 Add-License "Barlow-fonts" "$repo\launcher\fonts\OFL.txt"
 Add-License "nanosvg" "$repo\launcher\thirdparty\nanosvg\LICENSE.txt"
+# JSON for Modern C++, which the launcher's updater reads GitHub's answer with (from the SDK's inja).
+Add-License "nlohmann-json" "$repo\thirdparty\rexglue-sdk\thirdparty\inja\third_party\include\nlohmann\LICENSE.MIT"
 # The SDK's components, as THIRD_PARTY_NOTICES.md lists them (license files under
 # thirdparty\rexglue-sdk\thirdparty\; licenses given in a header are in that header).
 $sdkThirdParty = "$repo\thirdparty\rexglue-sdk\thirdparty"
@@ -96,3 +99,9 @@ Get-ChildItem -Recurse -LiteralPath $dest -File | ForEach-Object {
   "{0,10:N0}  {1}" -f $_.Length, $_.FullName.Substring($dest.Length + 1)
 }
 "zip: $zip ({0:N1} MB)" -f ((Get-Item $zip).Length / 1MB)
+
+# Its SHA-256, as sha256sum writes it. The launcher's updater checks the zip against GitHub's digest of the asset,
+# or against this file when it is attached to the release too (<zip>.sha256).
+$hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
+[System.IO.File]::WriteAllText("$zip.sha256", "$hash  $name.zip`n", (New-Object System.Text.UTF8Encoding($false)))
+"sha256: $hash"

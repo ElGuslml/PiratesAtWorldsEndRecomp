@@ -38,9 +38,11 @@
 #include <cstdlib>
 #include <cwchar>
 #include <filesystem>
+#include <initializer_list>
 #include <string>
 
 #include "app.h"
+#include "game.h"
 #include "ui/gfx.h"
 #include "ui/ui.h"
 
@@ -105,29 +107,45 @@ std::wstring ForwardedArguments() {
   return p;
 }
 
+// The arguments the launcher received, each with its leading space, without those starting with one of `drop`
+// (a quoted argument stays whole).
+std::wstring ArgumentsWithout(std::initializer_list<const wchar_t*> drop) {
+  std::wstring all = ForwardedArguments();
+  std::wstring kept;
+  size_t at = 0;
+  while (at < all.size()) {
+    while (at < all.size() && (all[at] == L' ' || all[at] == L'\t')) ++at;
+    if (at >= all.size()) break;
+    size_t end = at;
+    bool quoted = false;
+    while (end < all.size() && (quoted || (all[end] != L' ' && all[end] != L'\t'))) {
+      if (all[end] == L'"') quoted = !quoted;
+      ++end;
+    }
+    std::wstring argument = all.substr(at, end - at);
+    bool dropped = false;
+    for (const wchar_t* prefix : drop) {
+      dropped = dropped || argument.rfind(prefix, 0) == 0;
+    }
+    if (!dropped) kept += L" " + argument;
+    at = end;
+  }
+  return kept;
+}
+
 void ShowError(const char* text) {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "PiratesAtWorldsEnd Launcher", text, nullptr);
 }
 
-// PiratesAtWorldsEndRecomp.exe, started from Play.
+// A program the launcher starts and stays for: the game from Play, or the launcher's new version after an update.
 class GameProcess {
  public:
   ~GameProcess() { Close(); }
 
-  // False with a message shown when it could not start.
-  bool Start(const std::filesystem::path& exe_dir, const launcher::Texts& t) {
+  // `arguments` with their leading spaces. False with a message shown when it could not start.
+  bool Start(const std::filesystem::path& exe, const std::wstring& arguments) {
     Close();
-    std::filesystem::path game = exe_dir / L"PiratesAtWorldsEndRecomp.exe";
-    if (!std::filesystem::exists(game)) {
-      ShowError(t.game_missing);
-      return false;
-    }
-    // The launcher's own option is not the game's.
-    std::wstring arguments = ForwardedArguments();
-    for (size_t at; (at = arguments.find(L" --launcher_first_run")) != std::wstring::npos;) {
-      arguments.erase(at, std::wcslen(L" --launcher_first_run"));
-    }
-    std::wstring command_line = L"\"" + game.wstring() + L"\"" + arguments;
+    std::wstring command_line = L"\"" + exe.wstring() + L"\"" + arguments;
     // Killed with the launcher: when Steam stops the program it started (this one), the game goes too. Nested
     // in Steam's own job, if any (Windows 8 and later).
     job_ = CreateJobObjectW(nullptr, nullptr);
@@ -139,8 +157,9 @@ class GameProcess {
     STARTUPINFOW startup = {sizeof(startup)};
     PROCESS_INFORMATION process = {};
     AllowSetForegroundWindow(ASFW_ANY);
-    if (!CreateProcessW(game.c_str(), command_line.data(), nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr,
-                        exe_dir.c_str(), &startup, &process)) {
+    std::filesystem::path folder = exe.parent_path();
+    if (!CreateProcessW(exe.c_str(), command_line.data(), nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr,
+                        folder.c_str(), &startup, &process)) {
       std::string text = "CreateProcess: " + std::to_string(GetLastError());
       ShowError(text.c_str());
       Close();
@@ -332,7 +351,13 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
       // The controllers are the game's while it runs (both reading a DualSense would also set its lights twice).
       ImGui_ImplSDL3_SetGamepadMode(ImGui_ImplSDL3_GamepadMode_Manual, nullptr, 0);
       SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
-      if (game.Start(exe_dir, t)) {
+      std::filesystem::path exe = exe_dir / launcher::game::kRecompExecutable;
+      bool found = std::filesystem::exists(exe);
+      if (!found) {
+        ShowError(t.game_missing);
+      }
+      // The launcher's own options are not the game's.
+      if (found && game.Start(exe, ArgumentsWithout({L"--launcher_"}))) {
         app.GameStarted();
       } else {
         SDL_InitSubSystem(SDL_INIT_GAMEPAD);
@@ -415,7 +440,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
       ImGui_ImplSDL3_ProcessEvent(&event);
     }
     idle_frames = input ? 0 : idle_frames + 1;
-    if (app.result() == App::Result::kQuit) {
+    if (app.result() == App::Result::kQuit || app.result() == App::Result::kRestart) {
       break;
     }
     if (app.result() == App::Result::kPlay) {
@@ -464,6 +489,16 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   }
 
   save();
+  // After an update: the new launcher, in place of this one. This process waits for it (and is gone only then), so
+  // that Steam still sees the program it started running.
+  GameProcess next;
+  bool restarted = false;
+  if (app.result() == App::Result::kRestart) {
+    std::wstring arguments = ArgumentsWithout({L"--launcher_updated_from", L"--launcher_first_run"});
+    std::string from = app.UpdatedFromArgument();
+    arguments += L" " + std::wstring(from.begin(), from.end());
+    restarted = next.Start(exe_dir / launcher::game::kLauncherExecutable, arguments);
+  }
   app.ReleaseTextures();
   ui::ReleasePictures();
   ImGui_ImplDX11_Shutdown();
@@ -472,5 +507,9 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   ui::gfx::Shutdown();
   SDL_DestroyWindow(window);
   SDL_Quit();
+  if (restarted) {
+    WaitForSingleObject(next.handle(), INFINITE);
+    return int(next.ExitCode());
+  }
   return 0;
 }

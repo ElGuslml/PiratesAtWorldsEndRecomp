@@ -182,7 +182,26 @@ struct Texts {
   const char* check_on_start;
   const char* check_on_start_hint;
   const char* release_notes;  // upper case; %s: the version
-  const char* release_notes_soon;
+  const char* release_notes_none;
+  const char* whats_new;  // %s: the version
+  const char* checking_updates;
+  const char* check_failed;  // %s: the error
+  const char* check_rate_limited;
+  const char* update_available;
+  const char* update_published;  // %s: date, %s: size in MB
+  const char* update_now;
+  const char* update_downloading;  // %s of %s MB
+  const char* update_verifying;
+  const char* update_installing;
+  const char* update_restart_hint;
+  const char* update_failed;  // %s: the error
+  const char* updated_to;  // %s: the version
+  const char* update_card_available;  // %s: the version
+  const char* see_whats_new;
+  const char* cancel;
+  const char* update_no_checksum;
+  const char* update_checksum_mismatch;
+  const char* update_in_use;  // %s: the file
   const char* full_history;
 
   // The first run (page_install.cpp).

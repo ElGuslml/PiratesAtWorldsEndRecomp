@@ -36,9 +36,20 @@ void App::PlayPage(const ImRect& rect) {
   float left = hero.Min.x + Px(40.0f);
   float right = hero.Max.x - Px(40.0f);
   float bottom = hero.Max.y - Px(36.0f);
+  // A notice across the top of the art: the game closed with an error, or the launcher was just updated.
+  ImRect notice(ImVec2(hero.Min.x + Px(24.0f), hero.Min.y + Px(24.0f)),
+                ImVec2(hero.Max.x - Px(24.0f), hero.Min.y + Px(24.0f) + Px(52.0f)));
   if (game_exit_code_ != 0) {
-    GameErrorNotice(ImRect(ImVec2(hero.Min.x + Px(24.0f), hero.Min.y + Px(24.0f)),
-                           ImVec2(hero.Max.x - Px(24.0f), hero.Min.y + Px(24.0f) + Px(52.0f))));
+    // A crash's code (0xC0000005) in hexadecimal, a small one as it is.
+    char code[16];
+    std::snprintf(code, sizeof(code), game_exit_code_ < 0x10000 ? "%u" : "0x%08X", game_exit_code_);
+    char text[256];
+    std::snprintf(text, sizeof(text), t_.game_closed_error, code);
+    Notice(notice, true, text, t_.open_logs, Page::kCount);
+  } else if (!updated_from_.empty()) {
+    char text[128];
+    std::snprintf(text, sizeof(text), t_.updated_to, kVersion);
+    Notice(notice, false, text, t_.see_whats_new, Page::kUpdates);
   }
 
   ButtonSpec play{ButtonKind::kPrimary, Type{Font::kCondensedBold, 26, 0.04f}, 60, 40, 10, Icon::kPlay, 22, 0, true};
@@ -144,39 +155,49 @@ void App::PlayPage(const ImRect& rect) {
     constexpr Type kVersionType{Font::kSemiBold, 16};
     float y = p.y + LineHeight(kCardTitle) + Px(12.0f);
     float line = LineHeight(kVersionType);
+    // The installed version with a green dot, or the new one with an accent dot.
+    const Release* newer = updates_ ? updates_->Newer(Version::Parse(kVersion)) : nullptr;
     FillRect(ImRect(ImVec2(p.x, y + (line - Px(10.0f)) * 0.5f), ImVec2(p.x + Px(10.0f), y + (line + Px(10.0f)) * 0.5f)),
-             col::kSuccess, 5.0f);
-    char version[64];
-    std::snprintf(version, sizeof(version), t_.version, kVersion);
-    DrawLabel(kVersionType, ImVec2(p.x + Px(20.0f), y), col::kText, version);
+             newer ? col::kAccent : col::kSuccess, 5.0f);
+    char version[96];
+    if (newer) {
+      std::string number = newer->tag.size() > 1 && (newer->tag[0] == 'v' || newer->tag[0] == 'V') ? newer->tag.substr(1)
+                                                                                                    : newer->tag;
+      std::snprintf(version, sizeof(version), t_.update_card_available, number.c_str());
+    } else {
+      std::snprintf(version, sizeof(version), t_.version, kVersion);
+    }
+    DrawLabel(kVersionType, ImVec2(p.x + Px(20.0f), y), col::kText,
+              Ellipsize(kVersionType, version, r.GetWidth() - Px(60.0f)));
     y += line + Px(12.0f);
     char checked[128];
-    std::snprintf(checked, sizeof(checked), t_.last_check, t_.never);
-    DrawLabel(Type{Font::kRegular, 13}, ImVec2(p.x, y), col::kTextMuted, checked);
-    if (Link("updates", ImVec2(p.x, link_y), t_.find_updates)) {
+    std::snprintf(checked, sizeof(checked), t_.last_check, LastCheckedText().c_str());
+    DrawLabel(Type{Font::kRegular, 13}, ImVec2(p.x, y), col::kTextMuted,
+              Ellipsize(Type{Font::kRegular, 13}, checked, r.GetWidth() - Px(40.0f)));
+    if (Link("updates", ImVec2(p.x, link_y), newer ? t_.update_now : t_.find_updates)) {
       Navigate(Page::kUpdates, false);
     }
   }
 }
 
-void App::GameErrorNotice(const ImRect& rect) {
-  // A crash's code (0xC0000005) in hexadecimal, a small one as it is.
-  char code[16];
-  std::snprintf(code, sizeof(code), game_exit_code_ < 0x10000 ? "%u" : "0x%08X", game_exit_code_);
-  char text[256];
-  std::snprintf(text, sizeof(text), t_.game_closed_error, code);
-  FillRect(rect, col::kErrorTint, 10.0f);
-  StrokeRect(rect, Fade(col::kError, 0.55f), 10.0f);
-  DrawIcon(Icon::kAlert, ImVec2(rect.Min.x + Px(16.0f), rect.Min.y + (rect.GetHeight() - Px(20.0f)) * 0.5f), 20.0f,
-           col::kError, 2.0f);
+void App::Notice(const ImRect& rect, bool error, const char* text, const char* link, Page link_page) {
+  ImU32 color = error ? col::kError : col::kSuccess;
+  FillRect(rect, error ? col::kErrorTint : Hex(0x17281F), 10.0f);
+  StrokeRect(rect, Fade(color, 0.55f), 10.0f);
+  ImVec2 icon(rect.Min.x + Px(16.0f), rect.Min.y + (rect.GetHeight() - Px(20.0f)) * 0.5f);
+  DrawIcon(error ? Icon::kAlert : Icon::kCheck, icon, 20.0f, color, 2.0f);
   constexpr Type kText{Font::kMedium, 14};
   float x = rect.Min.x + Px(48.0f);
   DrawLabel(kText, ImVec2(x, rect.Min.y), col::kText, text, rect.GetHeight());
   constexpr Type kLinkType{Font::kSemiBold, 14};
-  float link_width = MeasureText(kLinkType, t_.open_logs).x + Px(20.0f);
+  float link_width = MeasureText(kLinkType, link).x + Px(20.0f);
   float link_x = std::max(x + MeasureText(kText, text).x + Px(24.0f), rect.Max.x - Px(16.0f) - link_width);
-  if (Link("logs", ImVec2(link_x, rect.Min.y + (rect.GetHeight() - LineHeight(kLinkType)) * 0.5f), t_.open_logs)) {
-    OpenFolder(exe_dir_ / L"logs");
+  if (Link("notice", ImVec2(link_x, rect.Min.y + (rect.GetHeight() - LineHeight(kLinkType)) * 0.5f), link)) {
+    if (link_page == Page::kCount) {
+      OpenFolder(exe_dir_ / L"logs");
+    } else {
+      Navigate(link_page, false);
+    }
   }
 }
 

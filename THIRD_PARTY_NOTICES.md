@@ -17,7 +17,10 @@ U.S. and other countries.
 
 ## PiratesAtWorldsEnd Launcher
 
-The launcher (`launcher/`) uses SDL 3 and Dear ImGui from the SDK (below), and also contains:
+The launcher (`launcher/`) uses SDL 3, Dear ImGui, toml++ and stb_image's zlib decoder from the SDK (below), and
+JSON for Modern C++ from the SDK's inja (https://github.com/nlohmann/json, Copyright 2013-2023 Niels Lohmann, MIT;
+`thirdparty/rexglue-sdk/thirdparty/inja/third_party/include/nlohmann/LICENSE.MIT`) to read GitHub's answer about
+updates. It also contains:
 - **Barlow and Barlow Condensed** (`launcher/fonts/`, embedded in `PiratesAtWorldsEnd Launcher.exe`; three of them
   are also in the ReXGlue SDK's `resources/fonts/`, embedded in `PiratesAtWorldsEndRecomp.exe` for the achievement
   toast and list and the quit prompt): https://github.com/jpt/barlow, Copyright 2017 The Barlow Project Authors,

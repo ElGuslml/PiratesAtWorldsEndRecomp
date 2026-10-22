@@ -20,4 +20,11 @@ inline constexpr const char* kRegion = "USA";
 // The game partition's files on that disc (25 files): the space the first run asks for before an ISO is chosen.
 inline constexpr uint64_t kInstalledBytes = 6835718080;
 
+// Where this project's releases are (updater.cpp): GitHub's API for them, newest first, and their page.
+inline constexpr const char* kReleasesApi =
+    "https://api.github.com/repos/ElGuslml/PiratesAtWorldsEndRecomp/releases?per_page=20";
+inline constexpr const char* kReleasesPage = "https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases";
+// The launcher, which the updater replaces while it runs (renamed, then started again).
+inline constexpr const char* kLauncherExecutable = "PiratesAtWorldsEnd Launcher.exe";
+
 }  // namespace launcher::game

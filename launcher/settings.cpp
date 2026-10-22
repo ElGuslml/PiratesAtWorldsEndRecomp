@@ -225,6 +225,7 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
   o.gamepad_remap = GetString(c, "gamepad_remap");
 
   o.check_updates = GetBool(c, "launcher_check_updates", true);
+  o.last_update_check = std::strtoll(GetString(c, "launcher_last_update_check").c_str(), nullptr, 10);
   o.ui_fullscreen = GetBool(c, "launcher_ui_fullscreen", true);
   o.ui_maximized = GetBool(c, "launcher_ui_maximized", false);
   o.ui_size = {GetInt(c, "launcher_ui_width", 0), GetInt(c, "launcher_ui_height", 0)};
@@ -547,6 +548,9 @@ bool SaveOptions(const Settings& s) {
   // ("ps5:a=east,b=south"); empty: the standard layout.
   f << "gamepad_remap = \"" << o.gamepad_remap << "\"\n";
   f << "launcher_check_updates = " << boolean(o.check_updates) << "\n";
+  if (o.last_update_check > 0) {
+    f << "launcher_last_update_check = " << o.last_update_check << "\n";
+  }
   f << "launcher_ui_fullscreen = " << boolean(o.ui_fullscreen) << "\n";
   f << "launcher_ui_maximized = " << boolean(o.ui_maximized) << "\n";
   if (o.ui_size.first > 0 && o.ui_size.second > 0) {

@@ -114,7 +114,11 @@ Xbox, Switch Pro...). Its pages:
   controller (Xbox, PlayStation, Switch...) keeps its own layout.
 - **Achievements:** the game's achievements with their icons, which ones you have unlocked and when, the totals and
   your gamerscore; filtered by all, unlocked or locked. The game writes their list the first time it runs.
-- **Updates:** coming in a later version.
+- **Updates:** the installed version, and a newer release from this repository's
+  [Releases](https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases) with its notes. "Update now" downloads it,
+  checks its SHA-256, replaces the program's files and restarts the launcher; your game files (`assets\`), saves and
+  achievements (`userdata\`) and settings (`.toml`) are never touched. The launcher looks for a new version each time
+  it opens unless you turn that off. Pre-releases are not offered.
 
 Every change is saved at once. With a controller: LB/RB change the page, A selects, B goes back to the
 sidebar, Start plays. The launcher starts in fullscreen (always on the Steam Deck and in Steam Big Picture); F11 or

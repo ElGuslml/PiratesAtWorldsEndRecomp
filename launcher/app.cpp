@@ -14,8 +14,10 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <iterator>
 
+#include "game.h"
 #include "ui/gfx.h"
 #include "version.h"
 
@@ -60,6 +62,26 @@ bool InGroup(Page group_first, Page page) {
 
 }  // namespace
 
+namespace {
+
+// The value of a launcher option on the command line (--launcher_update_url=...), or empty.
+std::string CommandLineValue(const std::wstring& name) {
+  std::wstring line = GetCommandLineW();
+  size_t at = line.find(name);
+  if (at == std::wstring::npos) return {};
+  at += name.size();
+  bool quoted = at < line.size() && line[at] == L'"';
+  if (quoted) ++at;
+  size_t end = line.find(quoted ? L'"' : L' ', at);
+  std::wstring value = line.substr(at, end == std::wstring::npos ? std::wstring::npos : end - at);
+  int length = WideCharToMultiByte(CP_UTF8, 0, value.data(), int(value.size()), nullptr, 0, nullptr, nullptr);
+  std::string out(size_t(length), '\0');
+  WideCharToMultiByte(CP_UTF8, 0, value.data(), int(value.size()), out.data(), length, nullptr, nullptr);
+  return out;
+}
+
+}  // namespace
+
 void OpenFolder(const std::filesystem::path& folder) {
   ShellExecuteW(nullptr, L"open", folder.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
@@ -83,13 +105,26 @@ App::App(Settings settings, uint32_t language)
   if (!installing_) {
     LoadAchievements();
   }
+  // Updates: what an update left is cleaned up, and a new version is looked for if allowed.
+  update_url_ = CommandLineValue(L"--launcher_update_url=");
+  if (update_url_.empty()) {
+    update_url_ = game::kReleasesApi;
+  }
+  updated_from_ = CommandLineValue(L"--launcher_updated_from=");
+  CleanUpAfterUpdate(exe_dir_);
+  if (!installing_ && settings_.o.check_updates) {
+    CheckForUpdatesNow();
+  }
   // PLAY has the focus from the first frame (ImGui::SetItemDefaultFocus in PlayPage does not show it).
   focus_page_ = true;
 }
 
 bool App::Busy() const {
+  Update::State update = update_.Get().state;
+  bool updating = update == Update::State::kDownloading || update == Update::State::kVerifying ||
+                  update == Update::State::kInstalling;
   return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_ || achievements_loading_.valid() ||
-         game_running_ ||
+         game_running_ || update_check_.valid() || updating ||
          (installing_ && (iso_check_.valid() || extraction_.Get().state == Extraction::State::kRunning));
 }
 
@@ -147,6 +182,30 @@ void App::Changed() {
   }
 }
 
+void App::CheckForUpdatesNow() {
+  if (update_check_.valid()) return;
+  std::string url = update_url_;
+  update_check_ = std::async(std::launch::async, [url] { return CheckForUpdates(url); });
+}
+
+void App::PollUpdates() {
+  if (update_check_.valid() && update_check_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    updates_ = update_check_.get();
+    if (updates_->ok) {
+      settings_.o.last_update_check = int64_t(std::time(nullptr));
+      Changed();
+    }
+  }
+  // Installed: main.cpp starts the new launcher.
+  if (update_.Get().state == Update::State::kDone && result_ == Result::kNone) {
+    result_ = Result::kRestart;
+  }
+}
+
+std::string App::UpdatedFromArgument() const {
+  return std::string("--launcher_updated_from=") + kVersion;
+}
+
 void App::GameStarted() {
   result_ = Result::kNone;
   game_running_ = true;
@@ -202,6 +261,7 @@ void App::Navigate(Page page, bool focus_sidebar) {
 
 void App::Frame(ImVec2 size) {
   PollAchievements();
+  PollUpdates();
   ImGuiViewport* viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(size);
@@ -407,6 +467,13 @@ void App::Sidebar(const ImRect& rect) {
       DrawIcon(entry.icon, ImVec2(item.Min.x + Px(12.0f), item.Min.y + (height - Px(20.0f)) * 0.5f), 20.0f, icon,
                1.8f);
       DrawLabel(Type{Font::kSemiBold, 15}, ImVec2(item.Min.x + Px(44.0f), item.Min.y), text, labels[i], height);
+    }
+    // A new version: a dot on Updates.
+    if (entry.page == Page::kUpdates && !entry.group && updates_ && updates_->Newer(Version::Parse(kVersion))) {
+      float dot = Px(8.0f);
+      ImVec2 center(item.Max.x - Px(16.0f), item.GetCenter().y);
+      FillRect(ImRect(ImVec2(center.x - dot * 0.5f, center.y - dot * 0.5f), ImVec2(center.x + dot * 0.5f, center.y + dot * 0.5f)),
+               col::kAccent, 4.0f);
     }
     if (state.focused) {
       FocusRing(item, 8.0f);

@@ -120,12 +120,15 @@ if(WIN32)
         launcher/page_settings.cpp
         launcher/page_keyboard.cpp
         launcher/page_gamepad.cpp
-        launcher/page_info.cpp
+        launcher/page_updates.cpp
         launcher/page_achievements.cpp
         launcher/page_install.cpp
         launcher/iso.cpp
         launcher/install.cpp
         launcher/achievements.cpp
+        launcher/net.cpp
+        launcher/updater.cpp
+        launcher/zip.cpp
         launcher/ui/gfx.cpp
         launcher/ui/ui.cpp
         "${REXSDK_DIR}/thirdparty/imgui/backends/imgui_impl_sdl3.cpp"
@@ -133,8 +136,10 @@ if(WIN32)
     set_target_properties(potcawe_launcher PROPERTIES OUTPUT_NAME "PiratesAtWorldsEnd Launcher")
     target_compile_definitions(potcawe_launcher PRIVATE UNICODE _UNICODE NOMINMAX IMGUI_DEFINE_MATH_OPERATORS)
     target_include_directories(potcawe_launcher PRIVATE launcher res launcher/thirdparty/nanosvg
-        "${REXSDK_DIR}/thirdparty/imgui/backends" "${REXSDK_DIR}/thirdparty/tomlplusplus")
-    target_link_libraries(potcawe_launcher PRIVATE imgui SDL3::SDL3 d3d11 dxgi d3dcompiler shcore windowscodecs ole32)
+        "${REXSDK_DIR}/thirdparty/imgui/backends" "${REXSDK_DIR}/thirdparty/tomlplusplus"
+        "${REXSDK_DIR}/thirdparty/inja/third_party/include" "${REXSDK_DIR}/thirdparty/stb")
+    target_link_libraries(potcawe_launcher PRIVATE imgui SDL3::SDL3 d3d11 dxgi d3dcompiler shcore windowscodecs ole32
+        winhttp bcrypt)
     # A development build's game files, as the game falls back to them: the launcher then skips the first run.
     target_compile_definitions(potcawe_launcher PRIVATE
         POTCAWE_DEFAULT_GAME_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/assets")

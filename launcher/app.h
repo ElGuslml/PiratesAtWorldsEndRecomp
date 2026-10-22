@@ -21,6 +21,7 @@
 
 #include "achievements.h"
 #include "install.h"
+#include "updater.h"
 #include "settings.h"
 #include "texts.h"
 #include "ui/ui.h"
@@ -42,7 +43,8 @@ enum class Page : int { kPlay, kAchievements, kKeyboard, kGamepad, kVideo, kGrap
 
 class App {
  public:
-  enum class Result { kNone, kPlay, kQuit };
+  // kRestart: an update installed the launcher's new version, which main.cpp starts in place of this one.
+  enum class Result { kNone, kPlay, kQuit, kRestart };
 
   App(Settings settings, uint32_t language);
 
@@ -74,6 +76,9 @@ class App {
   // again, and a notice when the exit code is not 0.
   void GameExited(uint32_t exit_code);
 
+  // The arguments of the launcher's next start after an update (main.cpp): it names the version it came from.
+  std::string UpdatedFromArgument() const;
+
  private:
   // A setting changed: potcawe_options.toml is written at once.
   void Changed();
@@ -89,6 +94,13 @@ class App {
   void VideoPage(const ImRect& rect);
   void GraphicsPage(const ImRect& rect);
   void UpdatesPage(const ImRect& rect);
+  // The release notes (Markdown) at `pos`, `width` wide. Returns the height; draws only when `draw`.
+  float ReleaseNotes(const std::string& markdown, ImVec2 pos, float width, bool draw);
+  // A notice across the top of the Play page's art (an error exit code, an update installed).
+  // `link_page` kCount: the link opens the logs folder.
+  void Notice(const ImRect& rect, bool error, const char* text, const char* link, Page link_page);
+  // When updates were last checked ("22/10/2026 18:04"), or "never".
+  std::string LastCheckedText() const;
 
   // The pages' shared pieces. Each returns the y below it (pixels).
   float Header(ImVec2 pos, const char* kicker, const char* title, const char* subtitle);
@@ -101,8 +113,6 @@ class App {
 
   void Navigate(Page page, bool focus_sidebar);
   void StartingOverlay(ImVec2 size);
-  // The notice on the Play page after the game closed with an error, in `rect`.
-  void GameErrorNotice(const ImRect& rect);
   void FocusSidebar() { focus_sidebar_ = true; }
 
   // The keyboard page's key being assigned (page_keyboard.cpp).
@@ -154,6 +164,15 @@ class App {
   std::optional<Achievements> achievements_;
   std::vector<ImTextureID> achievement_icons_;
   bool achievements_requested_ = false;
+
+  // Updates (updater.h): checked on a thread when the launcher opens (if allowed) and on request.
+  void CheckForUpdatesNow();
+  void PollUpdates();
+  std::string update_url_;     // game::kReleasesApi, or --launcher_update_url for a test
+  std::string updated_from_;   // --launcher_updated_from: this start follows an update from that version
+  std::future<UpdateCheck> update_check_;
+  std::optional<UpdateCheck> updates_;
+  Update update_;
 
   // The first run (page_install.cpp): the game's files extracted from the player's ISO.
   enum class InstallStep { kWelcome, kChooseIso, kExtracting, kDone };
