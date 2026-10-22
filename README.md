@@ -90,14 +90,22 @@ Vulkan, at a whole multiple of 1280×720 (2×, 3×). Wider screens get black bar
 
 ## Configuration
 
-**PiratesAtWorldsEnd Launcher** works with mouse, keyboard or controller. Its rows:
-- monitor, display (fullscreen, borderless or window) and window size;
-- renderer;
-- with NativeXRenderer: image format (fill the screen, or 16:9 with bars) and internal resolution;
-- with Xenos: render scale and graphics API;
-- frame rate (30 or 60 FPS), antialiasing and anisotropic filtering.
+**PiratesAtWorldsEnd Launcher** works with mouse, keyboard or any controller (DualSense, DualShock,
+Xbox, Switch Pro...). Its pages:
+- **Play:** starts the game, with a summary of the current settings.
+- **Settings → Video:** monitor, display (fullscreen, borderless or window), window size, image format (fill
+  the screen, or 16:9 with bars) and internal resolution (NativeXRenderer's, or the Xenos path's scale).
+- **Settings → Graphics:** renderer (NativeXRenderer or Xenos), frame rate (30 or 60 FPS), antialiasing,
+  anisotropic filtering, and the graphics API with Xenos.
+- **Controls → Keyboard:** playing with keyboard and mouse, a primary and a secondary key for each control of
+  the Xbox 360 controller (Shift, Ctrl or Alt combinations and mouse buttons included), and the mouse for the
+  camera with its sensitivity.
+- **Controls → Gamepad:** the controllers connected (remapping comes in a later version).
+- **Achievements** and **Updates:** coming in later versions.
 
-Save writes the options and keeps the launcher open; Play saves them and starts the game.
+Every change is saved at once. With a controller: LB/RB change the page, A selects, B goes back to the
+sidebar, Start plays. The window scales with its size; F11 or Alt+Enter switch it to fullscreen, which it
+starts in on the Steam Deck and in Steam Big Picture.
 
 | File (next to `PiratesAtWorldsEndRecomp.exe`) | What it holds |
 |---|---|

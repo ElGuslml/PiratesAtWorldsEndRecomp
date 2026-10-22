@@ -1,0 +1,168 @@
+// The Play page: the art with the game's name, PLAY and Quit, and cards for the current settings, the
+// achievements and the updates.
+
+#include <algorithm>
+#include <cstdio>
+#include <string>
+#include <vector>
+
+#include "app.h"
+
+namespace launcher {
+
+using namespace ui;
+
+namespace {
+
+constexpr Type kCardTitle{Font::kBold, 12, 0.1f};
+constexpr Type kChip{Font::kMedium, 13};
+constexpr Type kLinkType{Font::kSemiBold, 14};
+
+std::string SizeText(Size size) { return std::to_string(size.first) + " × " + std::to_string(size.second); }
+
+}  // namespace
+
+void App::PlayPage(const ImRect& rect) {
+  const Options& o = settings_.o;
+  ImRect content(ImVec2(rect.Min.x + Px(24.0f), rect.Min.y + Px(24.0f)),
+                 ImVec2(rect.Max.x - Px(24.0f), rect.Max.y - Px(24.0f)));
+  float cards_height = Px(172.0f);
+  ImRect hero(content.Min, ImVec2(content.Max.x, content.Max.y - cards_height - Px(16.0f)));
+
+  // The art and the game's name.
+  FillRect(hero, Hex(0x142033), 12.0f);
+  // Cropped above center: a wide window keeps the moon whole (at the mockup's size nothing is cropped vertically).
+  DrawArt(Art::kHero, hero, ImVec2(0.5f, 0.3f), 12.0f);
+  float left = hero.Min.x + Px(40.0f);
+  float right = hero.Max.x - Px(40.0f);
+  float bottom = hero.Max.y - Px(36.0f);
+
+  ButtonSpec play{ButtonKind::kPrimary, Type{Font::kCondensedBold, 26, 0.04f}, 60, 40, 10, Icon::kPlay, 22, 0, true};
+  play.gap = 12;
+  ButtonSpec quit{ButtonKind::kHero, Type{Font::kSemiBold, 16}, 60, 24, 10, Icon::kLogOut, 20, 1.8f};
+  quit.gap = 10;
+  float play_width = ButtonWidth(play, t_.play);
+  float quit_width = ButtonWidth(quit, t_.quit);
+  float buttons_y = bottom - Px(60.0f);
+  float play_x = right - play_width;
+  if (Button("quit", ImVec2(play_x - Px(12.0f) - quit_width, buttons_y), quit, t_.quit)) {
+    result_ = Result::kQuit;
+  }
+  if (Button("play", ImVec2(play_x, buttons_y), play, t_.play)) {
+    result_ = Result::kPlay;
+  }
+  // The window's first focus (ImGui's navigation picks it when the window appears): Enter or A plays straight
+  // away, as in the launcher before (its default button).
+  ImGui::SetItemDefaultFocus();
+  page_focus_ = ImGui::GetItemID();
+
+  constexpr Type kKicker{Font::kBold, 13, 0.16f};
+  constexpr Type kName{Font::kCondensedBold, 76, -0.01f};
+  constexpr Type kTagline{Font::kRegular, 15};
+  float tagline_y = bottom - LineHeight(kTagline);
+  float name_box = Px(76.0f) * 0.92f;
+  float name_y = tagline_y - Px(12.0f) - name_box;
+  float kicker_y = name_y - Px(6.0f) - LineHeight(kKicker);
+  DrawLabel(kKicker, ImVec2(left, kicker_y), col::kAccent, "PIRATES OF THE CARIBBEAN");
+  DrawLabel(kName, ImVec2(left, name_y), col::kText, "At World's End", name_box);
+  DrawLabel(kTagline, ImVec2(left, tagline_y), col::kTextSecondary, t_.tagline);
+
+  // The cards.
+  float gap = Px(16.0f);
+  float card_width = (content.GetWidth() - gap * 2.0f) / 3.0f;
+  float card_top = content.Max.y - cards_height;
+  auto card = [&](int i) {
+    float x = content.Min.x + float(i) * (card_width + gap);
+    return ImRect(ImVec2(x, card_top), ImVec2(x + card_width, content.Max.y));
+  };
+  float link_y = content.Max.y - Px(20.0f) - LineHeight(kLinkType);
+
+  // The current settings.
+  {
+    ImRect r = card(0);
+    FillRect(r, col::kCard, 10.0f);
+    ImVec2 p(r.Min.x + Px(20.0f), r.Min.y + Px(20.0f));
+    DrawLabel(kCardTitle, p, col::kLabel, t_.current_settings);
+    std::vector<std::string> chips;
+    chips.push_back(SizeText(settings_.OutputSize()));
+    chips.push_back(o.display == kFullscreen ? t_.fullscreen : o.display == kBorderless ? t_.borderless : t_.window);
+    chips.push_back(o.native ? "NativeXRenderer" : "Xenos");
+    chips.push_back(o.fps60 ? "60 FPS" : "30 FPS");
+    if (o.native) {
+      if (o.native_aa == kAaOff) {
+        chips.push_back(std::string(t_.antialiasing) + ": " + t_.none);
+      } else if (o.native_aa < kNativeAntialiasingCount) {
+        constexpr const char* kNames[] = {"SMAA", "DLAA", "FXAA", ""};
+        chips.push_back(kNames[o.native_aa]);
+      } else if (o.native_aa_experimental >= 0) {
+        chips.push_back(kExperimentalAntialiasing[o.native_aa_experimental].label);
+      }
+    } else {
+      chips.push_back(o.no_msaa ? std::string(t_.antialiasing) + ": " + t_.none : std::string("2× MSAA"));
+    }
+    constexpr const char* kAnisotropic[] = {"", "", "2×", "4×", "8×", "16×"};
+    chips.push_back(o.anisotropic > 0 ? std::string("AF ") + kAnisotropic[o.anisotropic] : std::string("AF ") + t_.off);
+    // The chips wrap; a third row pushes the links down into the cards' bottom padding, as in the mockup
+    // (its flex column overflows the same way). What still does not fit is left out.
+    std::vector<ImRect> places;
+    float x = p.x;
+    float y = p.y + LineHeight(kCardTitle) + Px(14.0f);
+    float chip_height = LineHeight(kChip) + Px(10.0f);
+    for (const std::string& chip : chips) {
+      float chip_width = MeasureText(kChip, chip).x + Px(20.0f);
+      if (x > p.x && x + chip_width > r.Max.x - Px(20.0f)) {
+        x = p.x;
+        y += chip_height + Px(6.0f);
+      }
+      places.emplace_back(ImVec2(x, y), ImVec2(x + chip_width, y + chip_height));
+      x += chip_width + Px(6.0f);
+    }
+    float lowest_link = r.Max.y - LineHeight(kLinkType) - Px(4.0f);
+    link_y = std::clamp(places.back().Max.y + Px(14.0f), link_y, std::max(link_y, lowest_link));
+    for (size_t i = 0; i < places.size() && places[i].Max.y <= link_y - Px(6.0f); ++i) {
+      FillRect(places[i], col::kChip, 6.0f);
+      DrawLabel(kChip, ImVec2(places[i].Min.x + Px(10.0f), places[i].Min.y + Px(5.0f)), col::kText, chips[i]);
+    }
+    if (Link("settings", ImVec2(p.x, link_y), t_.change_settings)) {
+      Navigate(Page::kVideo, false);
+    }
+  }
+
+  // The achievements (their list comes from the game after the first session).
+  {
+    ImRect r = card(1);
+    FillRect(r, col::kCard, 10.0f);
+    ImVec2 p(r.Min.x + Px(20.0f), r.Min.y + Px(20.0f));
+    DrawLabel(kCardTitle, p, col::kLabel, t_.achievements_card);
+    DrawParagraph(Type{Font::kRegular, 14}, ImVec2(p.x, p.y + LineHeight(kCardTitle) + Px(12.0f)),
+                    r.GetWidth() - Px(40.0f), 1.4f, col::kTextMuted, t_.achievements_after_play);
+    if (Link("achievements", ImVec2(p.x, link_y), t_.see_achievements)) {
+      Navigate(Page::kAchievements, false);
+    }
+  }
+
+  // The updates.
+  {
+    ImRect r = card(2);
+    FillRect(r, col::kCard, 10.0f);
+    ImVec2 p(r.Min.x + Px(20.0f), r.Min.y + Px(20.0f));
+    DrawLabel(kCardTitle, p, col::kLabel, t_.updates_card);
+    constexpr Type kVersionType{Font::kSemiBold, 16};
+    float y = p.y + LineHeight(kCardTitle) + Px(12.0f);
+    float line = LineHeight(kVersionType);
+    FillRect(ImRect(ImVec2(p.x, y + (line - Px(10.0f)) * 0.5f), ImVec2(p.x + Px(10.0f), y + (line + Px(10.0f)) * 0.5f)),
+             col::kSuccess, 5.0f);
+    char version[64];
+    std::snprintf(version, sizeof(version), t_.version, kVersion);
+    DrawLabel(kVersionType, ImVec2(p.x + Px(20.0f), y), col::kText, version);
+    y += line + Px(12.0f);
+    char checked[128];
+    std::snprintf(checked, sizeof(checked), t_.last_check, t_.never);
+    DrawLabel(Type{Font::kRegular, 13}, ImVec2(p.x, y), col::kTextMuted, checked);
+    if (Link("updates", ImVec2(p.x, link_y), t_.find_updates)) {
+      Navigate(Page::kUpdates, false);
+    }
+  }
+}
+
+}  // namespace launcher

@@ -106,14 +106,34 @@ target_include_directories(potcawe PRIVATE "${REXSDK_DIR}/thirdparty/imgui")
 target_compile_definitions(potcawe PRIVATE
     POTCAWE_DEFAULT_GAME_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
-# PiratesAtWorldsEnd Launcher: game options in a separate executable (Win32, no SDK) so that
-# PiratesAtWorldsEndRecomp.exe starts right away. It writes potcawe_options.toml next to
-# PiratesAtWorldsEndRecomp.exe and starts it on "Play".
+# PiratesAtWorldsEnd Launcher: game options in a separate executable so that PiratesAtWorldsEndRecomp.exe
+# starts right away. It writes potcawe_options.toml next to PiratesAtWorldsEndRecomp.exe and starts it on
+# "Play". SDL3 and Dear ImGui from the SDK tree, linked statically (one executable, without the SDK's DLLs),
+# drawn with Direct3D 11 (the SDK builds SDL3 without SDL_render); nanosvg draws its icons and art.
 if(WIN32)
-    add_executable(potcawe_launcher WIN32 launcher/potcawe_launcher.cpp)
+    add_executable(potcawe_launcher WIN32
+        launcher/main.cpp
+        launcher/app.cpp
+        launcher/settings.cpp
+        launcher/texts.cpp
+        launcher/page_play.cpp
+        launcher/page_settings.cpp
+        launcher/page_keyboard.cpp
+        launcher/page_gamepad.cpp
+        launcher/page_info.cpp
+        launcher/ui/gfx.cpp
+        launcher/ui/ui.cpp
+        "${REXSDK_DIR}/thirdparty/imgui/backends/imgui_impl_sdl3.cpp"
+        "${REXSDK_DIR}/thirdparty/imgui/backends/imgui_impl_dx11.cpp")
     set_target_properties(potcawe_launcher PROPERTIES OUTPUT_NAME "PiratesAtWorldsEnd Launcher")
-    target_compile_definitions(potcawe_launcher PRIVATE UNICODE _UNICODE NOMINMAX)
-    target_link_libraries(potcawe_launcher PRIVATE comctl32 shcore)
+    target_compile_definitions(potcawe_launcher PRIVATE UNICODE _UNICODE NOMINMAX IMGUI_DEFINE_MATH_OPERATORS)
+    target_include_directories(potcawe_launcher PRIVATE launcher res launcher/thirdparty/nanosvg
+        "${REXSDK_DIR}/thirdparty/imgui/backends")
+    target_link_libraries(potcawe_launcher PRIVATE imgui SDL3::SDL3 d3d11 dxgi d3dcompiler shcore)
+    # The embedded fonts and art (res/launcher.rc): a change rebuilds the resources.
+    file(GLOB POTCAWE_LAUNCHER_RESOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/launcher/fonts/*.ttf" "${CMAKE_CURRENT_SOURCE_DIR}/launcher/art/*.svg")
+    set_source_files_properties(res/launcher.rc PROPERTIES OBJECT_DEPENDS "${POTCAWE_LAUNCHER_RESOURCES}")
 endif()
 
 # Windows resources: file properties (res/version.h) and the icon, res/icon.ico, when it exists. The

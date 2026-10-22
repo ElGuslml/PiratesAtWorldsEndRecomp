@@ -3,7 +3,8 @@
 #   - README.md, LICENSE, THIRD_PARTY_NOTICES.md;
 #   - assets\README.md (the user copies the game files there);
 #   - licenses\: the license text of every component in the binaries (the ReXGlue SDK and its components,
-#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS).
+#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS, and the launcher's Barlow fonts and
+#     nanosvg).
 # It never takes userdata\, logs\, *.toml or *.pdb from the build folder: those are the builder's saves,
 # caches (the game's shaders among them), settings and debug data.
 #
@@ -51,6 +52,9 @@ Add-License "volk" "$diligent\ThirdParty\volk\LICENSE.md"
 Add-License "SMAA" "$nxr\thirdparty\smaa\LICENSE.txt"
 Add-License "NVIDIA-DLSS" "$Build\_deps\dlss-headers-src\LICENSE.txt"
 Add-License "ReXGlue-SDK" "$repo\thirdparty\rexglue-sdk\LICENSE"
+# The launcher's fonts and SVG rasterizer (launcher\).
+Add-License "Barlow-fonts" "$repo\launcher\fonts\OFL.txt"
+Add-License "nanosvg" "$repo\launcher\thirdparty\nanosvg\LICENSE.txt"
 # The SDK's components, as THIRD_PARTY_NOTICES.md lists them (license files under
 # thirdparty\rexglue-sdk\thirdparty\; licenses given in a header are in that header).
 $sdkThirdParty = "$repo\thirdparty\rexglue-sdk\thirdparty"

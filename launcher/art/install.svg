@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 760">
+<!-- The first-run screens' side art (Gustavo's mockup, local_docs/launcher_design). Drawn with
+     preserveAspectRatio "xMidYMax slice" (launcher/ui/art.cpp). -->
+<rect width="440" height="760" fill="#142033"/>
+<g fill="#33445F"><circle cx="40" cy="250" r="1.6"/><circle cx="120" cy="300" r="1.2"/><circle cx="200" cy="230" r="1.6"/><circle cx="80" cy="380" r="1.2"/><circle cx="390" cy="380" r="1.6"/><circle cx="170" cy="400" r="1.2"/><circle cx="410" cy="250" r="1.2"/></g>
+<circle cx="320" cy="320" r="78" fill="#E7D3A0"/>
+<circle cx="296" cy="300" r="12" fill="#D9C38B"/>
+<circle cx="345" cy="345" r="8" fill="#D9C38B"/>
+<circle cx="340" cy="290" r="5" fill="#D9C38B"/>
+<rect x="0" y="500" width="440" height="260" fill="#1A2B45"/>
+<g fill="#38507A"><rect x="270" y="512" width="100" height="4" rx="2"/><rect x="284" y="526" width="72" height="4" rx="2"/><rect x="296" y="540" width="48" height="4" rx="2"/></g>
+<g fill="#0B111B">
+<path d="M40 500 h190 l-24 34 h-144z"/>
+<path d="M226 500 l52 -22 l2 4 l-48 22z"/>
+<rect x="92" y="352" width="4" height="150"/>
+<rect x="138" y="330" width="4" height="172"/>
+<rect x="182" y="362" width="4" height="140"/>
+<path d="M68 378 h52 l5 38 h-62z"/><path d="M64 424 h60 l5 46 h-70z"/>
+<path d="M112 352 h56 l5 42 h-66z"/><path d="M106 402 h66 l6 52 h-78z"/>
+<path d="M162 386 h44 l4 34 h-52z"/><path d="M158 428 h54 l5 40 h-64z"/>
+<path d="M142 330 l20 5 l-20 5z"/>
+</g>
+<path d="M0 544 Q 40 530 80 544 T 160 544 T 240 544 T 320 544 T 400 544 T 480 544 V760 H0Z" fill="#15233A"/>
+<path d="M0 610 Q 50 596 100 610 T 200 610 T 300 610 T 400 610 T 500 610 V760 H0Z" fill="#101B2D"/>
+<path d="M0 680 Q 55 668 110 680 T 220 680 T 330 680 T 440 680 T 550 680 V760 H0Z" fill="#0C1524"/>
+</svg>

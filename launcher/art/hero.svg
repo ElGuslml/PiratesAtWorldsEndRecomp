@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480">
+<!-- The Play page's art (Gustavo's mockup, local_docs/launcher_design): a ship and the moon. Drawn
+     with preserveAspectRatio "xMidYMid slice" (launcher/ui/art.cpp). -->
+<rect width="1000" height="480" fill="#142033"/>
+<g fill="#33445F"><circle cx="90" cy="60" r="1.6"/><circle cx="180" cy="120" r="1.2"/><circle cx="310" cy="50" r="1.6"/><circle cx="420" cy="140" r="1.2"/><circle cx="540" cy="70" r="1.6"/><circle cx="610" cy="190" r="1.2"/><circle cx="930" cy="80" r="1.6"/><circle cx="880" cy="230" r="1.2"/><circle cx="40" cy="200" r="1.2"/><circle cx="470" cy="230" r="1.6"/></g>
+<circle cx="760" cy="150" r="92" fill="#E7D3A0"/>
+<circle cx="732" cy="128" r="14" fill="#D9C38B"/>
+<circle cx="790" cy="180" r="9" fill="#D9C38B"/>
+<circle cx="785" cy="118" r="6" fill="#D9C38B"/>
+<rect x="0" y="292" width="1000" height="188" fill="#1A2B45"/>
+<g fill="#38507A"><rect x="700" y="304" width="120" height="4" rx="2"/><rect x="716" y="318" width="88" height="4" rx="2"/><rect x="730" y="332" width="60" height="4" rx="2"/></g>
+<g fill="#0B111B">
+<path d="M560 292 h70 l-8 10 h-54z"/><rect x="583" y="244" width="2" height="48"/><rect x="603" y="252" width="2" height="40"/><path d="M574 252 h20 l2 18 h-24z"/><path d="M594 260 h18 l2 16 h-22z"/>
+<path d="M130 292 h230 l-28 40 h-176z"/>
+<path d="M356 292 l64 -26 l2 4 l-60 26z"/>
+<rect x="196" y="120" width="5" height="174"/>
+<rect x="250" y="96" width="5" height="198"/>
+<rect x="303" y="132" width="5" height="162"/>
+<path d="M168 150 h62 l6 46 h-74z"/><path d="M164 206 h70 l6 56 h-82z"/>
+<path d="M220 120 h66 l6 50 h-78z"/><path d="M214 180 h76 l7 62 h-90z"/>
+<path d="M280 160 h52 l5 40 h-62z"/><path d="M276 210 h62 l6 48 h-74z"/>
+<path d="M255 96 l24 6 l-24 6z"/>
+<path d="M330 262 l50 -20 l4 22 l-54 6z"/>
+</g>
+<path d="M0 336 Q 50 322 100 336 T 200 336 T 300 336 T 400 336 T 500 336 T 600 336 T 700 336 T 800 336 T 900 336 T 1000 336 V480 H0Z" fill="#15233A"/>
+<path d="M0 388 Q 60 372 120 388 T 240 388 T 360 388 T 480 388 T 600 388 T 720 388 T 840 388 T 960 388 T 1080 388 V480 H0Z" fill="#101B2D"/>
+<path d="M0 436 Q 70 424 140 436 T 280 436 T 420 436 T 560 436 T 700 436 T 840 436 T 980 436 T 1120 436 V480 H0Z" fill="#0C1524"/>
+</svg>
