@@ -103,6 +103,10 @@ struct Options {
   float mnk_sensitivity = 1.0f;
   std::array<std::string, int(Bind::kCount)> binds;
 
+  // The controllers' buttons moved to other Xbox 360 controls: the SDK's gamepad_remap (recomp change 36),
+  // edited by the Gamepad page (page_gamepad.cpp).
+  std::string gamepad_remap;
+
   // The launcher's own.
   bool check_updates = true;    // launcher_check_updates
   bool ui_fullscreen = false;   // launcher_ui_fullscreen: the launcher's window

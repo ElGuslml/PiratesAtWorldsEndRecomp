@@ -129,17 +129,6 @@ int LaunchGame(const std::filesystem::path& exe_dir, const launcher::Texts& t) {
   return int(exit_code);
 }
 
-// A controller button held when the window opened (the A that started the launcher from Big Picture) must
-// not press anything: the controller navigates once all its buttons are up.
-bool AnyGamepadButtonDown() {
-  for (int key = ImGuiKey_GamepadStart; key <= ImGuiKey_GamepadR3; ++key) {
-    if (ImGui::IsKeyDown(ImGuiKey(key))) {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
@@ -280,10 +269,12 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
     }
     // The controller navigates once the buttons held at the start are up, and not while a key is being
     // assigned (B cancels that, App::OnKeyCapture).
-    if (!primed && !AnyGamepadButtonDown()) {
+    // A controller button held when the window opened (the A that started the launcher from Big Picture) must
+    // not press anything; neither must the one just assigned on the Gamepad page (App::GamepadLocked).
+    if (!primed && !ui::AnyGamepadButtonDown()) {
       primed = true;
     }
-    if (primed && !app.Listening()) {
+    if (primed && !app.Listening() && !app.GamepadLocked()) {
       io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     } else {
       io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;

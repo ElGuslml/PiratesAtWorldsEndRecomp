@@ -403,6 +403,15 @@ ItemState Item(ImGuiID id, const ImRect& rect, bool enabled) {
 
 ItemState Item(const char* id, const ImRect& rect, bool enabled) { return Item(ImGui::GetID(id), rect, enabled); }
 
+bool AnyGamepadButtonDown() {
+  for (int key = ImGuiKey_GamepadStart; key <= ImGuiKey_GamepadR3; ++key) {
+    if (ImGui::IsKeyDown(ImGuiKey(key))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void CaptureFirstItem() {
   g_capture_first = true;
   g_first_item = 0;

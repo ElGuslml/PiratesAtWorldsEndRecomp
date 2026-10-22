@@ -222,6 +222,8 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
     o.binds[i] = it != c.end() ? it->second : kBinds[i].sdk_default;
   }
 
+  o.gamepad_remap = GetString(c, "gamepad_remap");
+
   o.check_updates = GetBool(c, "launcher_check_updates", true);
   o.ui_fullscreen = GetBool(c, "launcher_ui_fullscreen", false);
   o.ui_maximized = GetBool(c, "launcher_ui_maximized", false);
@@ -541,6 +543,9 @@ bool SaveOptions(const Settings& s) {
   for (int i = 0; i < int(Bind::kCount); ++i) {
     f << kBinds[i].cvar << " = \"" << o.binds[i] << "\"\n";
   }
+  // The controllers' layouts: per SDL gamepad type, which button presses each Xbox 360 control
+  // ("ps5:a=east,b=south"); empty: the standard layout.
+  f << "gamepad_remap = \"" << o.gamepad_remap << "\"\n";
   f << "launcher_check_updates = " << boolean(o.check_updates) << "\n";
   f << "launcher_ui_fullscreen = " << boolean(o.ui_fullscreen) << "\n";
   f << "launcher_ui_maximized = " << boolean(o.ui_maximized) << "\n";

@@ -150,7 +150,8 @@ struct Texts {
   const char* mapping_title;  // upper case, followed by an arrow and the controller
   const char* mapping_hint;
   const char* pad_buttons[14];  // A B X Y LB RB LT RT LS RS Start Back D-pad Guide
-  const char* remap_soon;
+  const char* press_button;
+  const char* remap_note;
   const char* controller;  // a controller of unknown type
 
   // Achievements.

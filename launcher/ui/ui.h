@@ -171,6 +171,8 @@ ItemState Item(const char* id, const ImRect& rect, bool enabled = true);
 ItemState Item(ImGuiID id, const ImRect& rect, bool enabled = true);
 // The mockup's :focus-visible outline: 2 dp of accent, 2 dp outside the item.
 void FocusRing(const ImRect& rect, float rounding);
+// A controller button is held (ImGui's gamepad keys).
+bool AnyGamepadButtonDown();
 // The first interactive item registered between the two calls (a page's first control).
 void CaptureFirstItem();
 ImGuiID CapturedFirstItem();

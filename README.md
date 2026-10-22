@@ -100,7 +100,9 @@ Xbox, Switch Pro...). Its pages:
 - **Controls → Keyboard:** playing with keyboard and mouse, a primary and a secondary key for each control of
   the Xbox 360 controller (Shift, Ctrl or Alt combinations and mouse buttons included), and the mouse for the
   camera with its sensitivity.
-- **Controls → Gamepad:** the controllers connected (remapping comes in a later version).
+- **Controls → Gamepad:** the controllers connected, and which of their buttons presses each button of the
+  Xbox 360 controller (A, B, X, Y, the bumpers, the triggers, the stick clicks, Start, Back, Guide). Each type of
+  controller (Xbox, PlayStation, Switch...) keeps its own layout.
 - **Achievements** and **Updates:** coming in later versions.
 
 Every change is saved at once. With a controller: LB/RB change the page, A selects, B goes back to the

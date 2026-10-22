@@ -164,7 +164,12 @@ void App::Frame(ImVec2 size) {
   // list is open (B closes it) or a key is being assigned.
   static bool popup_was_open = false;
   bool popup = ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId);
-  if (!popup && !popup_was_open && listen_bind_ < 0) {
+  // The controller's buttons are ImGui's state, not events: one just assigned on the Gamepad page still looks
+  // pressed. It does nothing until all are up.
+  if (pad_release_wait_ && !AnyGamepadButtonDown()) {
+    pad_release_wait_ = false;
+  }
+  if (!popup && !popup_was_open && !Listening() && !pad_release_wait_) {
     constexpr Page kOrder[] = {Page::kPlay,  Page::kAchievements, Page::kKeyboard, Page::kGamepad,
                                Page::kVideo, Page::kGraphics,     Page::kUpdates};
     int index = int(std::find(std::begin(kOrder), std::end(kOrder), page_) - std::begin(kOrder));
@@ -201,7 +206,7 @@ bool App::OnEvent(const SDL_Event& event) {
     default:
       break;
   }
-  return OnKeyCapture(event);
+  return OnKeyCapture(event) || OnPadCapture(event);
 }
 
 // --- The sidebar ---

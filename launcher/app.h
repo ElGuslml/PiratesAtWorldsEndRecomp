@@ -4,6 +4,7 @@
 #pragma once
 
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_scancode.h>
 
 #include <chrono>
@@ -45,7 +46,9 @@ class App {
   // Something is changing on screen (a key being assigned, a message): keep drawing.
   bool Busy() const;
   // A key is being assigned: the controller does not navigate meanwhile (B cancels).
-  bool Listening() const { return listen_bind_ >= 0; }
+  bool Listening() const { return listen_bind_ >= 0 || pad_listen_ >= 0; }
+  // A controller button was just assigned: the controller does nothing until its buttons are up.
+  bool GamepadLocked() const { return pad_release_wait_; }
   Settings& settings() { return settings_; }
   const Texts& texts() const { return t_; }
 
@@ -79,6 +82,9 @@ class App {
 
   // The keyboard page's key being assigned (page_keyboard.cpp).
   bool OnKeyCapture(const SDL_Event& event);
+  // The Gamepad page's control being assigned a button (page_gamepad.cpp).
+  bool OnPadCapture(const SDL_Event& event);
+  void AssignPad(int input);
   void StartListening(int bind, int slot);
   void StopListening();
   void Assign(std::string token);
@@ -101,6 +107,9 @@ class App {
 
   // Gamepad page.
   int selected_pad_ = 0;
+  SDL_GamepadType pad_type_ = SDL_GAMEPAD_TYPE_UNKNOWN;  // the chosen controller's type: its layout is edited
+  int pad_listen_ = -1;  // the control waiting for a button, or -1
+  bool pad_release_wait_ = false;
 
   // Achievements page.
   int achievement_filter_ = 0;

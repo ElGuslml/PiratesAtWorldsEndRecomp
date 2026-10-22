@@ -150,7 +150,8 @@ const Texts kEnglish = {
     .pad_buttons = {"A button", "B button", "X button", "Y button", "Left bumper", "Right bumper", "Left trigger",
                     "Right trigger", "Left stick click", "Right stick click", "Start", "Back", "D-pad",
                     "Guide button"},
-    .remap_soon = "Remapping arrives in the next version.",
+    .press_button = "Press a button…",
+    .remap_note = "Each type of controller keeps its own layout. Esc or a click cancels.",
     .controller = "Controller",
 
     .achievements_title = "Achievements",
@@ -324,7 +325,8 @@ const Texts kGerman = {
     .pad_buttons = {"A-Taste", "B-Taste", "X-Taste", "Y-Taste", "Linke Schultertaste", "Rechte Schultertaste",
                     "Linker Trigger", "Rechter Trigger", "Linken Stick drücken", "Rechten Stick drücken", "Start",
                     "Back", "Steuerkreuz", "Guide-Taste"},
-    .remap_soon = "Die Neubelegung kommt in der nächsten Version.",
+    .press_button = "Taste drücken…",
+    .remap_note = "Jeder Controller-Typ behält seine eigene Belegung. Esc oder ein Klick bricht ab.",
     .controller = "Controller",
 
     .achievements_title = "Erfolge",
@@ -498,7 +500,8 @@ const Texts kFrench = {
     .pad_buttons = {"Bouton A", "Bouton B", "Bouton X", "Bouton Y", "Bouton supérieur gauche",
                     "Bouton supérieur droit", "Gâchette gauche", "Gâchette droite", "Clic du stick gauche",
                     "Clic du stick droit", "Start", "Back", "Croix", "Bouton Guide"},
-    .remap_soon = "La réattribution arrive dans la prochaine version.",
+    .press_button = "Appuyez sur un bouton…",
+    .remap_note = "Chaque type de manette garde sa propre disposition. Échap ou un clic annule.",
     .controller = "Manette",
 
     .achievements_title = "Succès",
@@ -672,7 +675,8 @@ const Texts kSpanish = {
     .pad_buttons = {"Botón A", "Botón B", "Botón X", "Botón Y", "Bumper izquierdo", "Bumper derecho",
                     "Gatillo izquierdo", "Gatillo derecho", "Clic stick izquierdo", "Clic stick derecho", "Start",
                     "Back", "Cruceta", "Botón Guía"},
-    .remap_soon = "La reasignación llega en la próxima versión.",
+    .press_button = "Pulsa un botón…",
+    .remap_note = "Cada tipo de mando guarda su propia asignación. Esc o un clic cancela.",
     .controller = "Mando",
 
     .achievements_title = "Logros",
@@ -846,7 +850,8 @@ const Texts kItalian = {
     .pad_buttons = {"Pulsante A", "Pulsante B", "Pulsante X", "Pulsante Y", "Dorsale sinistro", "Dorsale destro",
                     "Grilletto sinistro", "Grilletto destro", "Clic levetta sinistra", "Clic levetta destra", "Start",
                     "Back", "Croce direzionale", "Pulsante Guida"},
-    .remap_soon = "La riassegnazione arriva nella prossima versione.",
+    .press_button = "Premi un pulsante…",
+    .remap_note = "Ogni tipo di controller mantiene la propria assegnazione. Esc o un clic annulla.",
     .controller = "Controller",
 
     .achievements_title = "Obiettivi",
