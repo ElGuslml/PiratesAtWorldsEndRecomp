@@ -79,6 +79,8 @@ Vulkan, at a whole multiple of 1280×720 (2×, 3×). Wider screens get black bar
 - **A script error no longer closes the game.** The recompiled `longjmp` did not jump, so Lua treated even
   the errors the game catches as fatal. The log now names each script error
   ([`docs/script-errors.md`](docs/script-errors.md)).
+- **Quitting from the title screen:** B on "PRESS START" asks whether to quit the game; A quits, B cancels
+  ([`docs/quit-prompt.md`](docs/quit-prompt.md)).
 - **On the Xenos path:**
   - no stutter the first time an effect appears ([`docs/stutters.md`](docs/stutters.md));
   - no flat-colored objects in Port Royal under GPU load
@@ -107,7 +109,8 @@ example:
 - `--fullscreen=false --window_width=1920 --window_height=1080`;
 - `--potcawe_60fps=true`;
 - `--native_x_renderer=false` (the Xenos path);
-- `--native_x_renderer_antialiasing=dlaa`.
+- `--native_x_renderer_antialiasing=dlaa`;
+- `--quit_prompt=false` (B on the title screen does not ask to quit).
 
 Other locations:
 - **Saves, the profile and the shader caches** go to `userdata\` next to the executable. If that folder

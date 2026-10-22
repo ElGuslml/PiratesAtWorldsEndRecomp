@@ -152,3 +152,38 @@ registers = ["r29", "r30"]
 address = 0x8247A61C   # stb r11,6(r31) (in luaD_throw, with no error handler: L->status = errcode)
 name = "PotcaweLuaUnhandledErrorHook"
 registers = ["r31", "r11"]
+
+# Quitting from the title screen (src/quit_prompt.cpp, the SDK's rex/ui/overlay/quit_prompt.h): the menu on screen,
+# followed through two events of the GX menu code. sub_822D4380 (GXMenuNode::CreateMenuItemHandlerFromWidgetMaybe)
+# sets a node up from its widget: the language menu C430000F, the title screen C4300007 (the same node), the main
+# menu C430000A. Six functions link a node to the next menu ([node+680] = next, cleared after the transition): the
+# title to the autosave notice, the notice to the main menu, the main menu back to the title. The prompt is offered
+# while the current menu is the title's node. quit_prompt = false disables it.
+[[midasm_hook]]
+address = 0x822D43F4   # bl 0x822d4160 (sub_822D4380: r3 = the node, r5 = the widget's GUID)
+name = "PotcaweMenuFromWidgetHook"
+registers = ["r3", "r5"]
+[[midasm_hook]]
+address = 0x822D2D90   # stw r30,680(r31) (sub_822D2CA0)
+name = "PotcaweMenuLinkHook"
+registers = ["r30"]
+[[midasm_hook]]
+address = 0x822D4078   # stw r30,680(r31) (sub_822D3F40)
+name = "PotcaweMenuLinkHook"
+registers = ["r30"]
+[[midasm_hook]]
+address = 0x822D5B0C   # stw r31,680(r30) (sub_822D5810)
+name = "PotcaweMenuLinkHook"
+registers = ["r31"]
+[[midasm_hook]]
+address = 0x822D5BF8   # stw r3,680(r31) (sub_822D5BA0)
+name = "PotcaweMenuLinkHook"
+registers = ["r3"]
+[[midasm_hook]]
+address = 0x822D5D08   # stw r3,680(r31) (sub_822D5CD0)
+name = "PotcaweMenuLinkHook"
+registers = ["r3"]
+[[midasm_hook]]
+address = 0x822D62D8   # stw r31,680(r30) (sub_822D5E60, NavigateToNewMenu)
+name = "PotcaweMenuLinkHook"
+registers = ["r31"]

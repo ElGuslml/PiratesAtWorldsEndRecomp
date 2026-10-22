@@ -12,6 +12,7 @@ the symptom, the cause, the fix and how to turn the fix off, so that you can che
 | [gpu-load.md](gpu-load.md) — GPU at 95-100 % with a 2× render scale (the SDK's copies around the game's EDRAM clears) | Fixed |
 | [sun-glow.md](sun-glow.md) — the sun's glare at the top of the screen with the sun behind the camera (Port Royal) | Fixed |
 | [script-errors.md](script-errors.md) — the game closes after a script error, with faults on several threads | Fixed |
+| [quit-prompt.md](quit-prompt.md) — no way to quit the game; B on the title screen now asks whether to quit | Working |
 
 ## NativeXRenderer
 

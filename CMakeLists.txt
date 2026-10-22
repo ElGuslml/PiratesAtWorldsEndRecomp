@@ -71,6 +71,7 @@ set(POTCAWE_SOURCES
     src/gpu_wait.cpp
     src/lua_errors.cpp
     src/options.cpp
+    src/quit_prompt.cpp
     src/startup.cpp
     src/native_x_renderer_potcawe.cpp
 )
