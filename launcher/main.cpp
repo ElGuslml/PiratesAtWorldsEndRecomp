@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cwchar>
 #include <filesystem>
 #include <string>
 
@@ -111,7 +112,12 @@ int LaunchGame(const std::filesystem::path& exe_dir, const launcher::Texts& t) {
     ShowError(t.game_missing);
     return 1;
   }
-  std::wstring command_line = L"\"" + game.wstring() + L"\"" + ForwardedArguments();
+  // The launcher's own option is not the game's.
+  std::wstring arguments = ForwardedArguments();
+  for (size_t at; (at = arguments.find(L" --launcher_first_run")) != std::wstring::npos;) {
+    arguments.erase(at, std::wcslen(L" --launcher_first_run"));
+  }
+  std::wstring command_line = L"\"" + game.wstring() + L"\"" + arguments;
   STARTUPINFOW startup = {sizeof(startup)};
   PROCESS_INFORMATION process = {};
   AllowSetForegroundWindow(ASFW_ANY);
@@ -214,6 +220,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   }
 
   App app(std::move(settings), language);
+  app.SetWindow(window);
   bool shown = false;
   bool primed = false;
   int idle_frames = 0;

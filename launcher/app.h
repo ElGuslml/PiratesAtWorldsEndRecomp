@@ -6,13 +6,19 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_video.h>
 
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
+#include <future>
+#include <memory>
+#include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 
+#include "install.h"
 #include "settings.h"
 #include "texts.h"
 #include "ui/ui.h"
@@ -50,6 +56,8 @@ class App {
   // A controller button was just assigned: the controller does nothing until its buttons are up.
   bool GamepadLocked() const { return pad_release_wait_; }
   Settings& settings() { return settings_; }
+  // The window, for the file dialog.
+  void SetWindow(SDL_Window* window) { window_ = window; }
   const Texts& texts() const { return t_; }
 
  private:
@@ -113,6 +121,38 @@ class App {
 
   // Achievements page.
   int achievement_filter_ = 0;
+
+  // The first run (page_install.cpp): the game's files extracted from the player's ISO.
+  enum class InstallStep { kWelcome, kChooseIso, kExtracting, kDone };
+  struct DialogResult {
+    std::mutex mutex;
+    std::optional<std::string> path;  // UTF-8
+  };
+  void InstallScreen(ImVec2 size);
+  void SetStep(InstallStep step) {
+    install_step_ = step;
+    step_changed_ = true;
+  }
+  void InstallArt(const ImRect& rect);
+  void Stepper(ImVec2 pos);
+  void ChooseIso(const std::string& path);
+  void BrowseIso();
+  void PollInstall();
+  std::string Gigabytes(uint64_t bytes) const;
+  std::filesystem::path exe_dir_;
+  bool installing_ = false;
+  InstallStep install_step_ = InstallStep::kWelcome;
+  bool step_changed_ = true;
+  std::string iso_pending_;  // the file being checked, UTF-8
+  std::future<IsoCheck> iso_check_;
+  std::optional<IsoCheck> iso_;
+  std::shared_ptr<DialogResult> dialog_ = std::make_shared<DialogResult>();
+  Extraction extraction_;
+  std::string install_error_;  // not enough space, under the ISO card
+  std::chrono::steady_clock::time_point rate_time_{};
+  uint64_t rate_done_ = 0;
+  double rate_ = 0.0;  // bytes per second, smoothed
+  SDL_Window* window_ = nullptr;
 };
 
 }  // namespace launcher

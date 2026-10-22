@@ -182,6 +182,61 @@ struct Texts {
   const char* release_notes_soon;
   const char* full_history;
 
+  // The first run (page_install.cpp).
+  const char* step_welcome;
+  const char* step_iso;
+  const char* step_install;
+  const char* step_done;
+  const char* welcome_title;
+  const char* welcome_text;
+  const char* need_iso;
+  const char* need_iso_hint;  // %s: the game
+  const char* install_here;
+  const char* install_here_hint;  // %s: the recompiled executable
+  const char* need_space;
+  const char* need_space_hint;  // %s: GB needed, GB free
+  const char* own_copy;
+  const char* start;
+  const char* choose_title;
+  const char* choose_text;  // %s: the game
+  const char* drop_here;
+  const char* browse;
+  const char* checking_iso;
+  const char* iso_valid;
+  const char* iso_detail;  // %s: the game, the region
+  const char* back;
+  const char* extract;
+  const char* wrong_game_title;
+  const char* wrong_game_text;  // %s: the game
+  const char* wrong_version_title;
+  const char* wrong_version_text;  // %s: the game, the region
+  const char* unreadable_title;
+  const char* unreadable_text;
+  const char* file_label;
+  const char* detected_label;
+  const char* detected_none;
+  const char* detected_no_xex;
+  const char* choose_other;
+  const char* or_drop;
+  const char* no_space;  // %s: GB needed, GB free
+  const char* extracting_title;
+  const char* extracting_text;
+  const char* extracted_title;
+  const char* extracted_text;
+  const char* time_left;  // %s: mm:ss
+  const char* current_file;  // upper case
+  const char* iso_verified;  // %s: the game
+  const char* cancel_install;
+  const char* continue_label;
+  const char* extract_failed_title;
+  const char* extract_failed_text;  // %s: the file, the system's message
+  const char* done_title;
+  const char* done_text;
+  const char* delete_iso;
+  const char* review_settings;
+  const char* iso_filter;  // the file dialog's filter
+  const char* decimal_separator;  // in sizes (7,3 GB)
+
   // Errors.
   const char* game_missing;
   const char* save_failed;

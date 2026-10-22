@@ -67,10 +67,16 @@ void OpenUrl(const char* url) {
   ShellExecuteW(nullptr, L"open", wide.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
-App::App(Settings settings, uint32_t language) : settings_(std::move(settings)), t_(TextsFor(language)) {}
+App::App(Settings settings, uint32_t language)
+    : settings_(std::move(settings)), t_(TextsFor(language)), exe_dir_(settings_.options_path.parent_path()) {
+  // The first run: the game's files are not there yet, or --launcher_first_run asks for it (to install again, or
+  // to see it in a development build, whose game falls back to the repository's files).
+  installing_ = !GameInstalled(exe_dir_) || std::wstring(GetCommandLineW()).find(L"--launcher_first_run") != std::wstring::npos;
+}
 
 bool App::Busy() const {
-  return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_;
+  return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_ ||
+         (installing_ && (iso_check_.valid() || extraction_.Get().state == Extraction::State::kRunning));
 }
 
 void App::Changed() {
@@ -101,6 +107,12 @@ void App::Frame(ImVec2 size) {
                    ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus |
                    ImGuiWindowFlags_NoScrollWithMouse);
   ImGui::PopStyleVar(3);
+
+  if (installing_) {
+    InstallScreen(size);
+    ImGui::End();
+    return;
+  }
 
   ImVec2 origin = viewport->Pos;
   float sidebar = Snap(Px(232.0f));
@@ -203,6 +215,12 @@ bool App::OnEvent(const SDL_Event& event) {
     case SDL_EVENT_KEY_DOWN:
       gamepad_used_ = false;
       break;
+    case SDL_EVENT_DROP_FILE:
+      // An ISO dropped on the window, on the first run's ISO step.
+      if (installing_ && install_step_ == InstallStep::kChooseIso && event.drop.data) {
+        ChooseIso(event.drop.data);
+      }
+      return true;
     default:
       break;
   }

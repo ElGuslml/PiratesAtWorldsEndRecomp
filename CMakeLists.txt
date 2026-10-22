@@ -121,6 +121,9 @@ if(WIN32)
         launcher/page_keyboard.cpp
         launcher/page_gamepad.cpp
         launcher/page_info.cpp
+        launcher/page_install.cpp
+        launcher/iso.cpp
+        launcher/install.cpp
         launcher/ui/gfx.cpp
         launcher/ui/ui.cpp
         "${REXSDK_DIR}/thirdparty/imgui/backends/imgui_impl_sdl3.cpp"
@@ -130,6 +133,9 @@ if(WIN32)
     target_include_directories(potcawe_launcher PRIVATE launcher res launcher/thirdparty/nanosvg
         "${REXSDK_DIR}/thirdparty/imgui/backends")
     target_link_libraries(potcawe_launcher PRIVATE imgui SDL3::SDL3 d3d11 dxgi d3dcompiler shcore)
+    # A development build's game files, as the game falls back to them: the launcher then skips the first run.
+    target_compile_definitions(potcawe_launcher PRIVATE
+        POTCAWE_DEFAULT_GAME_ROOT="${CMAKE_CURRENT_SOURCE_DIR}/assets")
     # The embedded fonts and art (res/launcher.rc): a change rebuilds the resources.
     file(GLOB POTCAWE_LAUNCHER_RESOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/launcher/fonts/*.ttf" "${CMAKE_CURRENT_SOURCE_DIR}/launcher/art/*.svg")

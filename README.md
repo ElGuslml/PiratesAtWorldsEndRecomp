@@ -29,9 +29,10 @@ emulation of that GPU, Xenos (derived from [Xenia](https://xenia.jp)), stays ava
 
 1. Download the latest release from [Releases](https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases),
    and extract it into a folder you can write to (not under `Program Files`).
-2. Copy your game files into its `assets` folder (see [Game files](#game-files)).
-3. Run `PiratesAtWorldsEnd Launcher.exe`, choose your options, and press Play. Afterwards
-   `PiratesAtWorldsEndRecomp.exe` starts the game directly with the saved options.
+2. Run `PiratesAtWorldsEnd Launcher.exe`. The first time, it asks for the ISO of your copy of the game, checks
+   it, and extracts its files into the `assets` folder (see [Game files](#game-files)).
+3. Choose your options and press Play. Afterwards `PiratesAtWorldsEndRecomp.exe` starts the game directly with
+   the saved options.
 
 Requirements:
 - **System:** Windows 10 or 11, 64-bit, with a CPU with x86-64-v2 (SSE4.2 and POPCNT: practically any 64-bit
@@ -42,12 +43,14 @@ Requirements:
 
 ## Game files
 
-Everything the game needs besides this project's code comes from your own copy of the game:
-1. Extract the content of your disc, or of an image (ISO) of your own disc, with
-   [extract-xiso](https://github.com/XboxDev/extract-xiso/releases).
-2. Copy all of it into the `assets` folder, so that `assets/default.xex` exists:
-   - next to `PiratesAtWorldsEndRecomp.exe` to play;
-   - in the repository to build.
+Everything the game needs besides this project's code comes from your own copy of the game, an image (ISO) of
+your own disc:
+- **To play:** the launcher extracts it on its first run. Choose or drop the ISO (a full Redump image or a trimmed
+  one); it checks that it is this game and this version (the USA disc, `default.xex` with CRC32 `A31B1069`), then
+  copies its files into `assets` next to `PiratesAtWorldsEndRecomp.exe`. The ISO is not needed afterwards.
+  `PiratesAtWorldsEnd Launcher.exe --launcher_first_run` installs them again.
+- **To build:** extract the disc's content into the repository's `assets` folder, so that `assets/default.xex`
+  exists, for example with [extract-xiso](https://github.com/XboxDev/extract-xiso/releases).
 
 The expected executable has CRC32 `A31B1069`. `PiratesAtWorldsEndRecomp.exe` checks it at startup and warns you
 if yours is a different version. See [`assets/README.md`](assets/README.md).
