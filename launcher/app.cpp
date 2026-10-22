@@ -60,6 +60,10 @@ bool InGroup(Page group_first, Page page) {
 
 }  // namespace
 
+void OpenFolder(const std::filesystem::path& folder) {
+  ShellExecuteW(nullptr, L"open", folder.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+}
+
 void OpenUrl(const char* url) {
   // SDL_OpenURL is not in the SDK's SDL build (SDL_MISC off).
   int length = MultiByteToWideChar(CP_UTF8, 0, url, -1, nullptr, 0);
@@ -79,10 +83,13 @@ App::App(Settings settings, uint32_t language)
   if (!installing_) {
     LoadAchievements();
   }
+  // PLAY has the focus from the first frame (ImGui::SetItemDefaultFocus in PlayPage does not show it).
+  focus_page_ = true;
 }
 
 bool App::Busy() const {
   return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_ || achievements_loading_.valid() ||
+         game_running_ ||
          (installing_ && (iso_check_.valid() || extraction_.Get().state == Extraction::State::kRunning));
 }
 
@@ -138,6 +145,51 @@ void App::Changed() {
     reported = true;
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "PiratesAtWorldsEnd Launcher", t_.save_failed, nullptr);
   }
+}
+
+void App::GameStarted() {
+  result_ = Result::kNone;
+  game_running_ = true;
+  game_exit_code_ = 0;
+}
+
+void App::GameExited(uint32_t exit_code) {
+  result_ = Result::kNone;
+  game_running_ = false;
+  game_exit_code_ = exit_code;
+  Navigate(Page::kPlay, false);
+  focus_page_ = true;
+  // The game may have unlocked some, or written the list for the first time.
+  LoadAchievements();
+}
+
+void App::StartingOverlay(ImVec2 size) {
+  // A window over the page, which takes no input (main.cpp does not pass it any meanwhile).
+  ImVec2 origin = ImGui::GetMainViewport()->Pos;
+  ImGui::SetNextWindowPos(origin);
+  ImGui::SetNextWindowSize(size);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+  ImGui::Begin("##starting", nullptr,
+               ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                   ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
+  ImGui::PopStyleVar(2);
+  ImDrawList* draw = ImGui::GetWindowDrawList();
+  draw->AddRectFilled(origin, ImVec2(origin.x + size.x, origin.y + size.y), Fade(col::kBackground, 0.88f));
+  constexpr Type kText{Font::kSemiBold, 18};
+  ImVec2 center(origin.x + size.x * 0.5f, origin.y + size.y * 0.5f);
+  // A spinning arc above the text.
+  float radius = Px(18.0f);
+  ImVec2 spinner(center.x, center.y - Px(28.0f));
+  float start = float(ImGui::GetTime()) * 5.0f;
+  draw->PathArcTo(spinner, radius, 0.0f, 6.2831853f, 48);
+  draw->PathStroke(col::kTrack, ImDrawFlags_None, Px(3.0f));
+  draw->PathArcTo(spinner, radius, start, start + 1.9f, 24);
+  draw->PathStroke(col::kAccent, ImDrawFlags_None, Px(3.0f));
+  ImVec2 text_size = MeasureText(kText, t_.starting_game);
+  ImVec2 text_pos(Snap(center.x - text_size.x * 0.5f), Snap(spinner.y + radius + Px(22.0f)));
+  DrawLabel(kText, text_pos, col::kText, t_.starting_game);
+  ImGui::End();
 }
 
 void App::Navigate(Page page, bool focus_sidebar) {
@@ -246,13 +298,29 @@ void App::Frame(ImVec2 size) {
       Navigate(kOrder[(index + 1) % count], true);
     } else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false)) {
       result_ = Result::kPlay;
+    } else if (page_ == Page::kPlay && !g.NavCursorVisible &&
+               (ImGui::IsKeyPressed(ImGuiKey_Enter, false) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter, false))) {
+      // PLAY is the page's default button: Enter plays while no control shows the focus (ImGui would not activate
+      // it then).
+      result_ = Result::kPlay;
     } else if (ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false) || ImGui::IsKeyPressed(ImGuiKey_Escape, false)) {
       FocusSidebar();
     }
   }
   popup_was_open = popup;
 
+  // When the launcher opens and back from the game: PLAY has the focus, shown when a controller is connected, so
+  // that A (or Enter) plays at once (ImGui activates only an item whose focus is shown).
+  if (focus_page_ && page_focus_) {
+    ImGui::SetFocusID(page_focus_, ImGui::GetCurrentWindow());
+    ImGui::SetNavCursorVisible(gamepad_used_ || SDL_HasGamepad());
+    focus_page_ = false;
+  }
+
   ImGui::End();
+  if (game_running_) {
+    StartingOverlay(size);
+  }
 }
 
 bool App::OnEvent(const SDL_Event& event) {

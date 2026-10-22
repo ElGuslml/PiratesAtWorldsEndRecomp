@@ -225,7 +225,7 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
   o.gamepad_remap = GetString(c, "gamepad_remap");
 
   o.check_updates = GetBool(c, "launcher_check_updates", true);
-  o.ui_fullscreen = GetBool(c, "launcher_ui_fullscreen", false);
+  o.ui_fullscreen = GetBool(c, "launcher_ui_fullscreen", true);
   o.ui_maximized = GetBool(c, "launcher_ui_maximized", false);
   o.ui_size = {GetInt(c, "launcher_ui_width", 0), GetInt(c, "launcher_ui_height", 0)};
   return o;

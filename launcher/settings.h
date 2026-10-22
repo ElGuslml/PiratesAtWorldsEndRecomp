@@ -109,7 +109,7 @@ struct Options {
 
   // The launcher's own.
   bool check_updates = true;    // launcher_check_updates
-  bool ui_fullscreen = false;   // launcher_ui_fullscreen: the launcher's window
+  bool ui_fullscreen = true;    // launcher_ui_fullscreen: the launcher's window (fullscreen by default)
   bool ui_maximized = false;    // launcher_ui_maximized
   Size ui_size{0, 0};           // launcher_ui_width/height, in pixels at 100 % scaling; 0 = the default
 };

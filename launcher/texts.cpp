@@ -238,6 +238,9 @@ const Texts kEnglish = {
     .decimal_separator = ".",
 
     .game_missing = "PiratesAtWorldsEndRecomp.exe was not found next to PiratesAtWorldsEnd Launcher.",
+    .starting_game = "Starting the game…",
+    .game_closed_error = "The game closed with an error (code %s).",
+    .open_logs = "Open the logs folder",
     .save_failed = "Could not save the options to potcawe_options.toml.",
     .no_direct3d = "PiratesAtWorldsEnd Launcher needs Direct3D 11, which could not be started.",
 };
@@ -470,6 +473,9 @@ const Texts kGerman = {
     .decimal_separator = ",",
 
     .game_missing = "PiratesAtWorldsEndRecomp.exe wurde neben PiratesAtWorldsEnd Launcher nicht gefunden.",
+    .starting_game = "Das Spiel wird gestartet…",
+    .game_closed_error = "Das Spiel wurde mit einem Fehler beendet (Code %s).",
+    .open_logs = "Protokollordner öffnen",
     .save_failed = "Die Optionen konnten nicht in potcawe_options.toml gespeichert werden.",
     .no_direct3d = "PiratesAtWorldsEnd Launcher benötigt Direct3D 11, das nicht gestartet werden konnte.",
 };
@@ -702,6 +708,9 @@ const Texts kFrench = {
     .decimal_separator = ",",
 
     .game_missing = "PiratesAtWorldsEndRecomp.exe est introuvable à côté de PiratesAtWorldsEnd Launcher.",
+    .starting_game = "Lancement du jeu…",
+    .game_closed_error = "Le jeu s'est fermé avec une erreur (code %s).",
+    .open_logs = "Ouvrir le dossier des journaux",
     .save_failed = "Impossible d'enregistrer les options dans potcawe_options.toml.",
     .no_direct3d = "PiratesAtWorldsEnd Launcher nécessite Direct3D 11, qui n'a pas pu démarrer.",
 };
@@ -934,6 +943,9 @@ const Texts kSpanish = {
     .decimal_separator = ",",
 
     .game_missing = "No se encontró PiratesAtWorldsEndRecomp.exe junto a PiratesAtWorldsEnd Launcher.",
+    .starting_game = "Iniciando el juego…",
+    .game_closed_error = "El juego se cerró con un error (código %s).",
+    .open_logs = "Abrir la carpeta de registros",
     .save_failed = "No se pudieron guardar las opciones en potcawe_options.toml.",
     .no_direct3d = "PiratesAtWorldsEnd Launcher necesita Direct3D 11, que no se pudo iniciar.",
 };
@@ -1166,6 +1178,9 @@ const Texts kItalian = {
     .decimal_separator = ",",
 
     .game_missing = "PiratesAtWorldsEndRecomp.exe non trovato accanto a PiratesAtWorldsEnd Launcher.",
+    .starting_game = "Avvio del gioco…",
+    .game_closed_error = "Il gioco si è chiuso con un errore (codice %s).",
+    .open_logs = "Apri la cartella dei log",
     .save_failed = "Impossibile salvare le opzioni in potcawe_options.toml.",
     .no_direct3d = "PiratesAtWorldsEnd Launcher richiede Direct3D 11, che non è stato possibile avviare.",
 };

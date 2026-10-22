@@ -32,6 +32,8 @@ extern const char* const kVersion;
 
 // Opens a web page in the default browser.
 void OpenUrl(const char* url);
+// Opens a folder in Explorer.
+void OpenFolder(const std::filesystem::path& folder);
 
 // This game's releases (GitHub).
 inline constexpr const char* kReleasesUrl = "https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases";
@@ -64,6 +66,14 @@ class App {
   // Before the graphics device goes: the achievement icons' textures.
   void ReleaseTextures();
 
+  // Play started the game (main.cpp): until its window shows, the launcher draws "Starting the game…" over its
+  // page and takes no input.
+  void GameStarted();
+  bool GameRunning() const { return game_running_; }
+  // The game exited (the launcher shows again): back on the Play page with PLAY focused, the achievements read
+  // again, and a notice when the exit code is not 0.
+  void GameExited(uint32_t exit_code);
+
  private:
   // A setting changed: potcawe_options.toml is written at once.
   void Changed();
@@ -90,6 +100,9 @@ class App {
   bool Footer(const ImRect& rect, const char* reset_label);
 
   void Navigate(Page page, bool focus_sidebar);
+  void StartingOverlay(ImVec2 size);
+  // The notice on the Play page after the game closed with an error, in `rect`.
+  void GameErrorNotice(const ImRect& rect);
   void FocusSidebar() { focus_sidebar_ = true; }
 
   // The keyboard page's key being assigned (page_keyboard.cpp).
@@ -108,6 +121,9 @@ class App {
   bool focus_sidebar_ = false;
   bool gamepad_used_ = false;  // the last input came from a controller: the hints show
   ImGuiID page_focus_ = 0;     // the control the controller enters the page on (App::Frame)
+  bool focus_page_ = false;    // focus page_focus_ on the next frame (back from the game)
+  bool game_running_ = false;
+  uint32_t game_exit_code_ = 0;  // the last game's, when not 0: a notice on the Play page
 
   // Keyboard page.
   int listen_bind_ = -1;  // the Bind whose key is being assigned, or -1

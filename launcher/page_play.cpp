@@ -36,6 +36,10 @@ void App::PlayPage(const ImRect& rect) {
   float left = hero.Min.x + Px(40.0f);
   float right = hero.Max.x - Px(40.0f);
   float bottom = hero.Max.y - Px(36.0f);
+  if (game_exit_code_ != 0) {
+    GameErrorNotice(ImRect(ImVec2(hero.Min.x + Px(24.0f), hero.Min.y + Px(24.0f)),
+                           ImVec2(hero.Max.x - Px(24.0f), hero.Min.y + Px(24.0f) + Px(52.0f))));
+  }
 
   ButtonSpec play{ButtonKind::kPrimary, Type{Font::kCondensedBold, 26, 0.04f}, 60, 40, 10, Icon::kPlay, 22, 0, true};
   play.gap = 12;
@@ -152,6 +156,27 @@ void App::PlayPage(const ImRect& rect) {
     if (Link("updates", ImVec2(p.x, link_y), t_.find_updates)) {
       Navigate(Page::kUpdates, false);
     }
+  }
+}
+
+void App::GameErrorNotice(const ImRect& rect) {
+  // A crash's code (0xC0000005) in hexadecimal, a small one as it is.
+  char code[16];
+  std::snprintf(code, sizeof(code), game_exit_code_ < 0x10000 ? "%u" : "0x%08X", game_exit_code_);
+  char text[256];
+  std::snprintf(text, sizeof(text), t_.game_closed_error, code);
+  FillRect(rect, col::kErrorTint, 10.0f);
+  StrokeRect(rect, Fade(col::kError, 0.55f), 10.0f);
+  DrawIcon(Icon::kAlert, ImVec2(rect.Min.x + Px(16.0f), rect.Min.y + (rect.GetHeight() - Px(20.0f)) * 0.5f), 20.0f,
+           col::kError, 2.0f);
+  constexpr Type kText{Font::kMedium, 14};
+  float x = rect.Min.x + Px(48.0f);
+  DrawLabel(kText, ImVec2(x, rect.Min.y), col::kText, text, rect.GetHeight());
+  constexpr Type kLinkType{Font::kSemiBold, 14};
+  float link_width = MeasureText(kLinkType, t_.open_logs).x + Px(20.0f);
+  float link_x = std::max(x + MeasureText(kText, text).x + Px(24.0f), rect.Max.x - Px(16.0f) - link_width);
+  if (Link("logs", ImVec2(link_x, rect.Min.y + (rect.GetHeight() - LineHeight(kLinkType)) * 0.5f), t_.open_logs)) {
+    OpenFolder(exe_dir_ / L"logs");
   }
 }
 

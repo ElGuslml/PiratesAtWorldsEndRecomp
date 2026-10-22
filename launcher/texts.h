@@ -242,6 +242,9 @@ struct Texts {
 
   // Errors.
   const char* game_missing;
+  const char* starting_game;      // over the launcher until the game's window shows
+  const char* game_closed_error;  // %s: the exit code
+  const char* open_logs;
   const char* save_failed;
   const char* no_direct3d;
 };

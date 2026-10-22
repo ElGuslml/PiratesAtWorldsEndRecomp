@@ -31,8 +31,10 @@ emulation of that GPU, Xenos (derived from [Xenia](https://xenia.jp)), stays ava
    and extract it into a folder you can write to (not under `Program Files`).
 2. Run `PiratesAtWorldsEnd Launcher.exe`. The first time, it asks for the ISO of your copy of the game, checks
    it, and extracts its files into the `assets` folder (see [Game files](#game-files)).
-3. Choose your options and press Play. Afterwards `PiratesAtWorldsEndRecomp.exe` starts the game directly with
-   the saved options.
+3. Choose your options and press Play. When you quit the game, the launcher comes back; Quit in the launcher
+   closes it. For Steam, add the launcher: Steam sees the game running until you quit the launcher, and stopping
+   it from Steam closes the game too. `PiratesAtWorldsEndRecomp.exe` still starts the game directly with the
+   saved options.
 
 Requirements:
 - **System:** Windows 10 or 11, 64-bit, with a CPU with x86-64-v2 (SSE4.2 and POPCNT: practically any 64-bit
@@ -115,8 +117,9 @@ Xbox, Switch Pro...). Its pages:
 - **Updates:** coming in a later version.
 
 Every change is saved at once. With a controller: LB/RB change the page, A selects, B goes back to the
-sidebar, Start plays. The window scales with its size; F11 or Alt+Enter switch it to fullscreen, which it
-starts in on the Steam Deck and in Steam Big Picture.
+sidebar, Start plays. The launcher starts in fullscreen (always on the Steam Deck and in Steam Big Picture); F11 or
+Alt+Enter switch it to a window, which scales with its size. If the game closes with an error, the launcher says
+so when it comes back, with a link to the logs.
 
 | File (next to `PiratesAtWorldsEndRecomp.exe`) | What it holds |
 |---|---|
