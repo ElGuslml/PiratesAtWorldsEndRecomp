@@ -166,6 +166,9 @@ const Texts kEnglish = {
     .locked = "Locked",
     .achievements_empty_title = "No achievements to show yet",
     .achievements_empty = "Play once: the game's achievements and your unlocks will appear here.",
+    .achievement_secret = "Secret achievement",
+    .achievement_secret_hint = "Keep playing to discover it.",
+    .achievements_filter_empty = "No achievements in this list.",
 
     .updates_title = "Updates",
     .updates_subtitle = "Keep the recompilation up to date with the latest fixes and improvements.",
@@ -395,6 +398,9 @@ const Texts kGerman = {
     .locked = "Gesperrt",
     .achievements_empty_title = "Noch keine Erfolge",
     .achievements_empty = "Spiele einmal: die Erfolge des Spiels und deine Freischaltungen erscheinen dann hier.",
+    .achievement_secret = "Geheimer Erfolg",
+    .achievement_secret_hint = "Spiel weiter, um ihn zu entdecken.",
+    .achievements_filter_empty = "Keine Erfolge in dieser Liste.",
 
     .updates_title = "Updates",
     .updates_subtitle = "Halte die Rekompilierung mit den neuesten Korrekturen und Verbesserungen aktuell.",
@@ -624,6 +630,9 @@ const Texts kFrench = {
     .locked = "Verrouillé",
     .achievements_empty_title = "Aucun succès pour l'instant",
     .achievements_empty = "Jouez une fois : les succès du jeu et ceux que vous débloquez apparaîtront ici.",
+    .achievement_secret = "Succès secret",
+    .achievement_secret_hint = "Continuez à jouer pour le découvrir.",
+    .achievements_filter_empty = "Aucun succès dans cette liste.",
 
     .updates_title = "Mises à jour",
     .updates_subtitle = "Gardez la recompilation à jour avec les dernières corrections et améliorations.",
@@ -853,6 +862,9 @@ const Texts kSpanish = {
     .locked = "Bloqueado",
     .achievements_empty_title = "Todavía no hay logros que mostrar",
     .achievements_empty = "Juega una vez: los logros del juego y los que desbloquees aparecerán aquí.",
+    .achievement_secret = "Logro secreto",
+    .achievement_secret_hint = "Sigue jugando para descubrirlo.",
+    .achievements_filter_empty = "No hay logros en esta lista.",
 
     .updates_title = "Actualizaciones",
     .updates_subtitle = "Mantén la recompilación al día con las últimas correcciones y mejoras.",
@@ -1082,6 +1094,9 @@ const Texts kItalian = {
     .locked = "Bloccato",
     .achievements_empty_title = "Ancora nessun obiettivo da mostrare",
     .achievements_empty = "Gioca una volta: gli obiettivi del gioco e quelli che sblocchi appariranno qui.",
+    .achievement_secret = "Obiettivo segreto",
+    .achievement_secret_hint = "Continua a giocare per scoprirlo.",
+    .achievements_filter_empty = "Nessun obiettivo in questo elenco.",
 
     .updates_title = "Aggiornamenti",
     .updates_subtitle = "Mantieni la ricompilazione aggiornata con le ultime correzioni e migliorie.",

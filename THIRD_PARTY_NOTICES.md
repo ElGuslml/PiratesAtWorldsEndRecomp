@@ -18,9 +18,11 @@ U.S. and other countries.
 ## PiratesAtWorldsEnd Launcher
 
 The launcher (`launcher/`) uses SDL 3 and Dear ImGui from the SDK (below), and also contains:
-- **Barlow and Barlow Condensed** (`launcher/fonts/`, embedded in `PiratesAtWorldsEnd Launcher.exe`):
-  https://github.com/jpt/barlow, Copyright 2017 The Barlow Project Authors, SIL Open Font License 1.1
-  (`launcher/fonts/OFL.txt`). The TTF files are the ones Google Fonts distributes, unchanged.
+- **Barlow and Barlow Condensed** (`launcher/fonts/`, embedded in `PiratesAtWorldsEnd Launcher.exe`; three of them
+  are also in the ReXGlue SDK's `resources/fonts/`, embedded in `PiratesAtWorldsEndRecomp.exe` for the achievement
+  toast and list and the quit prompt): https://github.com/jpt/barlow, Copyright 2017 The Barlow Project Authors,
+  SIL Open Font License 1.1 (`launcher/fonts/OFL.txt`). The TTF files are the ones Google Fonts distributes,
+  unchanged.
 - **nanosvg** (`launcher/thirdparty/nanosvg/`): https://github.com/memononen/nanosvg, Copyright (c) 2013-14
   Mikko Mononen, zlib license (`launcher/thirdparty/nanosvg/LICENSE.txt`). It draws the launcher's icons and
   art.

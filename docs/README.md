@@ -13,6 +13,7 @@ the symptom, the cause, the fix and how to turn the fix off, so that you can che
 | [sun-glow.md](sun-glow.md) — the sun's glare at the top of the screen with the sun behind the camera (Port Royal) | Fixed |
 | [script-errors.md](script-errors.md) — the game closes after a script error, with faults on several threads | Fixed |
 | [quit-prompt.md](quit-prompt.md) — no way to quit the game; B on the title screen now asks whether to quit | Working |
+| [achievements.md](achievements.md) — the unlock notification tiny, in English and without icons; the launcher could not show the achievements | Working |
 
 ## NativeXRenderer
 

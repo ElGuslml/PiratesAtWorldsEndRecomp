@@ -17,10 +17,7 @@
 // SDK runs when a press of B begins (SetQuitPromptCondition). So a B pressed in the main menu still goes back to the
 // title screen, and only a new press there opens the dialog. quit_prompt = false (an SDK cvar) disables it.
 //
-// The game asks for its language in its first menu and does not use the SDK's user_language, so the dialog takes
-// the Windows display language, as the launcher's texts do (English, French, German, Italian or Spanish; the
-// others, Dutch included, get English). A player whose game language differs from Windows's sees the dialog in
-// Windows's.
+// The dialog's language is the Windows display language (potcawe::SetDialogLanguage, src/startup.cpp).
 
 #include <rex/logging.h>
 #include <rex/ppc/context.h>
@@ -30,11 +27,6 @@
 #include <cstdint>
 #include <mutex>
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-
 namespace {
 
 // The title screen's widget (the GUID its menu node is set up from).
@@ -43,26 +35,9 @@ constexpr uint32_t kTitleWidget = 0xC4300007;
 std::atomic<uint32_t> g_current_menu{0};  // the menu node on screen, as the last event named it
 std::atomic<uint32_t> g_title_menu{0};    // the node set up as the title screen; 0 = none
 
-// The Windows display language as an XLanguage (launcher/potcawe_launcher.cpp's SystemLanguage).
-uint32_t SystemLanguage() {
-  switch (PRIMARYLANGID(GetUserDefaultUILanguage())) {
-    case LANG_GERMAN:
-      return 3;
-    case LANG_FRENCH:
-      return 4;
-    case LANG_SPANISH:
-      return 5;
-    case LANG_ITALIAN:
-      return 6;
-    default:
-      return 1;
-  }
-}
-
 void RegisterCondition() {
   static std::once_flag once;
   std::call_once(once, [] {
-    rex::ui::SetQuitPromptLanguage(SystemLanguage());
     rex::ui::SetQuitPromptCondition([] {
       uint32_t title = g_title_menu.load(std::memory_order_relaxed);
       return title != 0 && g_current_menu.load(std::memory_order_relaxed) == title;

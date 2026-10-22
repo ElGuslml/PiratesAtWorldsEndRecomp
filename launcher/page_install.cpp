@@ -522,6 +522,9 @@ void App::InstallScreen(ImVec2 size) {
       }
       if (done) {
         default_focus();
+        if (!achievements_requested_) {
+          LoadAchievements();  // the game can write their list now
+        }
       }
       break;
     }

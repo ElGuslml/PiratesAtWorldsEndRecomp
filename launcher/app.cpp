@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <iterator>
 
+#include "ui/gfx.h"
 #include "version.h"
 
 namespace launcher {
@@ -68,15 +69,67 @@ void OpenUrl(const char* url) {
 }
 
 App::App(Settings settings, uint32_t language)
-    : settings_(std::move(settings)), t_(TextsFor(language)), exe_dir_(settings_.options_path.parent_path()) {
+    : settings_(std::move(settings)),
+      t_(TextsFor(language)),
+      language_(language),
+      exe_dir_(settings_.options_path.parent_path()) {
   // The first run: the game's files are not there yet, or --launcher_first_run asks for it (to install again, or
   // to see it in a development build, whose game falls back to the repository's files).
   installing_ = !GameInstalled(exe_dir_) || std::wstring(GetCommandLineW()).find(L"--launcher_first_run") != std::wstring::npos;
+  if (!installing_) {
+    LoadAchievements();
+  }
 }
 
 bool App::Busy() const {
-  return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_ ||
+  return listen_bind_ >= 0 || std::chrono::steady_clock::now() < notice_until_ || achievements_loading_.valid() ||
          (installing_ && (iso_check_.valid() || extraction_.Get().state == Extraction::State::kRunning));
+}
+
+void App::LoadAchievements() {
+  achievements_requested_ = true;
+  std::filesystem::path exe_dir = exe_dir_;
+  uint32_t language = language_;
+  achievements_loading_ = std::async(std::launch::async, [exe_dir, language] {
+    std::optional<Achievements> list = launcher::LoadAchievements(exe_dir, language);
+    if (!list && WriteAchievementList(exe_dir)) {
+      list = launcher::LoadAchievements(exe_dir, language);
+    }
+    return list;
+  });
+}
+
+void App::PollAchievements() {
+  if (!achievements_loading_.valid() ||
+      achievements_loading_.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+    return;
+  }
+  std::optional<Achievements> list = achievements_loading_.get();
+  if (list) {
+    ReleaseTextures();
+    achievements_ = std::move(list);
+    achievement_icons_.assign(achievements_->items.size(), ImTextureID_Invalid);
+  }
+}
+
+ImTextureID App::AchievementIcon(size_t index) {
+  if (!achievements_ || index >= achievement_icons_.size()) {
+    return ImTextureID_Invalid;
+  }
+  Achievement& a = achievements_->items[index];
+  if (achievement_icons_[index] == ImTextureID_Invalid && !a.icon.empty()) {
+    achievement_icons_[index] = ui::gfx::CreateTexture(a.icon.data(), a.icon_width, a.icon_height);
+    a.icon.clear();  // on the GPU now
+    a.icon.shrink_to_fit();
+  }
+  return achievement_icons_[index];
+}
+
+void App::ReleaseTextures() {
+  for (ImTextureID& texture : achievement_icons_) {
+    ui::gfx::DestroyTexture(texture);
+    texture = ImTextureID_Invalid;
+  }
 }
 
 void App::Changed() {
@@ -96,6 +149,7 @@ void App::Navigate(Page page, bool focus_sidebar) {
 }
 
 void App::Frame(ImVec2 size) {
+  PollAchievements();
   ImGuiViewport* viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(size);

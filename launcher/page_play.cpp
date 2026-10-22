@@ -128,18 +128,8 @@ void App::PlayPage(const ImRect& rect) {
     }
   }
 
-  // The achievements (their list comes from the game after the first session).
-  {
-    ImRect r = card(1);
-    FillRect(r, col::kCard, 10.0f);
-    ImVec2 p(r.Min.x + Px(20.0f), r.Min.y + Px(20.0f));
-    DrawLabel(kCardTitle, p, col::kLabel, t_.achievements_card);
-    DrawParagraph(Type{Font::kRegular, 14}, ImVec2(p.x, p.y + LineHeight(kCardTitle) + Px(12.0f)),
-                    r.GetWidth() - Px(40.0f), 1.4f, col::kTextMuted, t_.achievements_after_play);
-    if (Link("achievements", ImVec2(p.x, link_y), t_.see_achievements)) {
-      Navigate(Page::kAchievements, false);
-    }
-  }
+  // The achievements (page_achievements.cpp).
+  AchievementsCard(card(1), link_y);
 
   // The updates.
   {

@@ -315,6 +315,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   bool saved = launcher::SaveOptions(app.settings());
   App::Result result = app.result();
 
+  app.ReleaseTextures();
   ui::ReleasePictures();
   ImGui_ImplDX11_Shutdown();
   ImGui_ImplSDL3_Shutdown();

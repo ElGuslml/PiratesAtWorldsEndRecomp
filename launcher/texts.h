@@ -167,6 +167,9 @@ struct Texts {
   const char* locked;
   const char* achievements_empty_title;
   const char* achievements_empty;
+  const char* achievement_secret;       // a secret achievement's name while locked
+  const char* achievement_secret_hint;  // and its description
+  const char* achievements_filter_empty;
 
   // Updates.
   const char* updates_title;

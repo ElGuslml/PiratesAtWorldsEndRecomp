@@ -5,6 +5,7 @@
 #include <rex/cvar.h>
 #include <rex/filesystem.h>
 #include <rex/logging.h>
+#include <rex/ui/overlay/overlay_language.h>
 
 #include <array>
 #include <cstdint>
@@ -239,6 +240,29 @@ bool CheckGameFiles(const std::filesystem::path& game_root) {
 #else
   return true;
 #endif
+}
+
+void SetDialogLanguage() {
+  uint32_t language = 1;  // an XLanguage: English
+#ifdef _WIN32
+  switch (PRIMARYLANGID(GetUserDefaultUILanguage())) {
+    case LANG_GERMAN:
+      language = 3;
+      break;
+    case LANG_FRENCH:
+      language = 4;
+      break;
+    case LANG_SPANISH:
+      language = 5;
+      break;
+    case LANG_ITALIAN:
+      language = 6;
+      break;
+    default:
+      break;
+  }
+#endif
+  rex::ui::SetOverlayLanguage(language);
 }
 
 }  // namespace potcawe

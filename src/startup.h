@@ -26,4 +26,10 @@ void EnsureDefaultConfig(const std::filesystem::path& config_path);
 // message, returns false (quit). Different version: warning, the user decides whether to go on.
 bool CheckGameFiles(const std::filesystem::path& game_root);
 
+// The language of the SDK's dialogs (the quit prompt, the achievement toast and list): the game asks for its
+// language in its first menu and does not use the SDK's user_language, so they take the Windows display language,
+// as the launcher's texts do (English, French, German, Italian or Spanish; the others, Dutch included, get
+// English). A player whose game language differs from Windows's sees them in Windows's.
+void SetDialogLanguage();
+
 }  // namespace potcawe

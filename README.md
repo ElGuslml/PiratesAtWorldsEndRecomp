@@ -84,6 +84,10 @@ Vulkan, at a whole multiple of 1280×720 (2×, 3×). Wider screens get black bar
   ([`docs/script-errors.md`](docs/script-errors.md)).
 - **Quitting from the title screen:** B on "PRESS START" asks whether to quit the game; A quits, B cancels
   ([`docs/quit-prompt.md`](docs/quit-prompt.md)).
+- **Achievements:** the game's 30 achievements unlock as on the console. A card at the top of the screen shows each
+  one as it unlocks (its icon, name, description and gamerscore), F7 lists them all with their unlock dates, and the
+  launcher's Achievements page shows them too. They are saved in `userdata\achievements\`
+  ([`docs/achievements.md`](docs/achievements.md)).
 - **On the Xenos path:**
   - no stutter the first time an effect appears ([`docs/stutters.md`](docs/stutters.md));
   - no flat-colored objects in Port Royal under GPU load
@@ -106,7 +110,9 @@ Xbox, Switch Pro...). Its pages:
 - **Controls → Gamepad:** the controllers connected, and which of their buttons presses each button of the
   Xbox 360 controller (A, B, X, Y, the bumpers, the triggers, the stick clicks, Start, Back, Guide). Each type of
   controller (Xbox, PlayStation, Switch...) keeps its own layout.
-- **Achievements** and **Updates:** coming in later versions.
+- **Achievements:** the game's achievements with their icons, which ones you have unlocked and when, the totals and
+  your gamerscore; filtered by all, unlocked or locked. The game writes their list the first time it runs.
+- **Updates:** coming in a later version.
 
 Every change is saved at once. With a controller: LB/RB change the page, A selects, B goes back to the
 sidebar, Start plays. The window scales with its size; F11 or Alt+Enter switch it to fullscreen, which it

@@ -1,6 +1,5 @@
-// The Achievements and Updates pages. Their data arrive in later phases (local_docs/10): the achievements'
-// list from the game's cache after the first session, the update check from the GitHub releases. Until then
-// they show what is known: the installed version, the setting for checking at start, the releases page.
+// The Updates page. The update check arrives in a later phase (local_docs/10): until then it shows what is known:
+// the installed version, the setting for checking at start, the releases page.
 
 #include <algorithm>
 #include <cstdio>
@@ -11,32 +10,6 @@
 namespace launcher {
 
 using namespace ui;
-
-void App::AchievementsPage(const ImRect& rect) {
-  ImRect content = PageContent(rect);
-  content.Max.x = rect.Max.x - Px(40.0f);  // the list uses the whole width
-  float y = Header(content.Min, nullptr, t_.achievements_title, t_.achievements_subtitle) + Px(20.0f);
-
-  // Nothing to list before the game has run once.
-  constexpr Type kTitle{Font::kSemiBold, 18};
-  constexpr Type kText{Font::kRegular, 14};
-  float text_width = std::min(Px(520.0f), content.GetWidth() - Px(80.0f));
-  float text_height = DrawParagraph(kText, ImVec2(0, 0), text_width, 1.5f, 0, t_.achievements_empty, false);
-  float height = Px(48.0f) * 2.0f + Px(64.0f) + Px(20.0f) + LineHeight(kTitle) + Px(8.0f) + text_height;
-  ImRect card(ImVec2(content.Min.x, y), ImVec2(content.Max.x, y + height));
-  FillRect(card, col::kCard, 12.0f);
-  float cx = card.GetCenter().x;
-  float top = card.Min.y + Px(48.0f);
-  ImRect icon(ImVec2(cx - Px(32.0f), top), ImVec2(cx + Px(32.0f), top + Px(64.0f)));
-  FillRect(icon, col::kAccentTint, 12.0f);
-  DrawIcon(Icon::kTrophy, ImVec2(icon.Min.x + Px(17.0f), icon.Min.y + Px(17.0f)), 30.0f, col::kAccent, 1.8f);
-  top += Px(64.0f) + Px(20.0f);
-  DrawLabel(kTitle, ImVec2(cx - MeasureText(kTitle, t_.achievements_empty_title).x * 0.5f, top), col::kText,
-           t_.achievements_empty_title);
-  top += LineHeight(kTitle) + Px(8.0f);
-  DrawParagraph(kText, ImVec2(cx - text_width * 0.5f, top), text_width, 1.5f, col::kTextMuted, t_.achievements_empty,
-                  true, 0.5f);
-}
 
 void App::UpdatesPage(const ImRect& rect) {
   Options& o = settings_.o;

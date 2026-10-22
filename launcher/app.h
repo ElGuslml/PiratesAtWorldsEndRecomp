@@ -17,7 +17,9 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
+#include "achievements.h"
 #include "install.h"
 #include "settings.h"
 #include "texts.h"
@@ -59,6 +61,8 @@ class App {
   // The window, for the file dialog.
   void SetWindow(SDL_Window* window) { window_ = window; }
   const Texts& texts() const { return t_; }
+  // Before the graphics device goes: the achievement icons' textures.
+  void ReleaseTextures();
 
  private:
   // A setting changed: potcawe_options.toml is written at once.
@@ -121,6 +125,19 @@ class App {
 
   // Achievements page.
   int achievement_filter_ = 0;
+
+  // The achievements (achievements.h): read on a thread when the launcher opens, and once the first run has
+  // extracted the game; the game is asked to write their list when it is missing.
+  void LoadAchievements();
+  void PollAchievements();
+  // The icon of achievements_->items[index], made into a texture the first time it is drawn.
+  ImTextureID AchievementIcon(size_t index);
+  void AchievementsCard(const ImRect& rect, float link_y);
+  uint32_t language_;
+  std::future<std::optional<Achievements>> achievements_loading_;
+  std::optional<Achievements> achievements_;
+  std::vector<ImTextureID> achievement_icons_;
+  bool achievements_requested_ = false;
 
   // The first run (page_install.cpp): the game's files extracted from the player's ISO.
   enum class InstallStep { kWelcome, kChooseIso, kExtracting, kDone };

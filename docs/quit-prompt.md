@@ -18,8 +18,8 @@ it.
 B anywhere else does what it always did: on the language menu, the autosave notice and in the game nothing opens, and
 B in the main menu still goes back to the title screen (only a new press of B there opens the dialog).
 
-The dialog belongs to the SDK (`rex/ui/overlay/quit_prompt.h`, changes 34 and 35 of its `recomp` branch), so other
-games can use it; KameoRecomp has the same. This game's side is `src/quit_prompt.cpp`. The game's menus are GX menu
+The dialog belongs to the SDK (`rex/ui/overlay/quit_prompt.h`, changes 34 and 35 of its `recomp` branch; since change
+37 it is drawn in Barlow, in the style of the achievement notification), so other games can use it; KameoRecomp has the same. This game's side is `src/quit_prompt.cpp`. The game's menus are GX menu
 nodes, and two events of its menu code say which one is on screen:
 - a node set up from its widget: the language menu, the title screen (widget `C4300007`), the main menu;
 - a node linked to the next menu during a transition: the title to the autosave notice, the notice to the main menu,
@@ -29,7 +29,8 @@ Hooks in `potcawe_functions.toml` record both. The SDK asks, when B is pressed, 
 title screen.
 
 The game asks for its language in its own first menu, so the dialog uses the Windows display language (English,
-French, German, Italian or Spanish; Dutch and the others get English).
+French, German, Italian or Spanish; Dutch and the others get English), as the achievement notification and list do
+(`potcawe::SetDialogLanguage`, `src/startup.cpp`).
 
 ## Turning it off
 

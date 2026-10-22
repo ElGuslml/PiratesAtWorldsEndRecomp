@@ -6,6 +6,7 @@
 
 #include <rex/rex_app.h>
 
+#include <rex/cvar.h>
 #include <rex/filesystem.h>
 #include <rex/kernel/xam/module.h>
 #include <rex/logging.h>
@@ -63,8 +64,10 @@ class PotcaweApp : public rex::ReXApp {
     if (!rex::ReXApp::SetupEnvironment()) return false;
     REXLOG_INFO("[startup] User data: {}", user_data_root().string());
     REXLOG_INFO("[startup] {}", native_x_renderer::Describe());
-    if (!potcawe::CheckGameFiles(game_data_root())) return false;
+    // Not when the launcher asks for the achievements' list (no window: a question would wait unseen).
+    if (!rex::cvar::Query<bool>("achievements_cache_only") && !potcawe::CheckGameFiles(game_data_root())) return false;
     potcawe::LoadLauncherOptions(exe_dir / "potcawe_options.toml", potcawe::GpuPluginPath());
+    potcawe::SetDialogLanguage();
     return true;
   }
 
