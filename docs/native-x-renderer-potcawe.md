@@ -360,8 +360,13 @@ Step 7, textures (runs `potcawe_056`–`074`):
 - **The shadow pass binds no color surface** (`rt0=0x0`, the depth surface `0x402670B0`, `RB_SURFACE_INFO`
   `0x10000410`), and sets no polygon offset. Each cascade is cleared with ClearF through an aliased color surface (pitch
   520, 4× MSAA). The library's shadow scale (D92, the launcher's "Shadow quality") finds it by the first, and sends the
-  clear to the shadow map's target whatever the ClearF binds. Ultra (4096²) gives Jack's and the sailors' shadows
-  smoother edges for 0.15–0.2 ms of GPU time and 256 MB at the dock (`local_docs/19-shadow-quality.md`).
+  clear to the shadow map's target whatever the ClearF binds.
+- **The scene's shaders filter the shadow map themselves** (`6B954BAB187F64D2` and the other eight that sample fetch
+  constant 8 with `tfetch3D`): `floor(uv × c38.xy) × c38.zw`, four point samples at that texel's corners, blended by
+  `frac(uv × c38.xy)`, with c38 = (1024, 1024, 1/1024, 1/1024). A larger map was therefore read on the 1024 grid; the
+  profile names c38 and fetch constant 8, and the library gives the map's host size there (D93). Ultra (4096²) then
+  draws Jack's shadow sharp (hair, sword hilt, hat) for 0.15–0.2 ms of GPU time and 256 MB at the dock, and Original
+  uses the render scale's map (`local_docs/19-shadow-quality.md`).
 - **The front buffer** is resolved with the red/blue swap, and its texture's swizzle swaps it back; the
   presenter applies that swizzle now.
 

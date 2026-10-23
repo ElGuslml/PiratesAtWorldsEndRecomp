@@ -77,6 +77,13 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     p.scene_resolve_caller = 0x824583EC;
     // src/aspect.cpp widens the game's 16:9 cameras: NativeXRenderer fills outputs of any aspect ratio.
     p.widens_cameras = true;
+    // The scene's pixel shaders filter the character shadows themselves: four point samples of the shadow map
+    // (fetch constant 8, a stacked texture of two cascades) on the texel grid that c38 gives, (1024, 1024, 1/1024,
+    // 1/1024), blended by the position within the texel. With the map's host size there, the filter works on the
+    // host's texels, at the render scale or the shadow scale (library D93; local_docs/19-shadow-quality.md).
+    static const native_x_renderer::Profile::TextureSizeConstant kTextureSizeConstants[] = {{true, 38, 8}};
+    p.texture_size_constants = kTextureSizeConstants;
+    p.texture_size_constant_count = 1;
     native_x_renderer::DeviceLayout& d = p.device;
     // Six dirty masks from +0: VS constants, PS constants, register groups, fetch slots (low half, slot 0
     // in bit 31), misc, tiling-dependent state.
