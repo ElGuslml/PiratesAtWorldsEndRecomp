@@ -7,6 +7,8 @@
 #include <rex/logging.h>
 #include <rex/ui/overlay/overlay_language.h>
 
+#include <algorithm>
+#include <cwctype>
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -24,6 +26,22 @@
 
 namespace potcawe {
 namespace {
+
+// Whether `folder` is inside the repository the build was made from (the parent of its assets\ folder): a
+// development build run from out\build\. A copy anywhere else (a release package, an installation) is not, even
+// on the machine that built it.
+bool InsideRepository(const std::filesystem::path& folder, const std::filesystem::path& repository_assets) {
+  std::error_code ec;
+  auto normal = [&ec](const std::filesystem::path& p) {
+    std::wstring s = std::filesystem::weakly_canonical(p, ec).generic_wstring();
+    std::transform(s.begin(), s.end(), s.begin(), [](wchar_t c) { return wchar_t(std::towlower(c)); });
+    if (!s.empty() && s.back() != L'/') s += L'/';
+    return s;
+  };
+  std::wstring root = normal(repository_assets.parent_path());
+  std::wstring inside = normal(folder);
+  return root.size() > 1 && inside.compare(0, root.size(), root) == 0;
+}
 
 constexpr const char* kGameExecutable = "default.xex";
 // CRC32 of the default.xex this code was recompiled from (6,041,600 bytes, title ID 425607D1,
@@ -113,8 +131,11 @@ std::filesystem::path DefaultGameRoot() {
   if (std::filesystem::exists(next_to_exe / kGameExecutable)) {
     return next_to_exe;
   }
+  // The repository's assets\, for a development build run from the repository only: a package or an installation
+  // uses its own (the launcher extracts the game there), even on the machine that built it.
   std::filesystem::path repository = POTCAWE_DEFAULT_GAME_ROOT;
-  if (std::filesystem::exists(repository / kGameExecutable)) {
+  if (InsideRepository(rex::filesystem::GetExecutableFolder(), repository) &&
+      std::filesystem::exists(repository / kGameExecutable)) {
     return repository;
   }
   // Neither has the game: report the folder next to the executable (the release layout), not a path
