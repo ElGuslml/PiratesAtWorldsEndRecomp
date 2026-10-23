@@ -1,6 +1,7 @@
 // This game's profile: everything the launcher knows about the game it belongs to. The rest of launcher\ is the same
-// for every game (recomp-tools' template copies it); game.h and game.cpp (the game's own texts) are each game's, with
-// the art (launcher\art), the icon (res\icon.ico) and the version (res\version.h).
+// for every game (recomp-tools' template copies it); game.h, game.cpp (the game's own texts) and palette.h (its
+// colors) are each game's, with the art (launcher\art), the icon (res\icon.ico) and the version
+// (res\version.h).
 
 #pragma once
 
@@ -40,6 +41,11 @@ inline constexpr const char* kBrandIcon =
 // as fractions of the art's width and height (0.3: above center, the moon).
 inline constexpr float kHeroFocusX = 0.5f;
 inline constexpr float kHeroFocusY = 0.3f;
+// The logo's mark on a disc instead of a rounded square.
+inline constexpr bool kBrandRound = false;
+// The first run's art panel: the game's name in a dark card over the art, with the tagline, instead of straight on
+// the art with the tagline at its foot.
+inline constexpr bool kInstallTitleCard = false;
 
 // --- The disc ---
 
@@ -134,6 +140,9 @@ struct GameTexts {
   const char* welcome_text;
   // kToggles' rows: a title and a hint each.
   std::array<const char*, kToggles.size() * 2> toggles;
+  // The first run's last screen (the game installed), in the game's spirit; null: the launcher's own.
+  const char* done_title = nullptr;
+  const char* done_text = nullptr;
 };
 // In the language of the launcher's texts (an XLanguage); missing ones fall back to English.
 const GameTexts& GameTextsFor(uint32_t language);
