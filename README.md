@@ -110,7 +110,9 @@ Xbox, Switch Pro...). Its pages:
 - **Settings → Video:** monitor, display (fullscreen, borderless or window), window size, image format (fill
   the screen, or 16:9 with bars) and internal resolution (NativeXRenderer's, or the Xenos path's scale).
 - **Settings → Graphics:** renderer (NativeXRenderer or Xenos), frame rate (30 or 60 FPS), antialiasing,
-  anisotropic filtering, and the graphics API with Xenos.
+  anisotropic filtering, shadow quality with NativeXRenderer (Original, High or Ultra: the characters' shadow maps at
+  the internal resolution, or at least 2048² or 4096²; Ultra takes about 250 MB more video memory), and the graphics
+  API with Xenos.
 - **Controls → Keyboard:** playing with keyboard and mouse, a primary and a secondary key for each control of
   the Xbox 360 controller (Shift, Ctrl or Alt combinations and mouse buttons included), and the mouse for the
   camera with its sensitivity.

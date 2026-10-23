@@ -357,6 +357,11 @@ Step 7, textures (runs `potcawe_056`–`074`):
   shaders (for example `6B954BAB187F64D2`) take four point samples (`tfetch3D`, the slice from the cascade
   selection) and compare them with the light-space depth they compute. Both the slices (once both
   cascades landed in one host slice) and the depth range (D24) had to be right for the shadows to show.
+- **The shadow pass binds no color surface** (`rt0=0x0`, the depth surface `0x402670B0`, `RB_SURFACE_INFO`
+  `0x10000410`), and sets no polygon offset. Each cascade is cleared with ClearF through an aliased color surface (pitch
+  520, 4× MSAA). The library's shadow scale (D92, the launcher's "Shadow quality") finds it by the first, and sends the
+  clear to the shadow map's target whatever the ClearF binds. Ultra (4096²) gives Jack's and the sailors' shadows
+  smoother edges for 0.15–0.2 ms of GPU time and 256 MB at the dock (`local_docs/19-shadow-quality.md`).
 - **The front buffer** is resolved with the red/blue swap, and its texture's swizzle swaps it back; the
   presenter applies that swizzle now.
 

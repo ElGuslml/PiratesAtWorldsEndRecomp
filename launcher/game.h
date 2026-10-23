@@ -71,6 +71,12 @@ inline constexpr const char* kReleasesPage = "https://github.com/ElGuslml/Pirate
 // of NativeXRenderer.
 inline constexpr bool kHasNativeXRenderer = true;
 
+// The Graphics page's shadow quality row: NativeXRenderer draws the game's shadow maps at a scale of their own
+// (native_x_renderer_shadow_scale, its D92): at least twice or four times the game's resolution. Only where it
+// finds them: the depth passes with no color target that are not of the game's output size.
+// Its character shadows: two cascades in a 1024x1024 depth map, drawn with no color target.
+inline constexpr bool kShadowQuality = kHasNativeXRenderer && true;
+
 // The Graphics page's frame rate row: kFrameRateCvar's choices, each a value of the cvar and the frame rate it
 // gives, and the value without the key. A boolean cvar (kFrameRateIsBool: the values are 0 and 1, as
 // src/framerate.cpp's 60 FPS) or a number (the emulated vblank's rate, video_mode_refresh_rate, which some games
