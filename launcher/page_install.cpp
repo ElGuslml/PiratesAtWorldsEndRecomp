@@ -1,4 +1,4 @@
-// The first run, Gustavo's mockup's setup screens (local_docs/launcher_design): Welcome, Choose your ISO (and its
+// The first run, Gustavo's mockup's setup screens: Welcome, Choose your ISO (and its
 // invalid variant), Extracting, Ready. The launcher opens on them while the game's files are missing
 // (GameInstalled); the ISO is checked and extracted by install.cpp, off the UI thread.
 
@@ -139,14 +139,14 @@ void App::InstallArt(const ImRect& rect) {
   float y = rect.Min.y + Px(40.0f);
   ImRect logo(ImVec2(x, y), ImVec2(x + Px(40.0f), y + Px(40.0f)));
   FillRect(logo, col::kAccent, 8.0f);
-  DrawIcon(Icon::kAnchor, ImVec2(logo.Min.x + Px(9.0f), logo.Min.y + Px(9.0f)), 22.0f, col::kOnAccent, 2.0f);
+  DrawIcon(Icon::kBrand, ImVec2(logo.Min.x + Px(9.0f), logo.Min.y + Px(9.0f)), 22.0f, col::kOnAccent, 2.0f);
   constexpr Type kBrand{Font::kSemiBold, 11, 0.12f};
   DrawLabel(kBrand, ImVec2(logo.Max.x + Px(12.0f), y), col::kTextMuted, t_.brand, Px(40.0f));
   y += Px(40.0f) + Px(28.0f);
   constexpr Type kKicker{Font::kBold, 12, 0.16f};
-  DrawLabel(kKicker, ImVec2(x, y), col::kAccent, "PIRATES OF THE CARIBBEAN");
+  DrawLabel(kKicker, ImVec2(x, y), col::kAccent, game::kArtKicker);
   y += LineHeight(kKicker) + Px(4.0f);
-  DrawLabel(Type{Font::kCondensedBold, 48}, ImVec2(x, y), col::kText, "At World's End", Px(48.0f) * 0.95f);
+  DrawLabel(Type{Font::kCondensedBold, 48}, ImVec2(x, y), col::kText, game::kArtTitle, Px(48.0f) * 0.95f);
   constexpr Type kFoot{Font::kRegular, 13};
   DrawParagraph(kFoot, ImVec2(x, rect.Max.y - Px(32.0f) - LineHeight(kFoot) * 2.0f), rect.GetWidth() - Px(80.0f), 1.2f,
                 col::kTextMuted, t_.tagline);
@@ -218,14 +218,18 @@ void App::InstallScreen(ImVec2 size) {
           {t_.need_iso, Format(t_.need_iso_hint, game::kName)},
           {t_.install_here, Format(t_.install_here_hint, game::kRecompExecutable)},
           {t_.need_space, Format(t_.need_space_hint, Gigabytes(game::kInstalledBytes), Gigabytes(FreeSpace(exe_dir_)))}};
-      float lead = DrawParagraph(kLead, ImVec2(0, 0), width, 1.55f, 0, t_.welcome_text, false);
+      // The game's own welcome (game.cpp), or the launcher's.
+      const game::GameTexts& own = game::GameTextsFor(language_);
+      const char* welcome_title = own.welcome_title ? own.welcome_title : t_.welcome_title;
+      const char* welcome_text = own.welcome_text ? own.welcome_text : t_.welcome_text;
+      float lead = DrawParagraph(kLead, ImVec2(0, 0), width, 1.55f, 0, welcome_text, false);
       float card = Px(16.0f) * 2.0f + std::max(Px(44.0f), LineHeight(kCardTitle) + Px(3.0f) + LineHeight(kCardHint));
       float height = Px(48.0f) + Px(14.0f) + lead + Px(32.0f) + card * 3.0f + Px(24.0f) + Px(20.0f) + LineHeight(kCardHint);
       float y = centered(height);
       float x = main.Min.x;
-      DrawLabel(kHeading, ImVec2(x, y), col::kText, t_.welcome_title, Px(48.0f));
+      DrawLabel(kHeading, ImVec2(x, y), col::kText, welcome_title, Px(48.0f));
       y += Px(48.0f) + Px(14.0f);
-      DrawParagraph(kLead, ImVec2(x, y), width, 1.55f, col::kTextSecondary, t_.welcome_text);
+      DrawParagraph(kLead, ImVec2(x, y), width, 1.55f, col::kTextSecondary, welcome_text);
       y += lead + Px(32.0f);
       const Icon icons[] = {Icon::kDisc, Icon::kFolder, Icon::kDrive};
       bool enough = FreeSpace(exe_dir_) >= game::kInstalledBytes;

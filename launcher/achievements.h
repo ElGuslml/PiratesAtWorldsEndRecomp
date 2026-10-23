@@ -2,7 +2,7 @@
 //
 // They live in the game's executable, which the launcher does not read: the game writes them for launchers each
 // time it starts (the SDK's achievement cache, rex/system/achievement_cache.h), next to the unlocks, in its user
-// data folder (userdata\ next to it, or Documents\potcawe when that cannot be written):
+// data folder (userdata\ next to it, or Documents\<game::kDocumentsFolder> when that cannot be written):
 // - achievements\<TITLEID>.info.toml: every achievement in every language the game has, and its icon;
 // - achievements\<TITLEID>\<image id>.png: the icons, the game's own;
 // - achievements\<TITLEID>.toml: the unlocks, with their times.

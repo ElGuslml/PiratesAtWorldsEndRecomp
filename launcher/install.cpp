@@ -50,9 +50,9 @@ struct Handle {
 bool GameInstalled(const std::filesystem::path& exe_dir) {
   std::error_code ec;
   if (std::filesystem::exists(exe_dir / "assets" / game::kDiscExecutable, ec)) return true;
-#ifdef POTCAWE_DEFAULT_GAME_ROOT
+#ifdef LAUNCHER_DEFAULT_GAME_ROOT
   // A development build: the game falls back to the repository's assets\ (src/startup.cpp, DefaultGameRoot).
-  if (std::filesystem::exists(std::filesystem::path(POTCAWE_DEFAULT_GAME_ROOT) / game::kDiscExecutable, ec)) return true;
+  if (std::filesystem::exists(std::filesystem::path(LAUNCHER_DEFAULT_GAME_ROOT) / game::kDiscExecutable, ec)) return true;
 #endif
   return std::wstring(GetCommandLineW()).find(L"--game_data_root") != std::wstring::npos;
 }

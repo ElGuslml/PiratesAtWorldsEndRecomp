@@ -1,4 +1,4 @@
-// PiratesAtWorldsEnd Launcher's texts, UTF-8, in the Windows display language: English, German, French,
+// The launcher's texts, UTF-8, in the Windows display language: English, German, French,
 // Spanish and Italian (the Spanish ones are the mockup's). The game asks for its own language in its
 // first menu.
 
@@ -19,6 +19,7 @@ struct Texts {
   const char* nav_settings;
   const char* nav_video;
   const char* nav_graphics;
+  const char* nav_game;
   const char* nav_updates;
   const char* donate_text;
   const char* donate;
@@ -73,7 +74,7 @@ struct Texts {
   const char* format_bars;
   const char* internal;
   const char* internal_hint;
-  const char* internal_hint_xenos;
+  const char* internal_hint_xenos;  // %d × %d: the game's frame
   const char* automatic;
   const char* original;
 
@@ -179,6 +180,11 @@ struct Texts {
   const char* checking;
   const char* checking_status;
   const char* up_to_date;
+  // The Game page (the game's own options, game.h).
+  const char* game_subtitle;
+  const char* game_language;
+  const char* game_language_hint;
+  const char* updates_off;  // the game has no releases to look for (game.h)
   const char* check_on_start;
   const char* check_on_start_hint;
   const char* release_notes;  // upper case; %s: the version
@@ -260,12 +266,12 @@ struct Texts {
   const char* decimal_separator;  // in sizes (7,3 GB)
 
   // Errors.
-  const char* game_missing;
+  const char* game_missing;  // %s: the game's executable, %s: the launcher
   const char* starting_game;      // over the launcher until the game's window shows
   const char* game_closed_error;  // %s: the exit code
   const char* open_logs;
-  const char* save_failed;
-  const char* no_direct3d;
+  const char* save_failed;  // %s: the options file
+  const char* no_direct3d;  // %s: the launcher
 };
 
 // The Windows display language as an XLanguage id, like the SDK's user_language: 1 English, 3 German,

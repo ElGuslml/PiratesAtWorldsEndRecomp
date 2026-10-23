@@ -210,6 +210,8 @@ void App::UpdatesPage(const ImRect& rect) {
   const bool updating = progress.state == Update::State::kDownloading || progress.state == Update::State::kVerifying ||
                         progress.state == Update::State::kInstalling || progress.state == Update::State::kDone;
   const Release* newer = updates_ ? updates_->Newer(running) : nullptr;
+  // A game without releases to look for (game.h): its version, and nothing to check.
+  const bool off = update_url_.empty();
 
   // The installed version, the last check and its result.
   {
@@ -230,9 +232,11 @@ void App::UpdatesPage(const ImRect& rect) {
 
     ButtonSpec check{ButtonKind::kPrimary, Type{Font::kBold, 16}, 52, 28, 10, Icon::kRefresh, 18, 2};
     check.gap = 10;
-    float button_width = ButtonWidth(check, t_.check_updates);
+    float button_width = off ? 0.0f : ButtonWidth(check, t_.check_updates);
     float status_width = card.Max.x - Px(56.0f) - button_width - x;
-    if (checking) {
+    if (off) {
+      DrawLabel(kStatus, ImVec2(x, top), col::kTextMuted, Ellipsize(kStatus, t_.updates_off, status_width));
+    } else if (checking) {
       DrawLabel(kStatus, ImVec2(x, top), col::kTextMuted, t_.checking_updates);
     } else if (updates_ && !updates_->ok) {
       char text[512];
@@ -254,8 +258,8 @@ void App::UpdatesPage(const ImRect& rect) {
                   Ellipsize(kStatus, t_.up_to_date, std::max(0.0f, x + status_width - after)));
       }
     }
-    if (Button("check", ImVec2(card.Max.x - Px(28.0f) - button_width, card.Min.y + (height - Px(52.0f)) * 0.5f), check,
-               t_.check_updates, !checking && !updating)) {
+    if (!off && Button("check", ImVec2(card.Max.x - Px(28.0f) - button_width, card.Min.y + (height - Px(52.0f)) * 0.5f),
+                       check, t_.check_updates, !checking && !updating)) {
       CheckForUpdatesNow();
     }
     y += height + Px(20.0f);
@@ -343,7 +347,7 @@ void App::UpdatesPage(const ImRect& rect) {
   }
 
   // Checking when the launcher opens.
-  {
+  if (!off) {
     constexpr Type kTitle{Font::kSemiBold, 15};
     constexpr Type kHint{Font::kRegular, 13};
     float height = Px(20.0f) * 2.0f + LineHeight(kTitle) + Px(4.0f) + LineHeight(kHint);
@@ -360,7 +364,7 @@ void App::UpdatesPage(const ImRect& rect) {
   }
 
   // The release notes: what is new since the installed version, or the installed version's.
-  {
+  if (!off) {
     ImRect card(ImVec2(content.Min.x, y), content.Max);
     FillRect(card, col::kCard, 12.0f);
     constexpr Type kLinkType{Font::kSemiBold, 14};

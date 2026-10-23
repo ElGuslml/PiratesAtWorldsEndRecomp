@@ -29,7 +29,8 @@ const char* LanguageKey(uint32_t language) {
   return language < std::size(kKeys) ? kKeys[language] : "en";
 }
 
-// The game's user data folder: userdata\ next to it, or Documents\potcawe (src/startup.cpp, ConfigureUserData).
+// The game's user data folder: userdata\ next to it, or Documents\<game::kDocumentsFolder> (src/startup.cpp,
+// ConfigureUserData).
 // The one that has the list.
 std::filesystem::path AchievementsFolder(const std::filesystem::path& exe_dir) {
   wchar_t name[16];
@@ -42,7 +43,7 @@ std::filesystem::path AchievementsFolder(const std::filesystem::path& exe_dir) {
   PWSTR documents = nullptr;
   std::filesystem::path result;
   if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, &documents))) {
-    std::filesystem::path other = std::filesystem::path(documents) / L"potcawe" / L"achievements";
+    std::filesystem::path other = std::filesystem::path(documents) / game::kDocumentsFolder / L"achievements";
     if (std::filesystem::exists(other / name, ec)) {
       result = other;
     }

@@ -31,8 +31,8 @@ void App::PlayPage(const ImRect& rect) {
 
   // The art and the game's name.
   FillRect(hero, Hex(0x142033), 12.0f);
-  // Cropped above center: a wide window keeps the moon whole (at the mockup's size nothing is cropped vertically).
-  DrawArt(Art::kHero, hero, ImVec2(0.5f, 0.3f), 12.0f);
+  // Cropped around the art's focus (game.h): a wide window keeps it whole.
+  DrawArt(Art::kHero, hero, ImVec2(game::kHeroFocusX, game::kHeroFocusY), 12.0f);
   float left = hero.Min.x + Px(40.0f);
   float right = hero.Max.x - Px(40.0f);
   float bottom = hero.Max.y - Px(36.0f);
@@ -78,8 +78,8 @@ void App::PlayPage(const ImRect& rect) {
   float name_box = Px(76.0f) * 0.92f;
   float name_y = tagline_y - Px(12.0f) - name_box;
   float kicker_y = name_y - Px(6.0f) - LineHeight(kKicker);
-  DrawLabel(kKicker, ImVec2(left, kicker_y), col::kAccent, "PIRATES OF THE CARIBBEAN");
-  DrawLabel(kName, ImVec2(left, name_y), col::kText, "At World's End", name_box);
+  DrawLabel(kKicker, ImVec2(left, kicker_y), col::kAccent, game::kArtKicker);
+  DrawLabel(kName, ImVec2(left, name_y), col::kText, game::kArtTitle, name_box);
   DrawLabel(kTagline, ImVec2(left, tagline_y), col::kTextSecondary, t_.tagline);
 
   // The cards.
@@ -101,8 +101,14 @@ void App::PlayPage(const ImRect& rect) {
     std::vector<std::string> chips;
     chips.push_back(SizeText(settings_.OutputSize()));
     chips.push_back(o.display == kFullscreen ? t_.fullscreen : o.display == kBorderless ? t_.borderless : t_.window);
-    chips.push_back(o.native ? "NativeXRenderer" : "Xenos");
-    chips.push_back(o.fps60 ? "60 FPS" : "30 FPS");
+    if (game::kHasNativeXRenderer) {
+      chips.push_back(o.native ? "NativeXRenderer" : "Xenos");
+    }
+    if (*game::kFrameRateCvar) {
+      for (const game::FrameRate& rate : game::kFrameRates) {
+        if (rate.value == o.frame_rate) chips.push_back(std::to_string(rate.fps) + " FPS");
+      }
+    }
     if (o.native) {
       if (o.native_aa == kAaOff) {
         chips.push_back(std::string(t_.antialiasing) + ": " + t_.none);
@@ -113,7 +119,9 @@ void App::PlayPage(const ImRect& rect) {
         chips.push_back(kExperimentalAntialiasing[o.native_aa_experimental].label);
       }
     } else {
-      chips.push_back(o.no_msaa ? std::string(t_.antialiasing) + ": " + t_.none : std::string("2× MSAA"));
+      if (*game::kNoMsaaCvar) {
+        chips.push_back(o.no_msaa ? std::string(t_.antialiasing) + ": " + t_.none : std::string(game::kMsaaLabel));
+      }
     }
     constexpr const char* kAnisotropic[] = {"", "", "2×", "4×", "8×", "16×"};
     chips.push_back(o.anisotropic > 0 ? std::string("AF ") + kAnisotropic[o.anisotropic] : std::string("AF ") + t_.off);
@@ -171,10 +179,14 @@ void App::PlayPage(const ImRect& rect) {
               Ellipsize(kVersionType, version, r.GetWidth() - Px(60.0f)));
     y += line + Px(12.0f);
     char checked[128];
-    std::snprintf(checked, sizeof(checked), t_.last_check, LastCheckedText().c_str());
+    if (update_url_.empty()) {
+      std::snprintf(checked, sizeof(checked), "%s", t_.updates_off);
+    } else {
+      std::snprintf(checked, sizeof(checked), t_.last_check, LastCheckedText().c_str());
+    }
     DrawLabel(Type{Font::kRegular, 13}, ImVec2(p.x, y), col::kTextMuted,
               Ellipsize(Type{Font::kRegular, 13}, checked, r.GetWidth() - Px(40.0f)));
-    if (Link("updates", ImVec2(p.x, link_y), newer ? t_.update_now : t_.find_updates)) {
+    if (!update_url_.empty() && Link("updates", ImVec2(p.x, link_y), newer ? t_.update_now : t_.find_updates)) {
       Navigate(Page::kUpdates, false);
     }
   }

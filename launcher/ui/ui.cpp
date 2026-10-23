@@ -2,6 +2,8 @@
 
 #include "ui/ui.h"
 
+#include "game.h"
+
 #include "resources.h"
 #include "ui/gfx.h"
 
@@ -62,8 +64,7 @@ constexpr const char* kIconBodies[int(Icon::kCount)] = {
     /* kRefresh */ "<path d='M20 12a8 8 0 1 1-2.4-5.7'/><path d='M20 4v5h-5'/>",
     /* kReset */ "<path d='M4 12a8 8 0 1 0 2.4-5.7'/><path d='M4 4v5h5'/>",
     /* kHeart */ "<path d='M12 20.5s-8-4.6-8-10.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8 2.6c0 6-8 10.6-8 10.6z'/>",
-    /* kAnchor */
-    "<circle cx='12' cy='5' r='2'/><path d='M12 7v14'/><path d='M8 11h8'/><path d='M5 14a7 7 0 0 0 14 0'/>",
+    /* kBrand */ launcher::game::kBrandIcon,
     /* kCheck */ "<path d='M5 12l5 5 9-10'/>",
     /* kArrowRight */ "<path d='M5 12h14'/><path d='M13 6l6 6-6 6'/>",
     /* kArrowLeft */ "<path d='M19 12H5'/><path d='M11 6l-6 6 6 6'/>",
@@ -168,6 +169,64 @@ std::string_view Resource(int id) {
 
 // --- Type ---
 
+// A font of Windows (C:\Windows\Fonts), mapped into memory for the program's life: only the pages ImGui reads
+// are loaded. Empty if it is not there.
+std::string_view MapWindowsFont(const wchar_t* name) {
+  wchar_t path[MAX_PATH];
+  UINT length = GetWindowsDirectoryW(path, MAX_PATH);
+  if (length == 0 || length + 8 + wcslen(name) >= MAX_PATH) {
+    return {};
+  }
+  wcscat_s(path, L"\\Fonts\\");
+  wcscat_s(path, name);
+  HANDLE file = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+  if (file == INVALID_HANDLE_VALUE) {
+    return {};
+  }
+  LARGE_INTEGER size = {};
+  HANDLE mapping = GetFileSizeEx(file, &size) ? CreateFileMappingW(file, nullptr, PAGE_READONLY, 0, 0, nullptr) : nullptr;
+  CloseHandle(file);
+  const void* view = mapping ? MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0) : nullptr;
+  if (mapping) {
+    CloseHandle(mapping);  // the view keeps it
+  }
+  return view ? std::string_view(static_cast<const char*>(view), size_t(size.QuadPart)) : std::string_view();
+}
+
+// Windows' fonts for the scripts Barlow does not have, which the names of the game's languages (game.h, in their
+// own words) use: merged after Barlow into each font, in this order.
+std::vector<std::string_view> FallbackFonts() {
+  bool han = false, kana = false, hangul = false, cyrillic = false;
+  bool traditional = false, simplified = false;
+  for (const launcher::game::Language& language : launcher::game::kLanguages) {
+    traditional = traditional || language.id == 8;
+    simplified = simplified || language.id == 10;
+    for (const char* s = language.name; *s;) {
+      unsigned int c;
+      s += NextChar(s, nullptr, &c);
+      han = han || (c >= 0x4E00 && c <= 0x9FFF);
+      kana = kana || (c >= 0x3040 && c <= 0x30FF);
+      hangul = hangul || (c >= 0xAC00 && c <= 0xD7AF) || (c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F);
+      cyrillic = cyrillic || (c >= 0x0400 && c <= 0x04FF);
+    }
+  }
+  std::vector<std::string_view> fonts;
+  auto add = [&](std::initializer_list<const wchar_t*> names) {
+    for (const wchar_t* name : names) {
+      if (std::string_view font = MapWindowsFont(name); !font.empty()) {
+        fonts.push_back(font);
+        return;
+      }
+    }
+  };
+  if (kana || (han && !traditional && !simplified)) add({L"YuGothM.ttc", L"msgothic.ttc"});
+  if (han && traditional) add({L"msjh.ttc", L"mingliu.ttc"});
+  if (han && simplified) add({L"msyh.ttc", L"simsun.ttc"});
+  if (hangul) add({L"malgun.ttf", L"gulim.ttc"});
+  if (cyrillic) add({L"segoeui.ttf", L"arial.ttf"});
+  return fonts;
+}
+
 bool LoadFonts() {
   ImGuiIO& io = ImGui::GetIO();
   constexpr int kIds[int(Font::kCount)] = {IDR_FONT_REGULAR,  IDR_FONT_MEDIUM, IDR_FONT_SEMIBOLD,
@@ -190,6 +249,14 @@ bool LoadFonts() {
     g_fonts[i] = io.Fonts->AddFontFromMemoryTTF(const_cast<char*>(data.data()), int(data.size()), 0.0f, &config);
     if (!g_fonts[i]) {
       return false;
+    }
+    static const std::vector<std::string_view> fallbacks = FallbackFonts();
+    for (std::string_view fallback : fallbacks) {
+      ImFontConfig merge;
+      merge.MergeMode = true;
+      merge.DstFont = g_fonts[i];
+      merge.FontDataOwnedByAtlas = false;  // mapped for the program's life
+      io.Fonts->AddFontFromMemoryTTF(const_cast<char*>(fallback.data()), int(fallback.size()), 0.0f, &merge);
     }
   }
   return true;

@@ -1,7 +1,7 @@
 // The Gamepad page: the controllers SDL sees, and which of their buttons presses each control of the
 // original Xbox 360 controller. That is the SDK's gamepad_remap (recomp change 36,
 // thirdparty/rexglue-sdk/src/input/sdl/sdl_input_driver.cpp): one layout per type of controller, kept in
-// potcawe_options.toml, applied by the game to every controller of that type. The names, the standard layout
+// the options file, applied by the game to every controller of that type. The names, the standard layout
 // and the order sections apply in are the SDK's, repeated here.
 
 #include <SDL3/SDL_gamepad.h>

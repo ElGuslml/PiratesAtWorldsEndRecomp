@@ -1,4 +1,4 @@
-// PiratesAtWorldsEnd Launcher's settings (settings.h).
+// The launcher's settings (settings.h).
 
 #include "settings.h"
 
@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <functional>
 #include <iterator>
@@ -60,11 +61,76 @@ void ResetGraphics(Options& o) {
   Options defaults;
   o.native = defaults.native;
   o.vulkan = defaults.vulkan;
-  o.fps60 = defaults.fps60;
+  o.frame_rate = defaults.frame_rate;
   o.no_msaa = defaults.no_msaa;
   o.native_aa = defaults.native_aa;
   o.native_aa_experimental = defaults.native_aa_experimental;
   o.anisotropic = defaults.anisotropic;
+}
+
+void ResetGame(Options& o) {
+  o.language = SystemGameLanguage();
+  for (size_t i = 0; i < game::kToggles.size(); ++i) {
+    o.toggles[i] = game::kToggles[i].default_value;
+  }
+}
+
+std::vector<game::FrameRate> FrameRates(const Monitor& monitor) {
+  std::vector<game::FrameRate> rates;
+  for (const game::FrameRate& rate : game::kFrameRates) {
+    if (rate.fps <= 60 || rate.fps <= monitor.refresh + 1) {
+      rates.push_back(rate);
+    }
+  }
+  return rates;
+}
+
+int SystemGameLanguage() {
+  if (game::kLanguages.empty()) {
+    return 0;
+  }
+  uint32_t id = 1;
+  switch (PRIMARYLANGID(GetUserDefaultUILanguage())) {
+    case LANG_JAPANESE: id = 2; break;
+    case LANG_GERMAN: id = 3; break;
+    case LANG_FRENCH: id = 4; break;
+    case LANG_SPANISH: id = 5; break;
+    case LANG_ITALIAN: id = 6; break;
+    case LANG_KOREAN: id = 7; break;
+    case LANG_CHINESE:
+      id = SUBLANGID(GetUserDefaultUILanguage()) == SUBLANG_CHINESE_SIMPLIFIED ? 10 : 8;
+      break;
+    case LANG_PORTUGUESE: id = 9; break;
+    case LANG_POLISH: id = 11; break;
+    case LANG_RUSSIAN: id = 12; break;
+    default: break;
+  }
+  // The user's locale ("es-MX") picks between two versions of the language.
+  wchar_t wide[LOCALE_NAME_MAX_LENGTH] = {};
+  GetUserDefaultLocaleName(wide, LOCALE_NAME_MAX_LENGTH);
+  std::string locale;
+  for (const wchar_t* c = wide; *c; ++c) locale += char(*c);
+  // The longest `locales` prefix that matches wins; an entry without one comes next, then one whose prefix does not
+  // match (the first of those).
+  int best = -1;
+  int best_score = 0;
+  for (size_t i = 0; i < game::kLanguages.size(); ++i) {
+    const game::Language& l = game::kLanguages[i];
+    if (l.id != id) continue;
+    int score = !l.locales ? 0 : locale.rfind(l.locales, 0) == 0 ? int(std::strlen(l.locales)) : -1;
+    if (best < 0 || score > best_score) {
+      best = int(i);
+      best_score = score;
+    }
+  }
+  if (best >= 0) {
+    return best;
+  }
+  // English, or the first.
+  for (size_t i = 0; i < game::kLanguages.size(); ++i) {
+    if (game::kLanguages[i].id == 1) return int(i);
+  }
+  return 0;
 }
 
 void ResetKeyboard(Options& o) {
@@ -75,7 +141,7 @@ void ResetKeyboard(Options& o) {
   o.mnk_sensitivity = 1.0f;
 }
 
-// --- potcawe.toml / potcawe_options.toml ---
+// --- The game's base settings and the options file ---
 
 namespace {
 
@@ -182,9 +248,34 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
     o.window = {MulDiv(window_width, int(primary_dpi), 96), MulDiv(window_height, int(primary_dpi), 96)};
   }
   o.vulkan = GetString(c, "gpu_backend") == "vulkan";
-  o.fps60 = GetBool(c, "potcawe_60fps", false);
-  o.no_msaa = GetBool(c, "potcawe_no_msaa", false);
-  o.native = GetBool(c, "native_x_renderer", true);  // the default (D56)
+  if (*game::kFrameRateCvar) {
+    int value = game::kFrameRateIsBool
+                    ? int(GetBool(c, game::kFrameRateCvar, game::kFrameRateDefault != 0))
+                    : int(std::lround(std::strtod(GetString(c, game::kFrameRateCvar).c_str(), nullptr)));
+    bool known = std::any_of(game::kFrameRates.begin(), game::kFrameRates.end(),
+                             [value](const game::FrameRate& rate) { return rate.value == value; });
+    o.frame_rate = known ? value : game::kFrameRateDefault;
+  }
+  o.no_msaa = *game::kNoMsaaCvar && GetBool(c, game::kNoMsaaCvar, false);
+  // The language: the entry of user_language whose variant cvar is set, or the one without; the Windows display
+  // language's until one is chosen.
+  o.language = -1;
+  if (uint32_t id = uint32_t(GetInt(c, "user_language", 0)); id != 0 && !GetString(c, "user_language").empty()) {
+    for (size_t i = 0; i < game::kLanguages.size(); ++i) {
+      const game::Language& l = game::kLanguages[i];
+      if (l.id != id) continue;
+      if (l.variant_cvar ? GetBool(c, l.variant_cvar, false) : o.language < 0) {
+        o.language = int(i);
+      }
+    }
+  }
+  if (o.language < 0) {
+    o.language = SystemGameLanguage();
+  }
+  for (size_t i = 0; i < game::kToggles.size(); ++i) {
+    o.toggles[i] = GetBool(c, game::kToggles[i].cvar, game::kToggles[i].default_value);
+  }
+  o.native = game::kHasNativeXRenderer && GetBool(c, "native_x_renderer", true);  // the default (D56)
   o.native_fill = GetBool(c, "native_x_renderer_fill_screen", true);
   double native_scale = std::strtod(GetString(c, "native_x_renderer_resolution_scale").c_str(), nullptr);
   o.native_height = native_scale > 0.0 ? int(std::lround(native_scale * kGuestHeight)) : 0;
@@ -198,7 +289,7 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
       o.native_aa = kNativeAntialiasingCount;
     }
   }
-  // Without the key, the game's default (src/startup.cpp adds it to potcawe.toml at the next start): 16x.
+  // Without the key, the game's default (src/startup.cpp adds it to its base settings at the next start): 16x.
   // A value the row does not offer: -1 (only what the game asks: 4x on some textures) shows as 4x, 1 (1x)
   // as off.
   int anisotropic = GetInt(c, "anisotropic_override", 5);
@@ -208,7 +299,7 @@ Options OptionsFromConfig(const Config& c, unsigned primary_dpi) {
   } else if (int scale = GetInt(c, "launcher_render_scale", 0); scale >= 1) {
     o.scale = std::min(scale, kMaxScale);
   } else {
-    // Without that key (potcawe.toml edited by hand): the square scale that was chosen there.
+    // Without that key (the base settings edited by hand): the square scale that was chosen there.
     int x = GetInt(c, "draw_resolution_scale_x", 0);
     int y = GetInt(c, "draw_resolution_scale_y", 0);
     o.scale = x >= 1 && x == y ? std::min(x, kMaxScale) : 0;
@@ -300,6 +391,9 @@ std::vector<Monitor> EnumerateMonitors() {
     current.dmSize = sizeof(current);
     if (EnumDisplaySettingsW(info.szDevice, ENUM_CURRENT_SETTINGS, &current)) {
       m.size = {int(current.dmPelsWidth), int(current.dmPelsHeight)};
+      if (current.dmDisplayFrequency > 1) {
+        m.refresh = int(current.dmDisplayFrequency);
+      }
     }
     for (DWORD i = 0;; ++i) {
       DEVMODEW mode = {};
@@ -417,17 +511,25 @@ Size Settings::EffectiveScale() const { return o.scale == 0 ? AutoScale(OutputSi
 
 void Settings::MonitorChanged() {
   window_sizes = WindowSizes(CurrentMonitor(), {0, 0});
+  FitFrameRate();
   if (std::find(window_sizes.begin(), window_sizes.end(), o.window) == window_sizes.end()) {
     o.window = {kGuestWidth, kGuestHeight};
   }
 }
 
+void Settings::FitFrameRate() {
+  std::vector<game::FrameRate> rates = FrameRates(CurrentMonitor());
+  if (std::none_of(rates.begin(), rates.end(), [this](const game::FrameRate& r) { return r.value == o.frame_rate; })) {
+    o.frame_rate = game::kFrameRateDefault;
+  }
+}
+
 Settings LoadSettings(const std::filesystem::path& exe_dir) {
   Settings s;
-  s.options_path = exe_dir / L"potcawe_options.toml";
-  // The same PiratesAtWorldsEndRecomp.exe will see: potcawe.toml, then what the launcher saved on top.
+  s.options_path = exe_dir / game::kOptionsFile;
+  // The same the game will see: its base settings, then what the launcher saved on top.
   Config config;
-  ReadToml(exe_dir / L"potcawe.toml", config);
+  ReadToml(exe_dir / game::kConfigFile, config);
   ReadToml(s.options_path, config);
   s.monitors = EnumerateMonitors();
   s.primary_dpi = s.monitors.front().dpi;
@@ -441,6 +543,7 @@ Settings LoadSettings(const std::filesystem::path& exe_dir) {
   }
   s.o.vulkan = s.o.vulkan && s.has_vulkan;
   s.o.native = s.o.native && s.has_vulkan;
+  s.FitFrameRate();
   return s;
 }
 
@@ -452,8 +555,9 @@ bool SaveOptions(const Settings& s) {
     return false;
   }
   auto boolean = [](bool value) { return value ? "true" : "false"; };
-  f << "# PiratesAtWorldsEnd Launcher options (\"PiratesAtWorldsEnd Launcher.exe\"): written whenever a\n"
-       "# setting changes. PiratesAtWorldsEndRecomp.exe loads them at startup, after potcawe.toml, without\n"
+  f << "# " << game::kLauncherName << " options (\"" << game::kLauncherExecutable << "\"): written whenever a\n"
+       "# setting changes. " << game::kRecompExecutable << " loads them at startup, after " << game::kConfigFile
+    << ", without\n"
        "# showing any window.\n"
        "# Command line options (for example those of a Steam shortcut) win over these.\n"
        "# monitor: 1 = primary, 2.. = the others (SDL order).\n"
@@ -488,7 +592,7 @@ bool SaveOptions(const Settings& s) {
   } else {
     f << "launcher_render_scale = " << o.scale << "\n";
   }
-  // resolution_scale = 1 so that draw_resolution_scale_x/y win (even if potcawe.toml says
+  // resolution_scale = 1 so that draw_resolution_scale_x/y win (even if the base settings say
   // otherwise). With NativeXRenderer the SDK's backend only keeps the GPU in sync, at 1x;
   // launcher_render_scale keeps the choice for Xenos.
   if (o.native) {
@@ -498,38 +602,67 @@ bool SaveOptions(const Settings& s) {
   f << "draw_resolution_scale_x = " << scale.first << "\n";
   f << "draw_resolution_scale_y = " << scale.second << "\n";
   f << "gpu_backend = \"" << (o.vulkan ? "vulkan" : "d3d12") << "\"\n";
-  // Present every vblank (60 FPS) instead of every second one (src/framerate.cpp).
-  f << "potcawe_60fps = " << boolean(o.fps60) << "\n";
-  // Render surfaces without 2x MSAA (src/msaa.cpp): less GPU work, no edge antialiasing. The game
-  // applies it with NativeXRenderer whatever this says.
-  f << "potcawe_no_msaa = " << boolean(o.no_msaa) << "\n";
+  // The game's own options (game.h).
+  if (*game::kFrameRateCvar) {
+    // 60 FPS (src/framerate.cpp), or the emulated vblank's rate the game follows.
+    if (game::kFrameRateIsBool) {
+      f << game::kFrameRateCvar << " = " << boolean(o.frame_rate != 0) << "\n";
+    } else {
+      f << game::kFrameRateCvar << " = " << o.frame_rate << "\n";
+    }
+  }
+  if (*game::kNoMsaaCvar) {
+    // Render surfaces without the game's MSAA (src/msaa.cpp): less GPU work, no edge antialiasing.
+    f << game::kNoMsaaCvar << " = " << boolean(o.no_msaa) << "\n";
+  }
+  if (*game::kUltrawideCvar) {
+    // The image format for both renderers: the cameras widened (src/widescreen.cpp) and the Xenos path's image
+    // stretched over a screen wider than 16:9, or 16:9 with bars.
+    f << game::kUltrawideCvar << " = " << boolean(o.native_fill) << "\n";
+    f << "present_letterbox = " << boolean(!o.native_fill) << "\n";
+  }
+  if (!game::kLanguages.empty()) {
+    // The game's language, and its version where it has two (each variant cvar written, set for the one chosen).
+    const game::Language& chosen = game::kLanguages[std::clamp(o.language, 0, int(game::kLanguages.size()) - 1)];
+    f << "user_language = " << chosen.id << "\n";
+    for (const game::Language& l : game::kLanguages) {
+      if (l.variant_cvar) {
+        f << l.variant_cvar << " = " << boolean(&l == &chosen) << "\n";
+      }
+    }
+  }
+  for (size_t i = 0; i < game::kToggles.size(); ++i) {
+    f << game::kToggles[i].cvar << " = " << boolean(o.toggles[i]) << "\n";
+  }
   // Anisotropic filtering for textures with mipmaps, sharper at oblique angles (SDK cvar; the game itself
   // asks for 4x on some textures only): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off.
   f << "anisotropic_override = " << o.anisotropic << "\n";
   // NativeXRenderer (native_x_renderer/): draw natively on Vulkan instead of emulating the GPU (the default, D56).
-  f << "native_x_renderer = " << boolean(o.native) << "\n";
-  // NativeXRenderer's image format and internal resolution (D54).
-  f << "# native_x_renderer_fill_screen: NativeXRenderer fills a screen or window that is not 16:9 (true), or keeps\n"
-       "# 16:9 with bars (false). native_x_renderer_resolution_scale: its internal resolution, as the height over\n"
-       "# 720 (2 = 1440 lines); 0 = the screen's or the window's.\n";
-  f << "native_x_renderer_fill_screen = " << boolean(o.native_fill) << "\n";
-  {
-    char text[32];
-    std::snprintf(text, sizeof(text), "%.6f", o.native_height > 0 ? double(o.native_height) / kGuestHeight : 0.0);
-    std::string value = text;
-    value.erase(value.find_last_not_of('0') + 1);
-    if (value.back() == '.') value.pop_back();
-    f << "native_x_renderer_resolution_scale = " << value << "\n";
+  if (game::kHasNativeXRenderer) {
+    f << "native_x_renderer = " << boolean(o.native) << "\n";
+    // NativeXRenderer's image format and internal resolution (D54).
+    f << "# native_x_renderer_fill_screen: NativeXRenderer fills a screen or window that is not 16:9 (true), or keeps\n"
+         "# 16:9 with bars (false). native_x_renderer_resolution_scale: its internal resolution, as a multiple of\n"
+         "# the game's frame height (2 = twice its lines); 0 = the screen's or the window's.\n";
+    f << "native_x_renderer_fill_screen = " << boolean(o.native_fill) << "\n";
+    {
+      char text[32];
+      std::snprintf(text, sizeof(text), "%.6f", o.native_height > 0 ? double(o.native_height) / kGuestHeight : 0.0);
+      std::string value = text;
+      value.erase(value.find_last_not_of('0') + 1);
+      if (value.back() == '.') value.pop_back();
+      f << "native_x_renderer_resolution_scale = " << value << "\n";
+    }
+    // NativeXRenderer's own antialiasing: smaa, dlaa, fxaa or off; or an experimental mode the file named (D53).
+    f << "# native_x_renderer_antialiasing: smaa, dlaa, fxaa or off, the launcher's choices. Experimental, for\n"
+         "# testing only (not finished, so the launcher does not offer them): dlss_quality, dlss_balanced,\n"
+         "# dlss_performance and dlss_ultra_performance, NVIDIA DLSS upscaling the 3D view from a lower\n"
+         "# resolution. The launcher keeps one written here.\n";
+    const char* native_aa = o.native_aa < kNativeAntialiasingCount ? kNativeAntialiasingNames[std::max(o.native_aa, 0)]
+                            : o.native_aa_experimental >= 0   ? kExperimentalAntialiasing[o.native_aa_experimental].name
+                                                              : kNativeAntialiasingNames[0];
+    f << "native_x_renderer_antialiasing = \"" << native_aa << "\"\n";
   }
-  // NativeXRenderer's own antialiasing: smaa, dlaa, fxaa or off; or an experimental mode the file named (D53).
-  f << "# native_x_renderer_antialiasing: smaa, dlaa, fxaa or off, the launcher's choices. Experimental, for\n"
-       "# testing only (not finished, so the launcher does not offer them): dlss_quality, dlss_balanced,\n"
-       "# dlss_performance and dlss_ultra_performance, NVIDIA DLSS upscaling the 3D view from a lower\n"
-       "# resolution. The launcher keeps one written here.\n";
-  const char* native_aa = o.native_aa < kNativeAntialiasingCount ? kNativeAntialiasingNames[std::max(o.native_aa, 0)]
-                          : o.native_aa_experimental >= 0   ? kExperimentalAntialiasing[o.native_aa_experimental].name
-                                                            : kNativeAntialiasingNames[0];
-  f << "native_x_renderer_antialiasing = \"" << native_aa << "\"\n";
   // The keyboard and the mouse as the player's controller (the SDK's mnk driver): its keys are lists of
   // alternatives ("Q,I"), each optionally with Shift+, Ctrl+ or Alt+.
   f << "# Keyboard and mouse: mnk_mode plays with them; mnk_mouse moves the camera (the right stick) with the\n"

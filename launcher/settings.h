@@ -1,7 +1,7 @@
-// PiratesAtWorldsEnd Launcher's settings: potcawe.toml and potcawe_options.toml, the monitors, and the
-// resolutions the game and NativeXRenderer will use. Ported from the Win32 launcher it replaces; the file
-// it writes keeps that launcher's keys, which PiratesAtWorldsEndRecomp.exe loads at startup
-// (src/options.cpp), plus the keyboard's.
+// The launcher's settings: the game's base settings and the options file (game::kConfigFile, game::kOptionsFile),
+// the monitors, and the resolutions the game and NativeXRenderer will use. Ported from the Win32 launcher it
+// replaces; the file it writes keeps that launcher's keys, which the game loads at startup (src/options.cpp),
+// plus the keyboard's, and the game's own options (game.h).
 
 #pragma once
 
@@ -13,13 +13,15 @@
 #include <utility>
 #include <vector>
 
+#include "game.h"
+
 namespace launcher {
 
-// The game always renders at 1280x720 (its Direct3D presentation parameters are hard-coded; the console
+// The game always renders its frame (game.h; its Direct3D presentation parameters are hard-coded; the console
 // video mode only drives the output scaler): resolution is raised with the SDK render scale
 // (draw_resolution_scale_x/y, integers, per axis), or by NativeXRenderer at any size.
-constexpr int kGuestWidth = 1280;
-constexpr int kGuestHeight = 720;
+constexpr int kGuestWidth = game::kFrameWidth;
+constexpr int kGuestHeight = game::kFrameHeight;
 constexpr int kMaxScale = 3;
 
 using Size = std::pair<int, int>;  // width, height
@@ -31,8 +33,8 @@ enum Display : int { kFullscreen, kBorderless, kWindow };
 enum NativeAntialiasing : int { kSmaa, kDlaa, kFxaa, kAaOff, kNativeAntialiasingCount };
 inline constexpr const char* kNativeAntialiasingNames[] = {"smaa", "dlaa", "fxaa", "off"};
 
-// The DLSS modes (D49) draw the 3D view at a lower resolution and upscale it. They are not finished, and the
-// launcher does not offer them (D53): potcawe_options.toml can still name one, and the row then shows it,
+// The DLSS modes (NativeXRenderer's D49) draw the 3D view at a lower resolution and upscale it. They are not
+// finished, and the launcher does not offer them (D53): the options file can still name one, and the row then shows it,
 // marked experimental, so that saving keeps it.
 struct ExperimentalAntialiasing {
   const char* name;
@@ -86,17 +88,22 @@ struct Options {
   int display = kBorderless;
   Size window{kGuestWidth, kGuestHeight};  // window size in physical pixels
   int scale = 0;                           // 0 = automatic; 1..kMaxScale = chosen
-  bool fps60 = false;                      // potcawe_60fps (src/framerate.cpp)
-  bool no_msaa = false;                    // potcawe_no_msaa (src/msaa.cpp)
+  int frame_rate = game::kFrameRateDefault;  // game::kFrameRateCvar's value (a game::kFrameRates value)
+  bool no_msaa = false;                    // game::kNoMsaaCvar (src/msaa.cpp)
   int anisotropic = 5;                     // anisotropic_override (SDK): 5 = 16x, 4 = 8x, 3 = 4x, 2 = 2x, 0 = off
   bool vulkan = false;                     // gpu_backend = "vulkan" (otherwise "d3d12")
-  bool native = true;                      // native_x_renderer: NativeXRenderer draws instead of Xenos (D56)
+  bool native = game::kHasNativeXRenderer;  // native_x_renderer: NativeXRenderer draws instead of Xenos (D56)
   // native_x_renderer_antialiasing: a NativeAntialiasing, or kNativeAntialiasingCount for the experimental mode
-  // potcawe_options.toml named (native_aa_experimental, an index of kExperimentalAntialiasing; -1: none).
+  // the options file named (native_aa_experimental, an index of kExperimentalAntialiasing; -1: none).
   int native_aa = kSmaa;
   int native_aa_experimental = -1;
   bool native_fill = true;  // native_x_renderer_fill_screen: fill an output that is not 16:9, or 16:9 with bars
-  int native_height = 0;    // native_x_renderer_resolution_scale × 720: the internal resolution's height; 0 = automatic
+  int native_height = 0;    // native_x_renderer_resolution_scale × the frame's height: the internal resolution's
+                            // height; 0 = automatic
+  // The game's own options (game.h): its language (an index of game::kLanguages: user_language and its variant
+  // cvar) and its switches. game::kUltrawideCvar follows native_fill (the image format).
+  int language = 0;
+  std::array<bool, game::kToggles.size()> toggles{};
 
   // Keyboard and mouse: the SDK's controller emulation (mnk_mode, mnk_mouse, mnk_sensitivity, keybind_*).
   bool mnk = false;
@@ -119,9 +126,10 @@ struct Options {
 // The defaults of each page's "Reset" (the game's own, src/startup.cpp; the SDK's for the keyboard).
 void ResetVideo(Options& o);
 void ResetGraphics(Options& o);
+void ResetGame(Options& o);
 void ResetKeyboard(Options& o);
 
-// --- potcawe.toml / potcawe_options.toml ---
+// --- The game's base settings and the options file ---
 
 // Minimal TOML reader ("key = value"; [x] tables are flattened as x_key, like the SDK does).
 using Config = std::map<std::string, std::string>;
@@ -139,11 +147,17 @@ struct Monitor {
   int work_left = 0, work_top = 0, work_right = 0, work_bottom = 0;  // work area (without the taskbar)
   unsigned dpi = 96;
   std::vector<Size> modes;  // 32-bit modes, unique, largest first
+  int refresh = 60;          // the current mode's refresh rate, Hz
 };
 
 // Monitors in SDL order (the one the monitor cvar uses): the primary first, then the rest in
 // EnumDisplayMonitors order (SDL_windowsmodes.c, WIN_AddDisplays).
 std::vector<Monitor> EnumerateMonitors();
+
+// The frame rates the monitor reaches (game::kFrameRates, those above 60 only up to its refresh rate).
+std::vector<game::FrameRate> FrameRates(const Monitor& monitor);
+// The Windows display language's entry of game::kLanguages, or 0.
+int SystemGameLanguage();
 
 // Window sizes that fit (frame included) in the monitor work area: its modes from 1280x720 up,
 // 1280x720 always, plus keep (the saved size) if it is not in the list.
@@ -177,12 +191,14 @@ struct Settings {
   Size EffectiveScale() const;
   // After the monitor changed: its window sizes, and a size it does not offer becomes 1280x720.
   void MonitorChanged();
+  // A frame rate the monitor does not reach goes back to the game's default.
+  void FitFrameRate();
 };
 
-// Reads potcawe.toml and potcawe_options.toml next to the executable, and what the machine offers.
+// Reads the game's base settings and the options file next to the executable, and what the machine offers.
 Settings LoadSettings(const std::filesystem::path& exe_dir);
 
-// Writes potcawe_options.toml. False if it could not be written.
+// Writes the options file. False if it could not be written.
 bool SaveOptions(const Settings& s);
 
 }  // namespace launcher

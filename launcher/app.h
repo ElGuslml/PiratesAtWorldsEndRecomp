@@ -1,5 +1,5 @@
-// PiratesAtWorldsEnd Launcher's window contents: the sidebar and the pages of Gustavo's mockup
-// (local_docs/launcher_design), on the settings of settings.h. main.cpp owns the window and the loop.
+// The launcher's window contents: the sidebar and the pages of Gustavo's mockup (made for POTCAWERecomp),
+// on the settings of settings.h. main.cpp owns the window and the loop.
 
 #pragma once
 
@@ -36,10 +36,9 @@ void OpenUrl(const char* url);
 // Opens a folder in Explorer.
 void OpenFolder(const std::filesystem::path& folder);
 
-// This game's releases (GitHub).
-inline constexpr const char* kReleasesUrl = "https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases";
 
-enum class Page : int { kPlay, kAchievements, kKeyboard, kGamepad, kVideo, kGraphics, kUpdates, kCount };
+// kGame only when the game has options of its own (game::kHasGamePage).
+enum class Page : int { kPlay, kAchievements, kKeyboard, kGamepad, kVideo, kGraphics, kGame, kUpdates, kCount };
 
 class App {
  public:
@@ -80,7 +79,7 @@ class App {
   std::string UpdatedFromArgument() const;
 
  private:
-  // A setting changed: potcawe_options.toml is written at once.
+  // A setting changed: the options file (game::kOptionsFile) is written at once.
   void Changed();
 
   void Sidebar(const ImRect& rect);
@@ -93,6 +92,7 @@ class App {
   void GamepadPage(const ImRect& rect);
   void VideoPage(const ImRect& rect);
   void GraphicsPage(const ImRect& rect);
+  void GamePage(const ImRect& rect);
   void UpdatesPage(const ImRect& rect);
   // The release notes (Markdown) at `pos`, `width` wide. Returns the height; draws only when `draw`.
   float ReleaseNotes(const std::string& markdown, ImVec2 pos, float width, bool draw);
@@ -168,7 +168,7 @@ class App {
   // Updates (updater.h): checked on a thread when the launcher opens (if allowed) and on request.
   void CheckForUpdatesNow();
   void PollUpdates();
-  std::string update_url_;     // game::kReleasesApi, or --launcher_update_url for a test
+  std::string update_url_;     // game::kReleasesApi, or --launcher_update_url for a test; empty: no updates
   std::string updated_from_;   // --launcher_updated_from: this start follows an update from that version
   std::future<UpdateCheck> update_check_;
   std::optional<UpdateCheck> updates_;

@@ -1,4 +1,4 @@
-// The launcher's updates from this project's GitHub releases (local_docs/10, section 3; local_docs/16).
+// The launcher's updates from this project's GitHub releases (game.h: kReleasesApi; none when it is empty).
 //
 // - The check asks GitHub's API for the releases (no token: 60 calls an hour per address, so once per launcher start
 //   and on request) and keeps those newer than the running version, without drafts and pre-releases.

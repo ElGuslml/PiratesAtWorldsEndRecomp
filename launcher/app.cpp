@@ -1,4 +1,4 @@
-// PiratesAtWorldsEnd Launcher's window contents (app.h): the sidebar, the pages' shared pieces and the
+// The launcher's window contents (app.h): the sidebar, the pages' shared pieces and the
 // controller's shortcuts.
 
 #include "app.h"
@@ -25,7 +25,7 @@ namespace launcher {
 
 using namespace ui;
 
-const char* const kVersion = POTCAWERECOMP_VERSION_STR;
+const char* const kVersion = game::kVersion;
 
 namespace {
 
@@ -51,12 +51,13 @@ constexpr NavEntry kNav[] = {
     {Page::kVideo, false, true, Icon::kSliders, 10},
     {Page::kVideo, true, false, Icon::kNone, 0},
     {Page::kGraphics, true, false, Icon::kNone, 0},
+    {Page::kGame, true, false, Icon::kNone, 0},
     {Page::kUpdates, false, false, Icon::kRefresh, 10},
 };
 
 bool InGroup(Page group_first, Page page) {
   if (group_first == Page::kKeyboard) return page == Page::kKeyboard || page == Page::kGamepad;
-  if (group_first == Page::kVideo) return page == Page::kVideo || page == Page::kGraphics;
+  if (group_first == Page::kVideo) return page == Page::kVideo || page == Page::kGraphics || page == Page::kGame;
   return false;
 }
 
@@ -112,7 +113,7 @@ App::App(Settings settings, uint32_t language)
   }
   updated_from_ = CommandLineValue(L"--launcher_updated_from=");
   CleanUpAfterUpdate(exe_dir_);
-  if (!installing_ && settings_.o.check_updates) {
+  if (!installing_ && settings_.o.check_updates && !update_url_.empty()) {
     CheckForUpdatesNow();
   }
   // PLAY has the focus from the first frame (ImGui::SetItemDefaultFocus in PlayPage does not show it).
@@ -178,12 +179,14 @@ void App::Changed() {
   static bool reported = false;
   if (!SaveOptions(settings_) && !reported) {
     reported = true;
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "PiratesAtWorldsEnd Launcher", t_.save_failed, nullptr);
+    char text[512];
+    std::snprintf(text, sizeof(text), t_.save_failed, game::kOptionsFile);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, game::kLauncherName, text, nullptr);
   }
 }
 
 void App::CheckForUpdatesNow() {
-  if (update_check_.valid()) return;
+  if (update_check_.valid() || update_url_.empty()) return;
   std::string url = update_url_;
   update_check_ = std::async(std::launch::async, [url] { return CheckForUpdates(url); });
 }
@@ -314,6 +317,9 @@ void App::Frame(ImVec2 size) {
     case Page::kGraphics:
       GraphicsPage(main);
       break;
+    case Page::kGame:
+      GamePage(main);
+      break;
     case Page::kUpdates:
       UpdatesPage(main);
       break;
@@ -348,14 +354,22 @@ void App::Frame(ImVec2 size) {
     pad_release_wait_ = false;
   }
   if (!popup && !popup_was_open && !Listening() && !pad_release_wait_) {
-    constexpr Page kOrder[] = {Page::kPlay,  Page::kAchievements, Page::kKeyboard, Page::kGamepad,
-                               Page::kVideo, Page::kGraphics,     Page::kUpdates};
+    constexpr Page kOrder[] = {Page::kPlay,     Page::kAchievements, Page::kKeyboard, Page::kGamepad,
+                               Page::kVideo,    Page::kGraphics,     Page::kGame,     Page::kUpdates};
     int index = int(std::find(std::begin(kOrder), std::end(kOrder), page_) - std::begin(kOrder));
     int count = int(std::size(kOrder));
+    // The next page in `step`'s direction that the game has.
+    auto next = [&](int step) {
+      int i = index;
+      do {
+        i = (i + count + step) % count;
+      } while (kOrder[i] == Page::kGame && !game::kHasGamePage);
+      return kOrder[i];
+    };
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadL1)) {
-      Navigate(kOrder[(index + count - 1) % count], true);
+      Navigate(next(-1), true);
     } else if (ImGui::IsKeyPressed(ImGuiKey_GamepadR1)) {
-      Navigate(kOrder[(index + 1) % count], true);
+      Navigate(next(1), true);
     } else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false)) {
       result_ = Result::kPlay;
     } else if (page_ == Page::kPlay && !g.NavCursorVisible &&
@@ -418,24 +432,27 @@ void App::Sidebar(const ImRect& rect) {
   float width = rect.GetWidth() - Px(32.0f) - Snap(Px(1.0f));
   float y = rect.Min.y + Px(24.0f);
 
-  // The brand: the anchor on accent and the game's name.
+  // The brand: the game's mark on accent and its name.
   ImRect logo(ImVec2(x + Px(8.0f), y), ImVec2(x + Px(48.0f), y + Px(40.0f)));
   FillRect(logo, col::kAccent, 8.0f);
-  DrawIcon(Icon::kAnchor, ImVec2(logo.Min.x + Px(9.0f), logo.Min.y + Px(9.0f)), 22.0f, col::kOnAccent, 2.0f);
+  DrawIcon(Icon::kBrand, ImVec2(logo.Min.x + Px(9.0f), logo.Min.y + Px(9.0f)), 22.0f, col::kOnAccent, 2.0f);
   constexpr Type kBrandTitle{Font::kCondensedBold, 20};
   constexpr Type kBrandSubtitle{Font::kSemiBold, 11, 0.12f};
   float block = Px(20.0f) + Px(5.0f) + LineHeight(kBrandSubtitle);
   float text_y = y + (Px(40.0f) - block) * 0.5f;
-  DrawLabel(kBrandTitle, ImVec2(logo.Max.x + Px(12.0f), text_y), col::kText, "At World's End", Px(20.0f));
+  DrawLabel(kBrandTitle, ImVec2(logo.Max.x + Px(12.0f), text_y), col::kText, game::kArtTitle, Px(20.0f));
   DrawLabel(kBrandSubtitle, ImVec2(logo.Max.x + Px(12.0f), text_y + Px(25.0f)), col::kLabel, t_.brand);
   y += Px(40.0f) + Px(28.0f);
 
   // The pages.
   const char* labels[] = {t_.nav_play,     t_.nav_achievements, t_.nav_controls, t_.nav_keyboard, t_.nav_gamepad,
-                          t_.nav_settings, t_.nav_video,        t_.nav_graphics, t_.nav_updates};
+                          t_.nav_settings, t_.nav_video,        t_.nav_graphics, t_.nav_game,     t_.nav_updates};
   ImGuiID current_id = 0;
   for (int i = 0; i < int(std::size(kNav)); ++i) {
     const NavEntry& entry = kNav[i];
+    if (entry.page == Page::kGame && !game::kHasGamePage) {
+      continue;
+    }
     if (i > 0) {
       y += Px(2.0f) + Px(entry.margin);
     }

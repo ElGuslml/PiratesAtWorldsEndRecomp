@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 
 #include "ui/ui.h"
 
@@ -13,6 +14,13 @@ inline ImRect PageContent(const ImRect& rect) {
   float width = std::min(rect.GetWidth() - ui::Px(80.0f), ui::Px(1240.0f));
   return ImRect(ImVec2(rect.Min.x + ui::Px(40.0f), rect.Min.y + ui::Px(32.0f)),
                 ImVec2(rect.Min.x + ui::Px(40.0f) + width, rect.Max.y - ui::Px(24.0f)));
+}
+
+// A frame rate's label: "60 FPS", "120 FPS (experimental)".
+inline std::string FrameRateText(int fps, const char* experimental) {
+  std::string text = std::to_string(fps) + " FPS";
+  if (fps > 60) text += std::string(" (") + experimental + ")";
+  return text;
 }
 
 // A card whose height is known after its rows: its background goes under them through a draw list channel.

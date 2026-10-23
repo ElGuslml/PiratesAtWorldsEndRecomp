@@ -1,11 +1,11 @@
-// PiratesAtWorldsEnd Launcher: options for potcawe (recompiled Pirates of the Caribbean: At World's End)
-// in a separate executable, so that PiratesAtWorldsEndRecomp.exe starts right away (for example from Steam
-// Big Picture).
+// The game's launcher (game.h names it and the game): options, the first run from the player's ISO,
+// achievements and updates, in a separate executable, so that the game's own starts right away (for example
+// from Steam Big Picture).
 //
-// Launcher 2 (local_docs/10): Gustavo's mockup (local_docs/launcher_design) on SDL3 and Dear ImGui, drawn with
-// Direct3D 11, all from the SDK tree and linked statically, so it is one executable without the SDK's DLLs.
-// It reads potcawe.toml and potcawe_options.toml (next to this exe and PiratesAtWorldsEndRecomp.exe), saves
-// every change to potcawe_options.toml at once (settings.cpp), which PiratesAtWorldsEndRecomp.exe loads at
+// Launcher 2 (made for POTCAWERecomp, shared through recomp-tools' template): Gustavo's mockup on SDL3 and
+// Dear ImGui, drawn with Direct3D 11, all from the SDK tree and linked statically, so it is one executable without the SDK's DLLs.
+// It reads the game's base settings and the options file (game::kConfigFile, game::kOptionsFile, next to this
+// exe and the game's), saves every change to the options file at once (settings.cpp), which the game loads at
 // startup (src/options.cpp), and works with the mouse, the keyboard and any controller SDL knows (the
 // DualSense included).
 //
@@ -13,7 +13,7 @@
 // Steam Deck and in Big Picture); F11 or Alt+Enter switch it. The texts follow the Windows display language
 // (English, German, French, Spanish, Italian); the game asks for its own language in its first menu.
 //
-// "Play" starts PiratesAtWorldsEndRecomp.exe (with the arguments the launcher received) and the launcher stays:
+// "Play" starts the game (with the arguments the launcher received) and the launcher stays:
 // it shows "Starting the game…" until the game's window appears, hides, and comes back on the Play page when the
 // game exits (with a notice if it closed with an error). So the launcher and the game look like one program, and
 // Steam sees it running from the launcher's start to its end. The game runs in a job object that is closed with
@@ -133,8 +133,15 @@ std::wstring ArgumentsWithout(std::initializer_list<const wchar_t*> drop) {
   return kept;
 }
 
+// A text with its %s filled.
+std::string Formatted(const char* format, const char* a, const char* b = "") {
+  char text[1024];
+  std::snprintf(text, sizeof(text), format, a, b);
+  return text;
+}
+
 void ShowError(const char* text) {
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "PiratesAtWorldsEnd Launcher", text, nullptr);
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, launcher::game::kLauncherName, text, nullptr);
 }
 
 // A program the launcher starts and stays for: the game from Play, or the launcher's new version after an update.
@@ -278,7 +285,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   window_width = std::max(window_width, min_width);
   window_height = std::max(window_height, min_height);
 
-  SDL_Window* window = SDL_CreateWindow("PiratesAtWorldsEnd Launcher", window_width, window_height,
+  SDL_Window* window = SDL_CreateWindow(launcher::game::kLauncherName, window_width, window_height,
                                         SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (!window) {
     ShowError(SDL_GetError());
@@ -298,7 +305,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
 
   HWND hwnd = HWND(SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
   if (!ui::gfx::Init(hwnd)) {
-    ShowError(t.no_direct3d);
+    ShowError(Formatted(t.no_direct3d, launcher::game::kLauncherName).c_str());
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 1;
@@ -316,7 +323,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
   ImGui_ImplSDL3_InitForD3D(window);
   ImGui_ImplDX11_Init(ui::gfx::Device(), ui::gfx::Context());
   if (!ui::LoadFonts()) {
-    ShowError("PiratesAtWorldsEnd Launcher: the fonts are missing from the executable.");
+    ShowError((std::string(launcher::game::kLauncherName) + ": the fonts are missing from the executable.").c_str());
     return 1;
   }
 
@@ -346,7 +353,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
     // Play: the game starts, and the launcher stays.
     if (app.result() == App::Result::kPlay) {
       if (!save()) {
-        ShowError(t.save_failed);
+        ShowError(Formatted(t.save_failed, launcher::game::kOptionsFile).c_str());
       }
       // The controllers are the game's while it runs (both reading a DualSense would also set its lights twice).
       ImGui_ImplSDL3_SetGamepadMode(ImGui_ImplSDL3_GamepadMode_Manual, nullptr, 0);
@@ -354,7 +361,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int) {
       std::filesystem::path exe = exe_dir / launcher::game::kRecompExecutable;
       bool found = std::filesystem::exists(exe);
       if (!found) {
-        ShowError(t.game_missing);
+        ShowError(Formatted(t.game_missing, launcher::game::kRecompExecutable, launcher::game::kLauncherName).c_str());
       }
       // The launcher's own options are not the game's.
       if (found && game.Start(exe, ArgumentsWithout({L"--launcher_"}))) {

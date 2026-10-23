@@ -8,11 +8,12 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include <algorithm>
 #include <cwchar>
 #include <memory>
 #include <vector>
 
-#include "version.h"
+#include "game.h"
 
 namespace launcher::net {
 namespace {
@@ -81,7 +82,9 @@ struct Request {
     }
     std::wstring object = std::wstring(parts.lpszUrlPath, parts.dwUrlPathLength) +
                           std::wstring(parts.lpszExtraInfo ? parts.lpszExtraInfo : L"", parts.dwExtraInfoLength);
-    std::wstring agent = L"PiratesAtWorldsEnd-Launcher/" + Wide(POTCAWERECOMP_VERSION_STR);
+    // The launcher's name without spaces, and its version (GitHub wants a User-Agent).
+    std::wstring agent = Wide(game::kLauncherName) + L"/" + Wide(game::kVersion);
+    std::replace(agent.begin(), agent.end(), L' ', L'-');
     session.h = WinHttpOpen(agent.c_str(), WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME,
                             WINHTTP_NO_PROXY_BYPASS, 0);
     if (!session.h) {

@@ -1,6 +1,6 @@
 // Xbox 360 disc images (iso.h).
 //
-// The layout, checked on Gustavo's Redump dump of this game (local_docs/13-first-run.md):
+// The layout, checked on Redump dumps (POTCAWERecomp's, Kameo's and GRAW's):
 // - the game partition starts at 0x18300000 (XGD1), 0xFD90000 (XGD2) or 0x2080000 (XGD3) in a full disc image, at 0
 //   in a trimmed one;
 // - its volume descriptor is sector 32 of the partition (2,048-byte sectors): "MICROSOFT*XBOX*MEDIA" at the start

@@ -87,14 +87,15 @@ void App::VideoPage(const ImRect& rect) {
   }
 
   // Image format: NativeXRenderer fills an output that is not 16:9, or keeps 16:9 with bars (D43, D54); Xenos
-  // always keeps 16:9 with bars.
+  // keeps 16:9 with bars, unless the game widens its cameras (game::kUltrawideCvar: Xenos stretches then).
   Size output = settings_.OutputSize();
   {
     bool wide = !Is16x9(output);
-    bool enabled = o.native && wide;
+    bool applies = o.native || *game::kUltrawideCvar;
+    bool enabled = applies && wide;
     std::vector<std::string> items = {t_.format_fill, t_.format_bars};
-    int selected = !o.native ? 1 : o.native_fill ? 0 : 1;
-    const char* hint = !o.native ? t_.format_hint_xenos : wide ? t_.format_hint : t_.format_hint_16x9;
+    int selected = !applies ? 1 : o.native_fill ? 0 : 1;
+    const char* hint = !applies ? t_.format_hint_xenos : wide ? t_.format_hint : t_.format_hint_16x9;
     y += Row(ImVec2(content.Min.x, y), width, 20, t_.format, hint, 48, false, &at);
     if (Segmented("format", at, kVideoSegments, items, &selected, enabled) && enabled) {
       o.native_fill = selected == 0;
@@ -136,8 +137,9 @@ void App::VideoPage(const ImRect& rect) {
       }
       selected = o.scale;
     }
-    y += Row(ImVec2(content.Min.x, y), width, 20, t_.internal, o.native ? t_.internal_hint : t_.internal_hint_xenos, 44,
-             true, &at);
+    char xenos_hint[128];
+    std::snprintf(xenos_hint, sizeof(xenos_hint), t_.internal_hint_xenos, game::kFrameWidth, game::kFrameHeight);
+    y += Row(ImVec2(content.Min.x, y), width, 20, t_.internal, o.native ? t_.internal_hint : xenos_hint, 44, true, &at);
     if (Combo("internal", ImRect(at, ImVec2(at.x + combo_width, at.y + Px(44.0f))), items, &selected)) {
       if (o.native) {
         o.native_height = heights[size_t(selected)];
@@ -181,8 +183,8 @@ void App::GraphicsPage(const ImRect& rect) {
   }
   y += Px(18.0f);
 
-  // The renderer: two cards.
-  {
+  // The renderer: two cards, when NativeXRenderer draws this game.
+  if (game::kHasNativeXRenderer) {
     float gap = Px(14.0f);
     float card_width = (content.GetWidth() - gap) * 0.5f;
     constexpr Type kTitle{Font::kBold, 17};
@@ -242,12 +244,18 @@ void App::GraphicsPage(const ImRect& rect) {
   ImVec2 at;
   Card card;
   float top = y;
-  {
-    std::vector<std::string> items = {"30 FPS", "60 FPS"};
-    int selected = o.fps60 ? 1 : 0;
+  if (*game::kFrameRateCvar) {
+    // The rates the monitor reaches; those above 60 are experimental.
+    std::vector<game::FrameRate> rates = FrameRates(settings_.CurrentMonitor());
+    std::vector<std::string> items;
+    int selected = 0;
+    for (size_t i = 0; i < rates.size(); ++i) {
+      items.push_back(FrameRateText(rates[i].fps, t_.experimental));
+      if (rates[i].value == o.frame_rate) selected = int(i);
+    }
     y += Row(ImVec2(content.Min.x, y), width, 16, t_.framerate, t_.framerate_hint, 48, false, &at);
     if (Segmented("fps", at, kGraphicsSegments, items, &selected)) {
-      o.fps60 = selected == 1;
+      o.frame_rate = rates[size_t(selected)].value;
       changed = true;
     }
   }
@@ -267,8 +275,8 @@ void App::GraphicsPage(const ImRect& rect) {
       o.native_aa = selected < 4 ? kOrder[selected] : kNativeAntialiasingCount;
       changed = true;
     }
-  } else {
-    std::vector<std::string> items = {"2× MSAA", t_.none};
+  } else if (*game::kNoMsaaCvar) {
+    std::vector<std::string> items = {game::kMsaaLabel, t_.none};
     int selected = o.no_msaa ? 1 : 0;
     y += Row(ImVec2(content.Min.x, y), width, 16, t_.antialiasing, t_.antialiasing_hint_xenos, 48, false, &at);
     if (Segmented("msaa", at, kGraphicsSegments, items, &selected)) {
@@ -286,7 +294,7 @@ void App::GraphicsPage(const ImRect& rect) {
       changed = true;
     }
   }
-  {
+  if (game::kHasNativeXRenderer) {
     // Not a setting yet (Gustavo, 2026-10-22: shown, disabled, "coming soon").
     std::vector<std::string> items = {"Original", t_.shadows_high, t_.shadows_ultra};
     int selected = 0;
@@ -314,7 +322,7 @@ void App::GraphicsPage(const ImRect& rect) {
 
   if (Footer(content, t_.reset_values)) {
     ResetGraphics(o);
-    o.native = o.native && settings_.has_vulkan;
+    o.native = o.native && settings_.has_vulkan && game::kHasNativeXRenderer;
     changed = true;
   }
   if (changed) {

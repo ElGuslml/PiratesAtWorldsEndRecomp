@@ -1,5 +1,5 @@
-// The launcher's look: the palette, the type, the icons and the widgets of Gustavo's mockup
-// (local_docs/launcher_design), drawn with Dear ImGui.
+// The launcher's look: the palette, the type, the icons and the widgets of Gustavo's mockup, drawn with
+// Dear ImGui.
 //
 // Everything is laid out in the mockup's units ("dp": its CSS pixels, for a 1280x760 window) and drawn at
 // Scale() pixels per dp, which follows the window (app.cpp). Widgets take absolute rectangles in pixels,
@@ -119,7 +119,7 @@ enum class Icon : int {
   kRefresh,
   kReset,
   kHeart,
-  kAnchor,
+  kBrand,  // the game's mark (game.h, kBrandIcon)
   kCheck,
   kArrowRight,
   kArrowLeft,
