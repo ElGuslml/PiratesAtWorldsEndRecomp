@@ -28,9 +28,14 @@ emulation of that GPU, Xenos (derived from [Xenia](https://xenia.jp)), stays ava
 ## Playing
 
 1. Download the latest release from [Releases](https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases),
-   and extract it into a folder you can write to (not under `Program Files`).
-2. Run `PiratesAtWorldsEnd Launcher.exe`. The first time, it asks for the ISO of your copy of the game, checks
-   it, and extracts its files into the `assets` folder (see [Game files](#game-files)).
+   either:
+   - **the installer** (`...-setup.exe`): it installs for your user, without administrator rights, in
+     `%LOCALAPPDATA%\Programs\PiratesAtWorldsEndRecomp`, with a Start menu shortcut (and a desktop one if you want).
+     Uninstalling asks whether to delete your saves and settings, and the game files; or
+   - **the zip**: extract it into a folder you can write to (not under `Program Files`).
+2. Run `PiratesAtWorldsEnd Launcher.exe` (the installer can open it when it finishes). The first time, it asks for
+   the ISO of your copy of the game, checks it, and extracts its files into the `assets` folder (see
+   [Game files](#game-files)).
 3. Choose your options and press Play. When you quit the game, the launcher comes back; Quit in the launcher
    closes it. For Steam, add the launcher: Steam sees the game running until you quit the launcher, and stopping
    it from Steam closes the game too. `PiratesAtWorldsEndRecomp.exe` still starts the game directly with the

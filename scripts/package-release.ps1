@@ -105,3 +105,21 @@ Get-ChildItem -Recurse -LiteralPath $dest -File | ForEach-Object {
 $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
 [System.IO.File]::WriteAllText("$zip.sha256", "$hash  $name.zip`n", (New-Object System.Text.UTF8Encoding($false)))
 "sha256: $hash"
+
+# The installer (installer\potcawe.iss) from the same folder, when Inno Setup 6.6 or later is installed
+# (winget install JRSoftware.InnoSetup).
+$iscc = @((Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source,
+          "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
+          "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+          "$env:ProgramFiles\Inno Setup 6\ISCC.exe") | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+if ($iscc) {
+  $setup = Join-Path $Out "PiratesAtWorldsEndRecomp-v$version-setup.exe"
+  & $iscc /Q "/DAppVersion=$version" "/DSourceDir=$dest" "/DOutputDir=$Out" "$repo\installer\potcawe.iss"
+  if ($LASTEXITCODE -ne 0) { throw "ISCC failed ($LASTEXITCODE)" }
+  $setupHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $setup).Hash.ToLowerInvariant()
+  [System.IO.File]::WriteAllText("$setup.sha256", "$setupHash  $(Split-Path $setup -Leaf)`n",
+                                 (New-Object System.Text.UTF8Encoding($false)))
+  "installer: $setup ({0:N1} MB)" -f ((Get-Item $setup).Length / 1MB)
+} else {
+  Write-Warning "Inno Setup not found: no installer (winget install JRSoftware.InnoSetup)"
+}
