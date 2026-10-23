@@ -1,5 +1,10 @@
 # PiratesAtWorldsEndRecomp
 
+<p align="center">
+  <a href="https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ElGuslml/PiratesAtWorldsEndRecomp?style=for-the-badge&label=Latest%20release&color=b22222"></a>
+  <a href="https://discord.gg/XQtM5TmNs8"><img alt="Discord: join the server" src="https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+</p>
+
 A static recompilation of **Pirates of the Caribbean: At World's End** (Xbox 360, 2007) to native Windows,
 built on the [ReXGlue SDK](https://github.com/rexglue/rexglue-sdk). The game's PowerPC code is translated to
 C++ and compiled.
