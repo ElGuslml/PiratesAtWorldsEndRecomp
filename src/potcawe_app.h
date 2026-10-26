@@ -52,6 +52,7 @@ class PotcaweApp : public rex::ReXApp {
       paths.game_data_root = potcawe::DefaultGameRoot();
     }
     potcawe::ConfigureUserData(paths.user_data_root, paths.cache_root);
+    potcawe::ConfigureProfile(paths.user_data_root);
   }
 
   // potcawe.toml with the built-in defaults if it is missing, then (after the SDK loads it) the game
