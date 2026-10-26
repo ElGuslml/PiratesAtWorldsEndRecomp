@@ -79,9 +79,10 @@ to quit).
 
 ## The launcher
 
-`launcher/` is PiratesAtWorldsEnd Launcher (SDL3 + Dear ImGui), the source of recomp-tools' launcher template: its
-code is the same in every game except the game's profile (`launcher/game.h`, `launcher/game.cpp`,
-`launcher/palette.h` and `launcher/art/`). It starts in fullscreen when Steam asks for it (`SteamDeck=1`,
+PiratesAtWorldsEnd Launcher (SDL3 + Dear ImGui) is [RecompLauncher](https://github.com/ElGuslml/RecompLauncher)
+(`recomp_launcher/`, a submodule: the launcher of every one of these recompilations, first made for this game) with
+this game's profile in `launcher/` (`game.h`, `game.cpp`, `palette.h` and `art/`) and its resources in
+`res/launcher.rc`. It starts in fullscreen when Steam asks for it (`SteamDeck=1`,
 `SteamGamepadUI=1`: Big Picture); F11 or Alt+Enter switch it to a window. Its updater downloads a newer release from
 this repository's Releases, checks its SHA-256 and replaces the program's files; the game files (`assets\`), saves
 and achievements (`userdata\`) and settings (`.toml`) are never touched, and pre-releases are not offered.
