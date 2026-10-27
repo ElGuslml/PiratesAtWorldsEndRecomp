@@ -7,6 +7,8 @@
 <p align="center">
   <a href="https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ElGuslml/PiratesAtWorldsEndRecomp?style=for-the-badge&label=Latest%20release&color=b22222"></a>
   <a href="https://discord.gg/XQtM5TmNs8"><img alt="Discord: join the server" src="https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+  <a href="https://ko-fi.com/elguslml"><img alt="Ko-fi: support me" src="https://img.shields.io/badge/Ko--fi-Support%20me-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white"></a>
+  <a href="https://x.com/ElGuslml"><img alt="X: follow @ElGuslml" src="https://img.shields.io/badge/X-Follow%20%40ElGuslml-000000?style=for-the-badge&logo=x&logoColor=white"></a>
   <a href="https://github.com/ElGuslml/ElGusRecomps"><img alt="More games: ElGus Recomps" src="https://img.shields.io/badge/More%20games-ElGus%20Recomps-2f6b45?style=for-the-badge&logo=github"></a>
 </p>
 
@@ -122,7 +124,25 @@ natively on Vulkan.
 - NativeXRenderer's design follows [Hell's Gate](https://github.com/florinp93/hells-gate-recomp) (Dante's Inferno
   on ReXGlue with a DiligentCore renderer) and [Unleashed Recompiled](https://github.com/hedge-dev/UnleashedRecomp);
   no code was taken from them.
-- Developed by Gustavo Garcia with the help of Claude (Anthropic).
+- Developed by Gustavo Garcia with the help of Claude (Anthropic): see [the note about AI](#-a-note-about-ai).
+
+## 🤖 A note about AI
+
+This project is developed with the help of AI ([Claude](https://claude.ai), by Anthropic). I know it's a touchy
+subject for many people, so I want to be open about it and explain how the work is done:
+
+- 🎮 **The game is still the original game.** Its code is translated by the ReXGlue recompiler, not written by an
+  AI, so it plays as it did on the Xbox 360.
+- 🧪 **Every change is tested by hand.** I play each fix and improvement myself before it is released, and check it
+  against how the game behaves on the console: its speed, its graphics, its sound and how it feels to play.
+- ⚡ **Performance is measured, not guessed.** CPU use, frame times and GPU time are measured on real hardware
+  before and after each change, so that the game runs smoothly and doesn't waste your computer's resources.
+- 🙌 **Claude helps with the research and the code;** the decisions, the testing and the care for the game are mine.
+
+If something doesn't run as well as it should, it's a bug like any other: tell us on
+[Discord](https://discord.gg/XQtM5TmNs8) or open an
+[issue](https://github.com/ElGuslml/PiratesAtWorldsEndRecomp/issues), and it will get fixed. Thanks for giving this
+game a try! 💜
 
 ## 📜 License
 
