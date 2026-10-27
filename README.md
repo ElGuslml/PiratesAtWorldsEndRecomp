@@ -29,6 +29,12 @@ recompiled to run directly on Windows: no emulator to set up, sharper graphics, 
 > 🚧 **Early release.** The first levels have been played through, in sessions of an hour, without problems; later
 > levels have not been tested yet. Please [tell us](#-reporting-a-problem) what you find!
 
+> [!WARNING]
+> 🟥 **AMD graphics cards:** NativeXRenderer, the default renderer, has only been tested on NVIDIA cards so far.
+> If the game closes, stays black or looks wrong on an AMD card (or an Intel one), open the launcher's
+> **Graphics** page and choose **Xenos** as the renderer: it emulates the Xbox 360's graphics instead. Please
+> [tell us](#-reporting-a-problem) your card's model and what happened.
+
 ## 🎮 How to play
 
 1. **Download** the latest version from
@@ -101,6 +107,7 @@ graphics instead), and tell us whether it happens there too.
 
 ### Known issues
 
+- 🟥 NativeXRenderer has not been tested on AMD or Intel graphics cards yet: if it fails there, use Xenos.
 - ⌨️ Keyboard and mouse controls are experimental.
 - 📺 With the Xenos renderer, wide screens get black bars at the sides.
 
