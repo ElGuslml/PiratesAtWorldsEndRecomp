@@ -3,8 +3,8 @@
 #   - README.md, LICENSE, THIRD_PARTY_NOTICES.md;
 #   - assets\README.md (the user copies the game files there);
 #   - licenses\: the license text of every component in the binaries (the ReXGlue SDK and its components,
-#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS, and the launcher's Barlow fonts,
-#     nanosvg and JSON for Modern C++);
+#     NativeXRenderer, DiligentCore, SPIRV-Cross, volk, SMAA, NVIDIA DLSS, and the launcher's RecompLauncher,
+#     Barlow fonts, nanosvg and JSON for Modern C++);
 #   - the zip's SHA-256 next to it (<zip>.sha256), for the launcher's updater and anyone checking the download.
 # It never takes userdata\, logs\, *.toml or *.pdb from the build folder: those are the builder's saves,
 # caches (the game's shaders among them), settings and debug data.
@@ -53,9 +53,10 @@ Add-License "volk" "$diligent\ThirdParty\volk\LICENSE.md"
 Add-License "SMAA" "$nxr\thirdparty\smaa\LICENSE.txt"
 Add-License "NVIDIA-DLSS" "$Build\_deps\dlss-headers-src\LICENSE.txt"
 Add-License "ReXGlue-SDK" "$repo\thirdparty\rexglue-sdk\LICENSE"
-# The launcher's fonts and SVG rasterizer (launcher\).
-Add-License "Barlow-fonts" "$repo\launcher\fonts\OFL.txt"
-Add-License "nanosvg" "$repo\launcher\thirdparty\nanosvg\LICENSE.txt"
+# The launcher's common code, its fonts and its SVG rasterizer (the RecompLauncher submodule, recomp_launcher\).
+Add-License "RecompLauncher" "$repo\recomp_launcher\LICENSE"
+Add-License "Barlow-fonts" "$repo\recomp_launcher\fonts\OFL.txt"
+Add-License "nanosvg" "$repo\recomp_launcher\thirdparty\nanosvg\LICENSE.txt"
 # JSON for Modern C++, which the launcher's updater reads GitHub's answer with (from the SDK's inja).
 Add-License "nlohmann-json" "$repo\thirdparty\rexglue-sdk\thirdparty\inja\third_party\include\nlohmann\LICENSE.MIT"
 # The SDK's components, as THIRD_PARTY_NOTICES.md lists them (license files under
