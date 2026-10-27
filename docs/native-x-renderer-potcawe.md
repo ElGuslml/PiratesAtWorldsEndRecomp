@@ -507,6 +507,18 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
   - The 2D views (the HUD, the menus, the video behind them) have a square parallel projection:
     `0.002 0 0 0 / 0 0.002 0 0 / 0 0 z 0 / 0 0 t 1` (the 1000×1000 camera).
   - The 3D views have a perspective column (`m[3] = 1`, `m[15]` = the distance).
+- **The journal at 21:9 (2026-10-26, Gustavo).** With the journal open (Back) the book was stretched across the
+  screen and its pages showed the scene through their sides. A frame there has six views (logged at
+  `0x823B3E48`, runs 458 and 460; the fix checked in run 461): a page, the water reflection, the 3D view, the HUD (the 2D camera with depth
+  `0.000909 z + 0.909`), the book, and the other page.
+  - **The book** is a 3D view of its own, unrotated, P00 1.732 / P11 2.414 (60 by 45 degrees, aspect 1.394):
+    not 16:9, so not widened, and stretched with the image. It now goes in the 16:9 box, as the HUD drawn with it.
+  - **The pages** are composed by 2D views of the camera with depth `0.0001 z + 0.1` (the main menu and the pause
+    menu have one too), then copied whole into a 1024×512 page texture: in the box they reached the texture
+    squeezed into the box's width. While the book is drawn (within 8 views of it) they are drawn over the whole
+    target. The pause and main menus keep their box.
+  - The views cannot be told apart by their caller: all are drawn from `sub_823301D8 < sub_82331468`. A hook
+    given `r1` breaks the stack (the registers as locals write it back): run 459 crashed.
 - **The text measures through the 2D camera.** The game's text layout converts glyph widths through that
   camera. With its P00 narrowed (run 177) the glyphs kept their stretched width, and "Reiniciar desde punto
   de control" lost its last word. Hence the renderer's box and an untouched camera.
