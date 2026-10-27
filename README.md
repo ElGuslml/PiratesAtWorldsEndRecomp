@@ -104,6 +104,13 @@ graphics instead), and tell us whether it happens there too.
 - ⌨️ Keyboard and mouse controls are experimental.
 - 📺 With the Xenos renderer, wide screens get black bars at the sides.
 
+## ❤️ Support
+
+If you enjoy sailing with Jack Sparrow on your PC, you can support the work on [Ko-fi](https://ko-fi.com/elguslml) ☕.
+For news about the next updates, follow [@ElGuslml on X](https://x.com/ElGuslml) and join the
+[Discord](https://discord.gg/XQtM5TmNs8). And if you'd like more Xbox 360 classics running natively, the other
+recompiled games are at [ElGus Recomps](https://github.com/ElGuslml/ElGusRecomps).
+
 ## 🛠️ For developers
 
 PiratesAtWorldsEndRecomp is a *static recompilation*: the game's original Xbox 360 code is translated to C++ and
