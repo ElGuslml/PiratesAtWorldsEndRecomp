@@ -75,6 +75,13 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     // The end of the engine's post-processing: the finished scene, blended with the last frame, copied to
     // 0x09B2E000; the HUD composite draws it, then the HUD over it (docs/native-x-renderer-potcawe.md).
     p.scene_resolve_caller = 0x824583EC;
+    // src/views.cpp marks the views (BeginView with the scene's matrix, EndViewGeometry): DLSS and FSR 3.1 follow them
+    // (D47, D119).
+    p.view_hooks = true;
+    // Without them (native_x_renderer_views = auto, to compare: D119), the view ends at the first copy of the output-size
+    // scene from 0x823FA2A4 after its first draw: the post-processing's (the generic copy function; the copy in the
+    // middle of the scene comes from 0x823FB79C).
+    p.upscale_resolve_caller = 0x823FA2A4;
     // src/aspect.cpp widens the game's 16:9 cameras: NativeXRenderer fills outputs of any aspect ratio.
     p.widens_cameras = true;
     // The scene's pixel shaders filter the character shadows themselves: four point samples of the shadow map
