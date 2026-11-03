@@ -10,6 +10,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
       "Before setting sail the game has to be installed. The launcher extracts its files from your Xbox 360 ISO; you "
       "only need to do it once.",
       {},
+      {},
       "All set, captain!",
       "The game was installed. Set sail now, or first review the video, graphics and control settings; you can always "
       "change them in the launcher."};
@@ -17,6 +18,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
       "Willkommen an Bord",
       "Bevor es losgeht, muss das Spiel installiert werden. Der Launcher entpackt die Dateien aus deiner Xbox-360-ISO; "
       "das musst du nur einmal tun.",
+      {},
       {},
       "Alles bereit, Käpt'n!",
       "Das Spiel wurde installiert. Stich jetzt in See oder prüfe zuerst die Video-, Grafik- und "
@@ -26,6 +28,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
       "Avant de prendre la mer, il faut installer le jeu. Le launcher extrait les fichiers de votre ISO Xbox 360 ; vous "
       "n'aurez à le faire qu'une fois.",
       {},
+      {},
       "Tout est prêt, capitaine !",
       "Le jeu est installé. Prenez la mer maintenant, ou vérifiez d'abord les paramètres vidéo, graphiques et de "
       "commandes ; vous pourrez toujours les modifier dans le launcher."};
@@ -34,6 +37,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
       "Antes de zarpar hay que instalar el juego. El launcher extrae los archivos desde tu ISO de Xbox 360; solo "
       "tendrás que hacerlo una vez.",
       {},
+      {},
       "¡Todo listo, capitán!",
       "El juego se instaló correctamente. Puedes zarpar ya o revisar primero los ajustes de video, gráficos y "
       "controles; siempre podrás cambiarlos desde el launcher."};
@@ -41,6 +45,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
       "Benvenuto a bordo",
       "Prima di salpare bisogna installare il gioco. Il launcher estrae i file dalla tua ISO Xbox 360; dovrai farlo "
       "una sola volta.",
+      {},
       {},
       "Tutto pronto, capitano!",
       "Il gioco è stato installato. Salpa subito o controlla prima le impostazioni video, grafica e controlli; potrai "
