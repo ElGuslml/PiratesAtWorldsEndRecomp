@@ -1,30 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760">
-<!-- The art under every page: the template's placeholder, an abstract disc. Replace it with the game's own, 1280 x 760
-     (drawn with preserveAspectRatio "slice", cropped around game.h's kArtFocusX/Y; nanosvg: no <use>, no CSS). The
-     pages darken it, all but Play; keep the left side quiet, where the Play page writes the game's name. -->
-<defs>
-  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#141C2B"/>
-    <stop offset="1" stop-color="#0D1015"/>
-  </linearGradient>
-  <radialGradient id="glow" cx="0.76" cy="0.58" r="0.55">
-    <stop offset="0" stop-color="#2B4266" stop-opacity="0.85"/>
-    <stop offset="1" stop-color="#2B4266" stop-opacity="0"/>
-  </radialGradient>
-  <radialGradient id="disc" cx="0.5" cy="0.5" r="0.5">
-    <stop offset="0" stop-color="#3A4F72"/>
-    <stop offset="0.7" stop-color="#22324B"/>
-    <stop offset="1" stop-color="#18243A"/>
-  </radialGradient>
-</defs>
-<rect width="1280" height="760" fill="url(#sky)"/>
-<rect width="1280" height="760" fill="url(#glow)"/>
-<circle cx="980" cy="470" r="260" fill="url(#disc)"/>
-<circle cx="980" cy="470" r="250" fill="none" stroke="#E0A93B" stroke-opacity="0.35" stroke-width="3"/>
-<circle cx="980" cy="470" r="200" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="2"/>
-<circle cx="980" cy="470" r="150" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="2"/>
-<circle cx="980" cy="470" r="100" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="2"/>
-<circle cx="980" cy="470" r="46" fill="#0D1015"/>
-<circle cx="980" cy="470" r="46" fill="none" stroke="#E0A93B" stroke-opacity="0.6" stroke-width="4"/>
-<path d="M980 220 A250 250 0 0 1 1230 470" fill="none" stroke="#F2C66B" stroke-opacity="0.55" stroke-width="6" stroke-linecap="round"/>
+<!-- The art under every page, from Gustavo's mockup of 2026-11-06 ("PotC AWE Launcher 2", its CFondo): a ship at sunset,
+     1280 x 760 (drawn with preserveAspectRatio "slice", cropped around game.h's kArtFocusX/Y; nanosvg: no <use>, no
+     CSS). The pages darken it, all but Play. -->
+<rect width="1280" height="760" fill="#0A1424"/>
+<rect y="220" width="1280" height="90" fill="#0E1B30"/>
+<rect y="310" width="1280" height="60" fill="#15253F"/>
+<rect y="370" width="1280" height="35" fill="#22324F"/>
+<rect y="405" width="1280" height="20" fill="#3B3A55"/>
+<rect y="425" width="1280" height="15" fill="#5C4258"/>
+<g fill="#33496B"><circle cx="90" cy="60" r="1.6"/><circle cx="240" cy="110" r="1.2"/><circle cx="410" cy="48" r="1.6"/><circle cx="560" cy="130" r="1.2"/><circle cx="650" cy="70" r="1.6"/><circle cx="980" cy="56" r="1.6"/><circle cx="1120" cy="104" r="1.2"/><circle cx="1220" cy="40" r="1.6"/><circle cx="720" cy="190" r="1.2"/><circle cx="30" cy="190" r="1.2"/></g>
+<g fill="#12223A"><rect x="120" y="150" width="260" height="14" rx="7"/><rect x="180" y="172" width="180" height="10" rx="5"/><rect x="760" y="120" width="300" height="16" rx="8"/><rect x="840" y="146" width="200" height="10" rx="5"/><rect x="1020" y="262" width="180" height="12" rx="6"/><rect x="560" y="300" width="160" height="10" rx="5"/></g>
+<circle cx="900" cy="440" r="112" fill="#E8A23A" opacity="0.12"/>
+<circle cx="900" cy="440" r="78" fill="#E8A23A"/>
+<circle cx="900" cy="440" r="56" fill="#F0B85A"/>
+<path d="M1040 440 q40 -30 80 -12 q30 -20 60 0 l100 12 z" fill="#101C2E"/>
+<path d="M600 440 q30 -14 60 -4 q20 -8 40 0 l30 4 z" fill="#101C2E"/>
+<rect y="440" width="1280" height="320" fill="#0E2033"/>
+<g fill="#E8A23A">
+<rect x="840" y="452" width="120" height="4" rx="2" opacity="0.75"/>
+<rect x="855" y="470" width="90" height="4" rx="2" opacity="0.6"/>
+<rect x="830" y="490" width="140" height="4" rx="2" opacity="0.4"/>
+<rect x="865" y="515" width="70" height="4" rx="2" opacity="0.35"/>
+<rect x="845" y="545" width="110" height="4" rx="2" opacity="0.22"/>
+<rect x="870" y="580" width="60" height="4" rx="2" opacity="0.18"/>
+</g>
+<g fill="#0B1A2B">
+<path d="M0 600 Q 60 588 120 600 T 240 600 T 360 600 T 480 600 T 600 600 T 720 600 T 840 600 T 960 600 T 1080 600 T 1200 600 T 1320 600 V760 H0Z"/>
+</g>
+<g fill="#081322">
+<path d="M0 668 Q 70 654 140 668 T 280 668 T 420 668 T 560 668 T 700 668 T 840 668 T 980 668 T 1120 668 T 1260 668 T 1400 668 V760 H0Z"/>
+</g>
+<g transform="translate(60 60) scale(1.25)" fill="#070D16">
+<path d="M130 292 h230 l-28 40 h-176z"/>
+<path d="M356 292 l64 -26 l2 4 l-60 26z"/>
+<rect x="196" y="120" width="5" height="174"/>
+<rect x="250" y="96" width="5" height="198"/>
+<rect x="303" y="132" width="5" height="162"/>
+<path d="M168 150 h62 l6 46 h-74z"/><path d="M164 206 h70 l6 56 h-82z"/>
+<path d="M220 120 h66 l6 50 h-78z"/><path d="M214 180 h76 l7 62 h-90z"/>
+<path d="M280 160 h52 l5 40 h-62z"/><path d="M276 210 h62 l6 48 h-74z"/>
+<path d="M255 96 l24 6 l-24 6z"/>
+<path d="M330 262 l50 -20 l4 22 l-54 6z"/>
+</g>
+<g fill="#0E2033" opacity="0.9"><rect x="222" y="476" width="290" height="3" rx="1.5"/><rect x="250" y="486" width="230" height="3" rx="1.5"/></g>
 </svg>

@@ -73,6 +73,7 @@ set(POTCAWE_SOURCES
     src/lua_errors.cpp
     src/options.cpp
     src/quit_prompt.cpp
+    src/screen_fx.cpp
     src/startup.cpp
     src/native_x_renderer_potcawe.cpp
 )

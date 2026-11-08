@@ -84,7 +84,7 @@ Everything is set up from the launcher, with the mouse, the keyboard or a contro
 | 🏆 **Achievements** | All 30 achievements, the ones you have unlocked and when, and your gamerscore. |
 | 🎮 **Controls** | Keyboard and mouse (experimental), and your controller's buttons. |
 | 🖥️ **Video** | Monitor, fullscreen or window, resolution, screen shape (fill a wide screen or keep 16:9), upscaling (FSR 1, NIS, FSR 3.1, DLSS) and its quality, sharpness. |
-| 🎨 **Graphics** | Renderer, frame rate, antialiasing, texture sharpness, shadow quality. |
+| 🎨 **Graphics** | Renderer, frame rate, antialiasing, texture sharpness, shadow quality, and the screen effects one by one (bloom, depth of field, blurs…). |
 | 🔄 **Updates** | Your version, and new ones when they come out. |
 
 Your choices are saved as soon as you make them. When you quit the game, the launcher comes back.

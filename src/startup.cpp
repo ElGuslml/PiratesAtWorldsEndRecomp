@@ -93,6 +93,14 @@ anisotropic_override = 5
 # of the Xbox 360 GPU (native_x_renderer/docs/decisions.md, D56). PiratesAtWorldsEnd Launcher's "Renderer" row
 # sets it. false = the Xenos path, as in POTCAWERecomp. If NativeXRenderer cannot start, the Xenos path draws.
 native_x_renderer = true
+# The screen effects, all on as on the console (docs/screen-effects.md). PiratesAtWorldsEnd Launcher's rows under
+# Graphics > Screen effects set them. false = off.
+potcawe_fx_bloom = true
+potcawe_fx_depth_of_field = true
+potcawe_fx_color = true
+potcawe_fx_heat_haze = true
+potcawe_fx_radial_blur = true
+potcawe_fx_motion_blur = true
 )";
 
 uint32_t Crc32(const std::vector<char>& data) {

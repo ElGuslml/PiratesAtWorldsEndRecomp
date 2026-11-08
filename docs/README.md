@@ -16,6 +16,7 @@ To build the project and work on it: [Building and developing](development.md).
 | [script-errors.md](script-errors.md) — the game closes after a script error, with faults on several threads | Fixed |
 | [quit-prompt.md](quit-prompt.md) — no way to quit the game; B on the title screen now asks whether to quit | Working |
 | [achievements.md](achievements.md) — the unlock notification tiny, in English and without icons; the launcher could not show the achievements | Working |
+| [screen-effects.md](screen-effects.md) — switches for the bloom, the depth of field, the color adjustment, the heat haze and the radial and motion blurs | Options |
 
 ## NativeXRenderer
 

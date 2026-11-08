@@ -70,7 +70,7 @@ script errors that no longer close the game ([`script-errors.md`](script-errors.
 Command-line options (`--name=value`, for example in Steam's launch options) win over both files, for example
 `--fullscreen=false --window_width=1920 --window_height=1080`, `--potcawe_60fps=true`, `--native_x_renderer=false`
 (the Xenos path), `--native_x_renderer_antialiasing=dlaa`, `--quit_prompt=false` (B on the title screen does not ask
-to quit).
+to quit), `--potcawe_fx_bloom=false` ([each screen effect has an option](screen-effects.md)).
 
 - Saves, the profile, the achievements and the shader caches go to `userdata\` next to the executable; if that
   folder cannot be written, to `Documents\potcawe`. Logs go to `logs\`.

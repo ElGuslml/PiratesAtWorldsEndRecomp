@@ -187,3 +187,22 @@ registers = ["r3"]
 address = 0x822D62D8   # stw r31,680(r30) (sub_822D5E60, NavigateToNewMenu)
 name = "PotcaweMenuLinkHook"
 registers = ["r31"]
+
+# The screen effects, each with a switch (src/screen_fx.cpp, docs/screen-effects.md): the view's flags choose the
+# post-processing effects; the bloom's color and the color adjustment's switch are read by the HDR final pass.
+[[midasm_hook]]
+address = 0x823D235C   # lfs f0,148(r29) (sub_823D2160: r26 = the view's flags, the HDR bit added)
+name = "PotcaweScreenFxFlagsHook"
+registers = ["r26"]
+[[midasm_hook]]
+address = 0x8245D524   # std r9,0(r7) (sub_8245D4A0: r9, r8 = the bloom's color, for pixel constant c19)
+name = "PotcaweBloomColorHook"
+registers = ["r9", "r8"]
+[[midasm_hook]]
+address = 0x8245DBC0   # cmplwi cr6,r11,0 (sub_8245D4A0: r11 = effect+176, HDRFinalPass or its _CA variant)
+name = "PotcaweColorAdjustHook"
+registers = ["r11"]
+[[midasm_hook]]
+address = 0x8245DF84   # cmplwi cr6,r11,0 (sub_8245DCD0: r11 = effect+176, HDREngineToSRGB or its _CA variant)
+name = "PotcaweColorAdjustHook"
+registers = ["r11"]

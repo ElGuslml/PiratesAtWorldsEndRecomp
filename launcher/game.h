@@ -40,12 +40,13 @@ inline constexpr const char* kArtTitle = "At World's End";
 inline constexpr const char* kBrandIcon =
     "<circle cx='12' cy='5' r='2'/><path d='M12 7v14'/><path d='M8 11h8'/><path d='M5 14a7 7 0 0 0 14 0'/>";
 // The header's name beside the logo, on two lines (in capitals); an empty title: the art's (kArtTitle) alone.
-inline constexpr const char* kBrandTitle = "Pirates";
-inline constexpr const char* kBrandSubtitle = "At World's End";
-// Where the art under the pages (launcher\art\background.svg, 1280 x 760: the template's, until the game has its own)
-// is cropped in a window of another shape: the point kept in view, as fractions of its width and height.
-inline constexpr float kArtFocusX = 0.75f;
-inline constexpr float kArtFocusY = 0.6f;
+inline constexpr const char* kBrandTitle = "";
+inline constexpr const char* kBrandSubtitle = "";
+// Where the art under the pages (launcher\art\background.svg, 1280 x 760: the ship at sunset of Gustavo's mockup) is
+// cropped in a window of another shape: the point kept in view, as fractions of its width and height. In a wide window
+// the ship and the sun on the horizon stay between the header and the footer.
+inline constexpr float kArtFocusX = 0.5f;
+inline constexpr float kArtFocusY = 0.55f;
 // The logo's mark on a disc instead of a rounded square.
 inline constexpr bool kBrandRound = false;
 // The titles in capitals (the game's own texts that the launcher shows as titles).
@@ -122,9 +123,17 @@ inline constexpr const char* kUltrawideCvar = "";
 // locale name prefix, "es-ES") matches the user's locale best, or the first with that id.
 inline constexpr std::array<Language, 0> kLanguages{};
 
-// Switches of the game's own (src/), each a boolean cvar with a row in the Settings tab; their titles and hints are
-// game.cpp's (GameTexts::toggles, in this order).
-inline constexpr std::array<Toggle, 0> kToggles{};
+// Switches of the game's own (src/), each a boolean cvar with a row in the Settings tab (game_types.h's Toggle); their
+// titles, hints and help are game.cpp's (GameTexts::toggles and toggle_help, in this order).
+// The screen effects (src/screen_fx.cpp, docs/screen-effects.md), all on as on the console.
+inline constexpr std::array<Toggle, 6> kToggles{{
+    {"potcawe_fx_bloom", true, ToggleGroup::kScreenEffects},
+    {"potcawe_fx_depth_of_field", true, ToggleGroup::kScreenEffects},
+    {"potcawe_fx_color", true, ToggleGroup::kScreenEffects},
+    {"potcawe_fx_heat_haze", true, ToggleGroup::kScreenEffects},
+    {"potcawe_fx_radial_blur", true, ToggleGroup::kScreenEffects},
+    {"potcawe_fx_motion_blur", true, ToggleGroup::kScreenEffects},
+}};
 
 // Whether some switch is in `group`.
 constexpr bool HasToggles(ToggleGroup group) {

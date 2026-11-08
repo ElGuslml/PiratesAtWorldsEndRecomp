@@ -454,8 +454,9 @@ Phase 4 closed on 2026-10-15 (D57). Its open checks are in `plan.md`, "Later".
 **The end of the frame** (trace of frame 4500 at the dock, run 156, with the callers):
 1. **The post-processing** draws the scene into the composite surface (`0x40243200`, 2_10_10_10_FLOAT,
    pitch 1280, EDRAM 0), and the engine copies it to `0x0886B000`, 8_8_8_8 (Resolve from `0x8245E180`).
-2. **A temporal blend:** the last frame's finished scene (`0x09B2E000`) is drawn into the surface, then
-   blended with the copy and the depth texture `0x084D2000`. That looks like motion blur.
+2. **The depth of field** (the effect with mask 1, `src/screen_fx.cpp`): the last frame's finished scene (`0x09B2E000`)
+   is drawn into the surface, then blended with the copy and the depth texture `0x084D2000`. It is not motion blur,
+   as this note first guessed: the trace ties these draws to the depth of field effect's begin and pass.
 3. **The finished scene** is copied to `0x09B2E000` (Resolve from `0x824583EC`). It is also the next
    frame's "last frame".
 4. **The HUD** is drawn into an 8_8_8_8 surface at the same EDRAM (`0x40268410`): a clear to transparent black,
