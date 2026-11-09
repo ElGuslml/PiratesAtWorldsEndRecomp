@@ -9,6 +9,8 @@
 
 #include <native_x_renderer/hooks.h>
 
+#include "level_packages.h"
+
 // Draws. All scene meshes come from sub_823DF3A8 through the engine's D3D9-style wrappers
 // sub_823DF278 (DrawIndexedPrimitive) and sub_823DF2C8 (DrawPrimitive).
 NATIVE_X_RENDERER_HOOK(824AC3C0, DrawIndexedVertices)
@@ -91,6 +93,10 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     static const native_x_renderer::Profile::TextureSizeConstant kTextureSizeConstants[] = {{true, 38, 8}};
     p.texture_size_constants = kTextureSizeConstants;
     p.texture_size_constant_count = 1;
+    // The pipeline list (library D129, D136; docs/compiling-shaders.md): 425607D1.pipelines.list beside the executable.
+    // The game's shaders are inside its level packages, compressed (src/level_packages.cpp).
+    p.title_id = 0x425607D1;
+    p.read_shader_archives = ReadPackagedShaders;
     native_x_renderer::DeviceLayout& d = p.device;
     // Six dirty masks from +0: VS constants, PS constants, register groups, fetch slots (low half, slot 0
     // in bit 31), misc, tiling-dependent state.

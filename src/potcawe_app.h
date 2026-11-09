@@ -65,10 +65,23 @@ class PotcaweApp : public rex::ReXApp {
     if (!rex::ReXApp::SetupEnvironment()) return false;
     REXLOG_INFO("[startup] User data: {}", user_data_root().string());
     REXLOG_INFO("[startup] {}", native_x_renderer::Describe());
-    // Not when the launcher asks for the achievements' list (no window: a question would wait unseen).
-    if (!rex::cvar::Query<bool>("achievements_cache_only") && !potcawe::CheckGameFiles(game_data_root())) return false;
+    // Not when the launcher asks for the achievements' list or runs NativeXRenderer's tool modes (no window: a question
+    // would wait unseen).
+    if (!rex::cvar::Query<bool>("achievements_cache_only") && !native_x_renderer::ToolModeRequested() &&
+        !potcawe::CheckGameFiles(game_data_root())) {
+      return false;
+    }
     potcawe::LoadLauncherOptions(exe_dir / "potcawe_options.toml", potcawe::GpuPluginPath());
     potcawe::SetDialogLanguage();
+    return true;
+  }
+
+  // NativeXRenderer's tool modes (D129), instead of the game: the launcher's "Compiling shaders"
+  // (--native_x_renderer_prepare_pipelines) and the developers' pipeline list (--native_x_renderer_make_pipeline_list),
+  // with the launcher's options already applied, so the pipelines are the ones the game will ask for.
+  bool OnToolMode() override {
+    if (!native_x_renderer::ToolModeRequested()) return false;
+    native_x_renderer::RunToolMode(potcawe::NativeXRendererProfile(), game_data_root(), cache_root());
     return true;
   }
 

@@ -32,6 +32,13 @@ foreach ($exe in @("PiratesAtWorldsEndRecomp.exe", "PiratesAtWorldsEnd Launcher.
   Copy-Item -LiteralPath "$Build\$exe" $dest
 }
 Get-ChildItem -LiteralPath $Build -Filter *.dll | ForEach-Object { Copy-Item -LiteralPath $_.FullName $dest }
+# NativeXRenderer's pipeline list (its D129, D136; docs/compiling-shaders.md), kept out of git in
+# tools\pipelines\425607D1.pipelines.list: beside the executable, where the launcher's "Compiling shaders" finds it. It
+# names the shaders by hash and the fields the D3D library patches in them; nothing of the game goes with it.
+foreach ($list in @(Get-ChildItem -LiteralPath "$repo\tools\pipelines" -Filter "*.pipelines.list" -File -ErrorAction SilentlyContinue)) {
+  Copy-Item -LiteralPath $list.FullName $dest
+  Write-Host "Pipeline list: $($list.Name) ($([math]::Round($list.Length / 1KB)) KB)"
+}
 
 # Documents.
 Copy-Item "$repo\README.md", "$repo\LICENSE", "$repo\THIRD_PARTY_NOTICES.md" $dest

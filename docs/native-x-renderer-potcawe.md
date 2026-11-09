@@ -32,7 +32,8 @@ Sources:
 8. [Phase 2 so far](#phase-2-so-far)
 9. [Phase 3 so far](#phase-3-so-far)
 10. [Phase 4 so far](#phase-4-so-far)
-11. [Measurements](#measurements)
+11. [The shaders in the game's files](#the-shaders-in-the-games-files)
+12. [Measurements](#measurements)
 
 ## The executable
 
@@ -609,6 +610,40 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
     may be an `exit()`. Look for the C runtime's exit on the main thread's stack.
 - **The menu videos have a green border** one pixel wide (row 1, column 1 and the last column), at full
   width as in the box. It is the Bink planes' edge, older than D43.
+
+## The shaders in the game's files
+
+NativeXRenderer's pipeline list (library D129, D136; [compiling-shaders.md](compiling-shaders.md)) names shaders by
+hash and rebuilds their microcode from the player's copy of the game. POTCAWE has no shader library file: the shaders
+are inside its level packages, mostly compressed. Found on 2026-11-08 by a scan of the whole data for XDK containers
+and the stored shaders' microcode (GHMetalRecomp's `local_docs/38`), then read through the packages' own structure on
+2026-11-09 (`src/level_packages.cpp`, `local_docs/25-pipeline-list.md`).
+
+- **The index.** `Data/FileList.bin`: a 0x14-byte header (the entry count, 1,611, at +8), then 0x24-byte big-endian
+  entries {the header's size for a GEOM package, else the size; id; type; 0; size; 1; hash; offset; part}. The part
+  is 0 for `FileList.000` (3.58 GB), 1 for `FileList.001` (2.80 GB). Types: 10 (918 entries), 0x27A0 (622), 0 (70),
+  15 (1).
+- **GEOM packages** (type 0x27A0: levels, characters, objects): "GEOM", the id, the type, the package's size at +0x14,
+  the header's size at +0x18, then 14 (count, offset) pairs at +0x30, each offset counted from its own field. Every
+  package has 14. Pair 2 is the package's shaders: records of 7 dwords {0x4F << 24 | index, hash (0xCF......), 0,
+  index, offset in the package, stored size, size}. 751 records in the 622 packages, all of class 0x4F.
+- **Compression.** A record is a Eurocom EDL block: "EDL", a byte (0x82: big-endian, method 2), the stored size (the
+  12-byte header included, equal to the record's), the size (equal to the record's). One record is stored as it is
+  (size 0, package 0xC1000148: 0x774 bytes, a pixel shader Gustavo's storage has). The game's decoders: the header
+  `sub_8240E438`, method 1 `sub_8240E510`, method 2 `sub_8240DB30`, an LZ77 read from 32-bit words least significant
+  bit first (its codes in `src/level_packages.cpp`). The 750 blocks: 29.9 MB that decode to 72.3 MB, in 0.3 s; each
+  one byte for byte as a mechanical C translation of `sub_8240DB30` decodes it (the 2026-11-08 scan's).
+- **Outside the packages:** the one type 15 entry (id 0x9D000000, 37 KB at 0x95D13000 in `FileList.001`) holds 52
+  containers as they are. 33 of Gustavo's stored shaders are only there.
+- **The containers:** compiler byte 0x11 (XDK 2.0.5426's: 0x102A1100 pixel, 0x102A1101 vertex). 42,647 in all, 1,812
+  different programs (1,470 pixel, 342 vertex sections): a level carries every shader it draws, so most repeat.
+- **What the D3D library changes** (Gustavo's 225 stored shaders against them): the 109 pixel shaders are the files'
+  as they are. The 116 vertex shaders have their vertex fetches set for their vertex declaration (56 only that), and
+  60 also have their exports linked to the pixel shader they draw with: an export to an interpolator the pixel shader
+  does not read becomes an instruction that writes nothing (export bit and write masks 0, dwords 1 and 2 `0` and
+  `0x02000000`, 104 instructions), the remaining interpolators are numbered down (`vector_dest`, 343 changes), and in
+  one shader the position export's placeholder source registers (255) become the register its vertex fetch writes (10),
+  with its swizzles. The list carries those as ISA fields (library D136).
 
 ## Measurements
 

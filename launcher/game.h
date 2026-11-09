@@ -153,9 +153,9 @@ inline constexpr bool kHasGamePage = !kLanguages.empty() || HasToggles(ToggleGro
 // mode (SDK change 44) into its user data's content folder. Off until checked with this game's content.
 inline constexpr bool kHasDlcPage = false;
 
-// NativeXRenderer's pipeline list (its D129, pipelines.h): off, the game's shaders are not in its files as they are
-// (NativeXRenderer's D133), so a list could not be rebuilt on the player's machine.
-inline constexpr bool kHasPipelineList = false;
+// NativeXRenderer's pipeline list (its D129, pipelines.h): "Compiling shaders" before Play. The game's shaders are read
+// from its compressed level packages (src/level_packages.cpp, NativeXRenderer's D136; docs/compiling-shaders.md).
+inline constexpr bool kHasPipelineList = true;
 
 // --- The keyboard ---
 

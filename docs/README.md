@@ -17,6 +17,7 @@ To build the project and work on it: [Building and developing](development.md).
 | [quit-prompt.md](quit-prompt.md) — no way to quit the game; B on the title screen now asks whether to quit | Working |
 | [achievements.md](achievements.md) — the unlock notification tiny, in English and without icons; the launcher could not show the achievements | Working |
 | [screen-effects.md](screen-effects.md) — switches for the bloom, the depth of field, the color adjustment, the heat haze and the radial and motion blurs | Options |
+| [compiling-shaders.md](compiling-shaders.md) — freezes and late objects the first time a level is shown (NativeXRenderer); the launcher's "Compiling shaders" from a pipeline list | Fixed |
 
 ## NativeXRenderer
 

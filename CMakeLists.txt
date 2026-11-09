@@ -70,6 +70,7 @@ set(POTCAWE_SOURCES
     src/framerate.cpp
     src/msaa.cpp
     src/gpu_wait.cpp
+    src/level_packages.cpp
     src/lua_errors.cpp
     src/options.cpp
     src/quit_prompt.cpp
