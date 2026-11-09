@@ -206,3 +206,13 @@ registers = ["r11"]
 address = 0x8245DF84   # cmplwi cr6,r11,0 (sub_8245DCD0: r11 = effect+176, HDREngineToSRGB or its _CA variant)
 name = "PotcaweColorAdjustHook"
 registers = ["r11"]
+
+# Button prompts for the controller in the player's hands (src/button_prompts.cpp, local_docs/12-button-glyphs.md):
+# the fonts' button glyphs and the HUD's button sprites as the PlayStation 3's with a PlayStation controller.
+[[midasm_hook]]
+address = 0x822B58C0   # li r4,1 (sub_822B58B0, the Direct3D library's Swap and Synchronize, after its prologue)
+name = "PotcaweButtonPromptsFrameHook"
+[[midasm_hook]]
+address = 0x82325010   # cmplwi cr6,r3,0 (sub_82324F80: after the EDL decoder, r3 = decoded, r31 = the section)
+name = "PotcaweButtonPromptsSectionHook"
+registers = ["r3", "r31"]

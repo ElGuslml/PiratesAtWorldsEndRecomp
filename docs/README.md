@@ -18,6 +18,7 @@ To build the project and work on it: [Building and developing](development.md).
 | [achievements.md](achievements.md) — the unlock notification tiny, in English and without icons; the launcher could not show the achievements | Working |
 | [screen-effects.md](screen-effects.md) — switches for the bloom, the depth of field, the color adjustment, the heat haze and the radial and motion blurs | Options |
 | [compiling-shaders.md](compiling-shaders.md) — freezes and late objects the first time a level is shown (NativeXRenderer); the launcher's "Compiling shaders" from a pipeline list | Fixed |
+| [button-prompts.md](button-prompts.md) — the Xbox 360's buttons shown with a PlayStation controller; now the PS3's own art, from the disc | Working |
 
 ## NativeXRenderer
 

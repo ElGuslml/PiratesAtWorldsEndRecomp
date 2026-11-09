@@ -12,11 +12,15 @@
 //   (33 of the stored shaders are only there).
 // Gustavo's 225 stored shaders (local_docs/24-cold-start-pipelines.md) are all there: the 109 pixel shaders as the
 // files have them, the 116 vertex shaders with their fetches and exports patched by the D3D library.
+// Pair 3 lists a package's textures in records of the same shape: {class << 24 | index (0x42 or 0x02), GUID, 0, index,
+// offset, stored size, size}. A texture decodes to what the game keeps in memory: a 4 KB header (0xAF000008, the
+// width and height at +0x24, the format at +0x2F: 1 DXT5, 4 DXT1), then the tiled surface and its mips.
 
 #include "level_packages.h"
 
 #include <rex/logging.h>
 
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <iterator>
@@ -32,7 +36,7 @@ uint32_t Be32(const uint8_t* p) {
 constexpr size_t kIndexHeader = 0x14, kEntrySize = 0x24;
 constexpr uint32_t kGeomType = 0x27A0;
 constexpr uint32_t kShaderEntryType = 15;
-constexpr size_t kGeomHeaderSizeField = 0x18, kGeomPairs = 0x30, kGeomPairCount = 14, kShaderPair = 2;
+constexpr size_t kGeomHeaderSizeField = 0x18, kGeomPairs = 0x30, kGeomPairCount = 14, kShaderPair = 2, kTexturePair = 3;
 constexpr size_t kRecordSize = 28;
 constexpr uint32_t kShaderClass = 0x4F;
 
@@ -67,6 +71,42 @@ class BitReader {
   uint64_t bits_ = 0;
   int available_ = 0;
   bool overrun_ = false;
+};
+
+// Data/FileList.bin, read whole. False (and a warning naming `what`) when it is missing or not the game's index.
+bool LoadIndex(const std::filesystem::path& folder, const char* what, std::vector<uint8_t>& index, uint32_t& count) {
+  std::ifstream file(folder / "FileList.bin", std::ios::binary);
+  if (!file) {
+    REXLOG_WARN("[potcawe] {}: {} is missing", what, (folder / "FileList.bin").string());
+    return false;
+  }
+  index.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+  count = index.size() >= kIndexHeader ? Be32(index.data() + 8) : 0;
+  if (!count || kIndexHeader + uint64_t(count) * kEntrySize > index.size()) {
+    REXLOG_WARN("[potcawe] {}: FileList.bin is not the game's index", what);
+    return false;
+  }
+  return true;
+}
+
+// FileList.000 and .001, read by an index entry's part and offset.
+class Archives {
+ public:
+  explicit Archives(const std::filesystem::path& folder)
+      : parts_{std::ifstream(folder / "FileList.000", std::ios::binary),
+               std::ifstream(folder / "FileList.001", std::ios::binary)} {}
+
+  bool Read(uint32_t part, uint64_t offset, size_t size, std::vector<uint8_t>& out) {
+    if (part > 1 || !parts_[part].is_open()) return false;
+    out.resize(size);
+    parts_[part].clear();
+    parts_[part].seekg(std::streamoff(offset));
+    parts_[part].read(reinterpret_cast<char*>(out.data()), std::streamsize(size));
+    return parts_[part].gcount() == std::streamsize(size);
+  }
+
+ private:
+  std::ifstream parts_[2];
 };
 
 }  // namespace
@@ -154,28 +194,11 @@ void ReadPackagedShaders(const std::filesystem::path& game_data_root,
                          const std::function<void(const uint8_t* data, size_t size)>& add) {
   const std::filesystem::path folder = game_data_root / "Data";
   std::vector<uint8_t> index;
-  {
-    std::ifstream file(folder / "FileList.bin", std::ios::binary);
-    if (!file) {
-      REXLOG_WARN("[potcawe] shaders: {} is missing", (folder / "FileList.bin").string());
-      return;
-    }
-    index.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-  }
-  const uint32_t count = index.size() >= kIndexHeader ? Be32(index.data() + 8) : 0;
-  if (!count || kIndexHeader + uint64_t(count) * kEntrySize > index.size()) {
-    REXLOG_WARN("[potcawe] shaders: FileList.bin is not the game's index");
-    return;
-  }
-  std::ifstream parts[2] = {std::ifstream(folder / "FileList.000", std::ios::binary),
-                            std::ifstream(folder / "FileList.001", std::ios::binary)};
-  auto read = [&parts](uint32_t part, uint64_t offset, size_t size, std::vector<uint8_t>& out) {
-    if (part > 1 || !parts[part].is_open()) return false;
-    out.resize(size);
-    parts[part].clear();
-    parts[part].seekg(std::streamoff(offset));
-    parts[part].read(reinterpret_cast<char*>(out.data()), std::streamsize(size));
-    return parts[part].gcount() == std::streamsize(size);
+  uint32_t count = 0;
+  if (!LoadIndex(folder, "shaders", index, count)) return;
+  Archives archives(folder);
+  auto read = [&archives](uint32_t part, uint64_t offset, size_t size, std::vector<uint8_t>& out) {
+    return archives.Read(part, offset, size, out);
   };
 
   uint32_t packages = 0, records = 0, entries = 0, failed = 0;
@@ -234,6 +257,48 @@ void ReadPackagedShaders(const std::filesystem::path& game_data_root,
   }
   REXLOG_INFO("[potcawe] shaders: {} records in {} level packages and {} entry, {} unreadable", records, packages,
               entries, failed);
+}
+
+std::unordered_map<uint32_t, std::vector<uint8_t>> ReadPackageTextures(const std::filesystem::path& game_data_root,
+                                                                       uint32_t package_id,
+                                                                       const std::vector<uint32_t>& guids) {
+  std::unordered_map<uint32_t, std::vector<uint8_t>> textures;
+  const std::filesystem::path folder = game_data_root / "Data";
+  std::vector<uint8_t> index;
+  uint32_t count = 0;
+  if (!LoadIndex(folder, "textures", index, count)) return textures;
+  Archives archives(folder);
+  for (uint32_t i = 0; i < count; ++i) {
+    const uint8_t* e = index.data() + kIndexHeader + size_t(i) * kEntrySize;
+    if (Be32(e + 4) != package_id) continue;
+    const uint32_t type = Be32(e + 8), size = Be32(e + 16), offset = Be32(e + 28), part = Be32(e + 32);
+    constexpr size_t kPairsEnd = kGeomPairs + kGeomPairCount * 8;
+    std::vector<uint8_t> header, block, decoded;
+    if (type != kGeomType || size < kPairsEnd || !archives.Read(part, offset, kPairsEnd, header) ||
+        std::memcmp(header.data(), "GEOM", 4)) {
+      break;
+    }
+    const uint32_t header_size = Be32(header.data() + kGeomHeaderSizeField);
+    if (header_size < kPairsEnd || header_size > size || !archives.Read(part, offset, header_size, header)) break;
+    const size_t pair = kGeomPairs + kTexturePair * 8;
+    const uint32_t record_count = Be32(header.data() + pair);
+    const uint64_t first_record = pair + 4 + uint64_t(Be32(header.data() + pair + 4));
+    if (first_record + uint64_t(record_count) * kRecordSize > header_size) break;
+    for (uint32_t r = 0; r < record_count; ++r) {
+      const uint8_t* record = header.data() + first_record + size_t(r) * kRecordSize;
+      const uint32_t guid = Be32(record + 4);
+      if (std::find(guids.begin(), guids.end(), guid) == guids.end()) continue;
+      const uint32_t at = Be32(record + 16), stored = Be32(record + 20), decoded_size = Be32(record + 24);
+      if (uint64_t(at) + stored > size || !archives.Read(part, uint64_t(offset) + at, stored, block)) continue;
+      if (!decoded_size) {
+        textures[guid] = block;
+      } else if (DecodeEdl(block.data(), block.size(), decoded) && decoded.size() == decoded_size) {
+        textures[guid] = std::move(decoded);
+      }
+    }
+    break;
+  }
+  return textures;
 }
 
 }  // namespace potcawe

@@ -15,6 +15,7 @@
 
 #include <native_x_renderer/native_x_renderer.h>
 
+#include "button_prompts.h"
 #include "options.h"
 #include "startup.h"
 #include "native_x_renderer_potcawe.h"
@@ -93,6 +94,7 @@ class PotcaweApp : public rex::ReXApp {
     }
     native_x_renderer::Initialize(potcawe::NativeXRendererProfile(), runtime() ? runtime()->graphics_system() : nullptr,
                              window(), runtime() ? runtime()->cache_root() : std::filesystem::path());
+    potcawe::InitButtonPrompts(game_data_root());
   }
 
   // On exit, log whether the game asked to launch another executable.
