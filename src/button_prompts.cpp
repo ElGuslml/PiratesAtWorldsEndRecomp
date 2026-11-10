@@ -9,12 +9,13 @@
 //   the d-pad, the guide button and the sticks with their arrows, with the PS3's counterparts beside them.
 //
 // The style follows the controller in hand (SDL's type, rex::input::GetActiveDevice): the PS3's art for a PS3
-// controller; for a PS4's or a PS5's the same, but OPTIONS and SHARE / CREATE in place of START and SELECT, pictures of
-// ours (res/prompts/, retouched from Xelu's CC0 prompts by make_prompts.py); the original for anything else.
+// controller; for a PS4's or a PS5's the same, but OPTIONS and SHARE / CREATE in place of START and SELECT; for an Xbox
+// One's or a Series' the 360's, but MENU and VIEW in place of START and BACK; the original for anything else. The
+// buttons the disc has no picture of are ours (res/prompts/, retouched from Xelu's CC0 prompts by make_prompts.py).
 // - Text: in each loaded font's glyph table, the 28 Xbox glyphs' records get the style's records (their UVs in the
 //   atlas, their size and advance). The text code reads the records as it lays out a line (sub_822C8618), so nothing
 //   in the text changes, only the pictures of its characters. Our glyphs are drawn into the atlases' empty rows when
-//   the game decompresses them, and their records are made from the PS3's START and SELECT.
+//   the game decompresses them, and their records are made from the records they replace.
 // - Sprites: when the game has decompressed a section of a package (sub_82324F80), a texture holding an Xbox sprite's
 //   pixels (the player's hud_main.edb, read at start) is noted and gets the style's pixels; on a change of controller
 //   every noted texture that still holds one of its versions is rewritten. Both renderers' texture caches watch the
@@ -28,7 +29,7 @@
 //   Three legends written with letters ("A - Select     B - Backup", "A - Continue", "Start - Continue     A - Select")
 //   are used nowhere: no package (their compressed sections included), script or code names them.
 // All is checked every fourth frame (the Direct3D library's Swap, sub_822B58B0). potcawe_button_prompts chooses: auto
-// (the default), xbox, ps3 (or playstation), ps4, ps5.
+// (the default), xbox (or xbox360), xboxone (or xboxseries), ps3 (or playstation), ps4, ps5.
 //
 // Not covered: the controls page's diagram (the PS3's has the left stick and the d-pad's labels the other way round),
 // four 64x64 A B X Y sprites with no PS3 counterpart (used nowhere either).
@@ -47,8 +48,12 @@
 #include <rex/system/xmemory.h>
 #include <rex/ui/image_decode.h>
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 
 #include <algorithm>
@@ -65,22 +70,27 @@
 #include <vector>
 
 REXCVAR_DEFINE_STRING(potcawe_button_prompts, "auto", "Potcawe",
-                      "The buttons the game shows: auto (for the controller in hand: the PlayStation's with a "
-                      "PlayStation controller, the original Xbox 360's otherwise), xbox, ps3 (or playstation), ps4 or "
-                      "ps5");
+                      "The buttons the game shows: auto (for the controller in hand: a PlayStation's or an Xbox One's "
+                      "and Series' with one of those, the original Xbox 360's otherwise), xbox (or xbox360), xboxone "
+                      "(or xboxseries), ps3 (or playstation), ps4 or ps5");
 
 namespace {
 
-enum class Style { kXbox, kPS3, kPS4, kPS5 };
-constexpr size_t kStyleCount = 4;
+enum class Style { kXbox360, kXboxOne, kPS3, kPS4, kPS5 };
+constexpr size_t kStyleCount = 5;
 
 const char* StyleName(Style style) {
   switch (style) {
+    case Style::kXboxOne: return "Xbox One";
     case Style::kPS3: return "PS3";
     case Style::kPS4: return "PS4";
     case Style::kPS5: return "PS5";
-    default: return "Xbox";
+    default: return "Xbox 360";
   }
+}
+
+bool IsPlayStation(Style style) {
+  return style == Style::kPS3 || style == Style::kPS4 || style == Style::kPS5;
 }
 
 // The fonts: sub_82081AB8 registers Font, Font2 and Font3 with the font manager (sub_822C9818), which keeps them as
@@ -118,6 +128,8 @@ constexpr NewGlyph kNewGlyphs[] = {
     {Style::kPS5, kBackGlyph, L"PROMPT_PS5_CREATE_GLYPH", 64, 320},
     {Style::kPS4, kStartGlyph, L"PROMPT_PS4_OPTIONS_GLYPH", 128, 320},  // up to 124 wide
     {Style::kPS4, kBackGlyph, L"PROMPT_PS4_SHARE_GLYPH", 256, 320},
+    {Style::kXboxOne, kStartGlyph, L"PROMPT_XBOX_MENU_GLYPH", 384, 320},
+    {Style::kXboxOne, kBackGlyph, L"PROMPT_XBOX_VIEW_GLYPH", 448, 320},
 };
 
 // hud_main.edb's button sprites, each Xbox texture's GUID and its PS3 counterpart's.
@@ -165,6 +177,8 @@ constexpr NewSprite kNewSprites[] = {
     {Style::kPS5, kBackSprite, L"PROMPT_PS5_CREATE_SPRITE"},
     {Style::kPS4, kStartSprite, L"PROMPT_PS4_OPTIONS_SPRITE"},
     {Style::kPS4, kBackSprite, L"PROMPT_PS4_SHARE_SPRITE"},
+    {Style::kXboxOne, kStartSprite, L"PROMPT_XBOX_MENU_SPRITE"},
+    {Style::kXboxOne, kBackSprite, L"PROMPT_XBOX_VIEW_SPRITE"},
 };
 // A texture as the game keeps it (level_packages.cpp): a 4 KB header, then the surface. The sprites' are 128x128 DXT5.
 constexpr uint32_t kTextureMagic = 0xAF000008;
@@ -190,7 +204,7 @@ std::atomic<uint32_t> g_atlases_drawn{0};
 // The sprites' state, shared by the loading thread (noting) and the render thread (a change of controller).
 std::mutex g_sprite_mutex;
 std::map<uint32_t, size_t> g_noted;  // the textures holding a sprite: guest address -> kSpritePairs index
-Style g_sprite_style = Style::kXbox;
+Style g_sprite_style = Style::kXbox360;
 uint32_t g_loaded = 0;  // sprites noted since the frame hook last logged them
 
 // The fonts' state and the frame hook's count, for one thread at a time (Swap and Synchronize may come from two).
@@ -200,7 +214,7 @@ struct FontPatch {
   uint32_t table = 0;
   std::array<GlyphRecord, kXboxGlyphs.size()> original = {};
   std::array<bool, kXboxGlyphs.size()> present = {};
-  Style style = Style::kXbox;
+  Style style = Style::kXbox360;
 };
 std::map<uint32_t, FontPatch> g_fonts;  // by the font's loaded .FNT
 
@@ -311,20 +325,27 @@ void SetStartWord(std::u16string word) {
 Style WantedStyle() {
   static std::string last_reason;
   const std::string setting = REXCVAR_GET(potcawe_button_prompts);
-  Style style = Style::kXbox;
+  Style style = Style::kXbox360;
   std::string reason;
-  if (setting == "xbox" || setting == "ps3" || setting == "playstation" || setting == "ps4" || setting == "ps5") {
-    style = setting == "ps4"   ? Style::kPS4
-            : setting == "ps5" ? Style::kPS5
-            : setting == "xbox" ? Style::kXbox
-                                : Style::kPS3;
+  static const std::pair<std::string_view, Style> kSettings[] = {
+      {"xbox", Style::kXbox360},       {"xbox360", Style::kXbox360}, {"xboxone", Style::kXboxOne},
+      {"xboxseries", Style::kXboxOne}, {"ps3", Style::kPS3},         {"playstation", Style::kPS3},
+      {"ps4", Style::kPS4},            {"ps5", Style::kPS5},
+  };
+  auto forced = std::find_if(std::begin(kSettings), std::end(kSettings),
+                             [&](const auto& entry) { return entry.first == setting; });
+  if (forced != std::end(kSettings)) {
+    style = forced->second;
     reason = "potcawe_button_prompts = " + setting;
-    SetStartWord(style == Style::kPS4 || style == Style::kPS5 ? u"OPTIONS" : u"");
+    SetStartWord(style == Style::kPS4 || style == Style::kPS5 ? u"OPTIONS"
+                 : style == Style::kXboxOne                   ? u"MENU"
+                                                              : u"");
   } else {
     const rex::input::DeviceInfo device = rex::input::GetActiveDevice(0);
     SetStartWord(StartWord(device));
     using rex::input::GamepadType;
     switch (device.gamepad_type) {
+      case GamepadType::kXboxOne: style = Style::kXboxOne; break;
       case GamepadType::kPS3: style = Style::kPS3; break;
       case GamepadType::kPS4: style = Style::kPS4; break;
       case GamepadType::kPS5: style = Style::kPS5; break;
@@ -346,7 +367,8 @@ Style WantedStyle() {
   return style;
 }
 
-// A record for one of our glyphs: the PS3 record of the button it replaces, pointing at its cell in the atlas.
+// A record for one of our glyphs: the PS3 record of the button it replaces (for its y offset: the PS3's cells are 32
+// pixels high, as our pictures), pointing at its cell in the atlas. For every style, the Xbox One's included.
 GlyphRecord NewGlyphRecord(const uint8_t* ps3_record, const NewGlyph& glyph, const Picture& picture,
                            uint32_t atlas_width, uint32_t atlas_height) {
   GlyphRecord record;
@@ -401,7 +423,7 @@ void ApplyToFonts(Style style) {
       uint8_t* record = glyphs + Be16(glyphs + kXboxGlyphs[k] * 2);
       const uint8_t* ps3 = glyphs + Be16(glyphs + (kPlayStationGlyphs + k) * 2);
       GlyphRecord to = patch.original[k];
-      if (style != Style::kXbox) std::memcpy(to.data(), ps3, kGlyphRecordSize);
+      if (IsPlayStation(style)) std::memcpy(to.data(), ps3, kGlyphRecordSize);
       for (size_t n = 0; n < g_glyph_pictures.size(); ++n) {
         const NewGlyph& glyph = kNewGlyphs[n];
         const Picture& picture = g_glyph_pictures[n];
@@ -473,12 +495,12 @@ void OnTexture(uint32_t address, uint8_t* blob) {
   const uint64_t hash = XXH3_64bits(surface, kSpritePixels);
   for (size_t i = 0; i < g_sprites.size(); ++i) {
     const SpriteArt& art = g_sprites[i];
-    const Surface& xbox = art.surfaces[size_t(Style::kXbox)];
+    const Surface& xbox = art.surfaces[size_t(Style::kXbox360)];
     if (!xbox || art.xbox_hash != hash || std::memcmp(surface, xbox->data(), kSpritePixels)) continue;
     std::lock_guard lock(g_sprite_mutex);
     g_noted[address] = i;
     ++g_loaded;
-    if (g_sprite_style != Style::kXbox) {
+    if (g_sprite_style != Style::kXbox360) {
       std::memcpy(surface, art.surfaces[size_t(g_sprite_style)]->data(), kSpritePixels);
     }
     return;
@@ -509,7 +531,8 @@ void InitButtonPrompts(const std::filesystem::path& game_data_root) {
     g_atlas_hashes.push_back(XXH3_64bits(blob.data() + kTextureHeader, kAtlasSurface));
   }
 
-  // The HUD's sprites: the Xbox one, the PS3 one, and for the PS4 and the PS5 the PS3 one or our picture on it.
+  // The HUD's sprites: the Xbox 360 one, the PS3 one; for the PS4 and the PS5 the PS3 one, for the Xbox One the 360
+  // one, or our picture over all of it.
   std::vector<uint32_t> guids;
   for (const SpritePair& pair : kSpritePairs) {
     guids.push_back(pair.xbox);
@@ -531,13 +554,14 @@ void InitButtonPrompts(const std::filesystem::path& game_data_root) {
       continue;  // left out: no texture will match an empty one
     }
     SpriteArt& art = sprites[i];
-    art.surfaces[size_t(Style::kXbox)] = surface_of(xbox->second);
+    art.surfaces[size_t(Style::kXbox360)] = surface_of(xbox->second);
     art.surfaces[size_t(Style::kPS3)] = surface_of(ps3->second);
     art.surfaces[size_t(Style::kPS4)] = art.surfaces[size_t(Style::kPS5)] = art.surfaces[size_t(Style::kPS3)];
+    art.surfaces[size_t(Style::kXboxOne)] = art.surfaces[size_t(Style::kXbox360)];
     for (const NewSprite& sprite : kNewSprites) {
       if (sprite.xbox != kSpritePairs[i].xbox) continue;
       const Picture picture = LoadPicture(sprite.picture);
-      std::vector<uint8_t> blob = ps3->second;
+      std::vector<uint8_t> blob = IsPlayStation(sprite.style) ? ps3->second : xbox->second;
       Dxt5Texture texture;
       if (picture.width != 128 || picture.height != 128 || !Dxt5TextureFromBlob(blob.data(), blob.size(), texture)) {
         continue;

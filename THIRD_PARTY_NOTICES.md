@@ -20,7 +20,7 @@ U.S. and other countries.
 ## Button pictures
 
 `PiratesAtWorldsEndRecomp.exe` embeds button pictures for the PS4's and the PS5's OPTIONS and SHARE / CREATE buttons
-(`res/prompts/`, docs/button-prompts.md), retouched from **Xelu's Free Controller & Key Prompts** by Nicolae "Xelu"
+and the Xbox One's and Series' MENU and VIEW buttons (`res/prompts/`, docs/button-prompts.md), retouched from **Xelu's Free Controller & Key Prompts** by Nicolae "Xelu"
 Berbece (Those Awesome Guys), https://thoseawesomeguys.com/prompts/, in the public domain (CC0 1.0).
 
 ## PiratesAtWorldsEnd Launcher

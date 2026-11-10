@@ -4,9 +4,11 @@ They come from Nicolae "Xelu" Berbece's Free Controller & Key Prompts (CC0, http
 retouched to the game's two sizes:
 - a font glyph: 32 pixels high, as wide as the picture needs (the game's are 32 or 64 wide);
 - a HUD sprite: 128x128 (the game's button sprites).
-The retouch: the picture cropped to what it draws, scaled, given a dark outline so it reads on any scene, and, for
-the PS4's buttons (a dark pill with its word under it), made light and laid out with the word beside the pill in a
-glyph.
+The retouch: the picture cropped to what it draws, scaled, given a dark outline so it reads on any scene, and:
+- the PS4's buttons (a dark pill with its word under it): made light, the word beside the pill in a glyph;
+- the PS5's (a light pill under its symbol): the symbol beside the pill in a glyph;
+- the Xbox Series' MENU and VIEW (a dark round button, a light symbol): made light with the symbol dark, as the 360's
+  START and BACK in the game. An Xbox One's are the same buttons.
 
     python res/prompts/make_prompts.py <Xelu's pack folder> [--preview preview.png]
 
@@ -36,6 +38,27 @@ def lighten(im):
     rgb = a[:, :, :3]
     a[:, :, :3] = 255.0 - rgb * 0.85
     return Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def light_round(im):
+    """The Xbox Series' round buttons (a dark grey face, a light symbol, a dark rim) made light as the 360's START and
+    BACK in the game: a light face, the symbol dark on it, the rim kept dark. Their greys are flat: rim 27, ring 49,
+    face 79, a highlight 98 at the ring's inner edge, the symbol 153 in the middle (within 17 pixels of the center)."""
+    a = np.array(im).astype(np.float32)
+    lum = a[:, :, 0]
+    base = np.interp(lum, [27, 49, 79, 98], [40, 150, 222, 240])
+    y, x = np.mgrid[0:a.shape[0], 0:a.shape[1]]
+    inner = np.hypot(x - (a.shape[1] - 1) / 2, y - (a.shape[0] - 1) / 2) < 20 * a.shape[0] / 100
+    symbol = np.where(inner, np.clip((lum - 79) / (153 - 79), 0, 1), 0)
+    base = np.where(inner, 222, base)
+    a[:, :, :3] = (base * (1 - symbol) + 45 * symbol)[:, :, None]
+    return Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def glyph_round(src):
+    """A round button in a 32x32 glyph: the circle 31 pixels across, as the game's A B X Y; its dark rim is its
+    outline."""
+    return place(fit(crop(src), 31, 31), 32, 32)
 
 
 def white(im):
@@ -109,9 +132,15 @@ def make(pack):
     ps5_create = load(pack, "PS5/PS5_Share.png")
     ps4_options = lighten(load(pack, "Others/PS4/PS4_Options.png"))
     ps4_share = lighten(load(pack, "Others/PS4/PS4_Share.png"))
+    xbox_menu = light_round(load(pack, "Xbox Series/XboxSeriesX_Menu.png"))
+    xbox_view = light_round(load(pack, "Xbox Series/XboxSeriesX_View.png"))
     split = 72  # the PS4 pictures' empty rows between the pill and the word
     ps5_split = 24  # the PS5 pictures' empty rows between the symbol and the pill
     return {
+        "xbox_menu_glyph": glyph_round(xbox_menu),
+        "xbox_view_glyph": glyph_round(xbox_view),
+        "xbox_menu_sprite": sprite(xbox_menu),
+        "xbox_view_sprite": sprite(xbox_view),
         "ps5_options_glyph": glyph_symbol_beside(ps5_options, ps5_split),
         "ps5_create_glyph": glyph_symbol_beside(ps5_create, ps5_split),
         "ps4_options_glyph": glyph_pill_and_word(ps4_options, split),
