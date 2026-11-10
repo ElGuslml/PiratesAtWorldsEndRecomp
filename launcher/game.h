@@ -137,6 +137,10 @@ inline constexpr std::array<Toggle, 7> kToggles{{
     {"potcawe_skip_intro", false, ToggleGroup::kGame},
 }};
 
+// The Game page's "Low latency audio" row (RecompLauncher 3.14.2): nothing in this game is played to the sound's
+// timing, so the row is hidden and the SDK's audio_wasapi_exclusive written off.
+inline constexpr bool kHasLowLatencyAudio = false;
+
 // Whether some switch is in `group`.
 constexpr bool HasToggles(ToggleGroup group) {
   for (const Toggle& toggle : kToggles) {
