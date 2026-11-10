@@ -1,7 +1,7 @@
 # A lattice in the depth of field at high resolutions
 
-**Status: cause found (2026-11-10), not fixed yet.** Turning the depth of field off (Settings → Graphics → Screen
-effects) removes it.
+**Status: cause found (2026-11-10), fix pending** (NativeXRenderer's `docs/plan.md`, "Later"). Meanwhile, turning the
+depth of field off (Settings → Graphics → Screen effects) removes it.
 
 ## Symptom
 
@@ -28,4 +28,5 @@ The game's depth of field has two modes, chosen by its setting "DoF Use Strong B
 
 Four samples cannot cover two or three pixels each. The four diagonal samples have to read a copy of the scene at the
 game's resolution, each of its pixels the average of the high resolution pixels it covers, while the sharp center
-keeps the full resolution. That is a change to NativeXRenderer.
+keeps the full resolution. That is a change to NativeXRenderer, planned but not made yet: the image would look as at
+1280x720, without the lattice, at any resolution, for one small downsample of the scene a frame.
