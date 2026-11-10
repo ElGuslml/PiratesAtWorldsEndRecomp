@@ -458,6 +458,23 @@ Phase 4 closed on 2026-10-15 (D57). Its open checks are in `plan.md`, "Later".
 2. **The depth of field** (the effect with mask 1, `src/screen_fx.cpp`): the last frame's finished scene (`0x09B2E000`)
    is drawn into the surface, then blended with the copy and the depth texture `0x084D2000`. It is not motion blur,
    as this note first guessed: the trace ties these draws to the depth of field effect's begin and pass.
+   (2026-11-10, run 619, `local_docs/26-depth-of-field.md`.) The first draw is the render target object's own restore
+   (`0x8245E724`, vtable +32 of `[manager+164]`); the effect's draw is the second, from its end function `sub_8245E6E8`
+   (vtable `0x8201DC00`: update `0x8248A8E8`, which copies the settings into the effect from +12, begin `0x8245E0C8`,
+   pass `0x8245E1D8`, end `0x8245E6E8`), pixel shader `EC40189F32F953BD` (Post_DepthOfField):
+   - fetch 0 the scene (`[manager+320]`, `0x0886B000`, 1280x720), fetch 2 the depth (`0x084D2000`), fetch 1 the
+     "Strong Blur" texture (`[manager+332]`, 320x180) only when `effect+44` ("DoF Use Strong Blur") is set, which also
+     sets pixel bool 137 (`sub_823B3470(..., 9, ...)`);
+   - constants, written straight into the device (PS constants at `+5888`): c29 = (`[manager+240]`, `[manager+244]`,
+     the depth's range), c30 = (effect+28, +32, +36, 1 / the depth texture's width), c31 = (effect+12, +16, +20,
+     1 / its height), c32.x = effect+24;
+   - without Strong Blur: the center sample, four taps at (±c30.z, ±c30.z) texels for the near blur and four at
+     (±c31.z, ±c31.z) for the far blur; out = lerp(center, (center + far taps + near weight × near taps) / (5 + 4 ×
+     near weight), blur factor). At the dock: effect+12..+36 = 6, 180, 1, 1, 0, 0, 0, so the far taps are one guest
+     texel away diagonally and the near blur is off. At a render scale above 1 the taps skip host texels: the
+     crosshatch of `docs/depth-of-field.md`;
+   - with Strong Blur, the pass function downsamples the scene into `[manager+328]` (320x180) and blurs it twice into
+     `[manager+332]` (`sub_823CFA08` kinds 2, 1, 0), and the shader blends the center with it.
 3. **The finished scene** is copied to `0x09B2E000` (Resolve from `0x824583EC`). It is also the next
    frame's "last frame".
 4. **The HUD** is drawn into an 8_8_8_8 surface at the same EDRAM (`0x40268410`): a clear to transparent black,
@@ -573,6 +590,13 @@ From the second run on, the dock loads with no draw waiting for a shader or a pi
       transparent black) and resolved to `0x0886B000`;
     - a quad then copies that into a 1024×512 surface at EDRAM 0 (pitch 1040, `8_8_8_8`, not cleared);
     - the result is resolved to the page texture (`0x0CC36000`, `0x0CE37000`).
+    - Corrected and completed 2026-11-10 (run 619, frames 6158 and 6609, `local_docs/27-journal-text.md`): only the
+      first page (`0x0CC36000`) is composed in the scene's surface `0x40243E70`, whose 22 draws bind it as
+      `2_10_10_10_FLOAT_AS_16_16_16_16` (its 2-bit alpha); the second (`0x0CE37000`) is composed in the HUD's
+      `0x40268410`, `8_8_8_8`, with the same kinds of draws (the parchment with pixel shader `0x404FF9D0`, decorations
+      `0x4051C590`, the underline `0x4024A350`, the text `0x4024A460`). The text's drop shadow leaves alpha just under
+      1: at 2 bits the first page showed hard light halos, on both renderers. NativeXRenderer keeps that alpha's
+      precision for this game (library D137, `docs/journal-text.md`).
   - **Then the usual frame:** the reflection, the shadows, the scene, the post-processing and the HUD. The
     scene copy `0x09B2E000` is resolved twice from `0x824583EC`, once without and once with the HUD
     composited, so SMAA (D41) runs twice per frame there.

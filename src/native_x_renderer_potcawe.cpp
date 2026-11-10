@@ -86,6 +86,16 @@ const native_x_renderer::Profile& NativeXRendererProfile() {
     p.upscale_resolve_caller = 0x823FA2A4;
     // src/aspect.cpp widens the game's 16:9 cameras: NativeXRenderer fills outputs of any aspect ratio.
     p.widens_cameras = true;
+    // The post-processing blurs reduced copies of the screen (the bloom and luminance chain from 320x180 down, the
+    // depth of field's "Use Strong Blur" mode at 320x180) with tap offsets the game computes for their guest size:
+    // those surfaces stay at the game's size, as on the console (library D127; docs/depth-of-field.md). The depth of
+    // field's usual mode samples the full-size scene and is not one of them.
+    p.unscaled_screen_fractions = true;
+    // The journal's first page is drawn into the HDR surface (2_10_10_10_FLOAT), whose alpha has 2 bits: the text's
+    // soft shadow came out as a hard light halo, on the Xenos path too (it packs the target as the console's EDRAM
+    // stores it, so likely on the console as well). Its alpha keeps the host's precision at the
+    // resolve, as the other pages' 8-bit surface keeps it (library D137; docs/journal-text.md).
+    p.float_7e3_full_alpha = true;
     // The scene's pixel shaders filter the character shadows themselves: four point samples of the shadow map
     // (fetch constant 8, a stacked texture of two cascades) on the texel grid that c38 gives, (1024, 1024, 1/1024,
     // 1/1024), blended by the position within the texel. With the map's host size there, the filter works on the
