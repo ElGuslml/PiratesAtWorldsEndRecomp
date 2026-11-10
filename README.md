@@ -52,7 +52,6 @@ From then on, the launcher keeps itself up to date: when a new version comes out
 
 - Windows 10 or 11 (64-bit).
 - A graphics card with up-to-date drivers that support Vulkan (practically any card from the last ten years).
-  DLSS and DLAA need an NVIDIA RTX card.
 - The [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) (most PCs already
   have it).
 - An Xbox controller, a PlayStation controller, or any other controller. Keyboard and mouse work too
@@ -61,9 +60,11 @@ From then on, the launcher keeps itself up to date: when a new version comes out
 ## ✨ Features
 
 - 🖥️ **Sharp, native graphics:** the game is drawn by your graphics card at your screen's resolution, with smooth
-  edges (SMAA, FXAA, NVIDIA DLAA on RTX cards or AMD FSR 3.1 on any), sharper textures and higher-quality shadows.
-- 🔍 **Upscaling:** AMD FSR 1 and NVIDIA Image Scaling for weaker cards and 4K screens, and AMD FSR 3.1 and NVIDIA
-  DLSS (experimental), with a sharpness setting.
+  edges (SMAA or FXAA), sharper textures and higher-quality shadows.
+- 🔍 **Upscaling:** AMD FSR 1 and NVIDIA Image Scaling for weaker cards and 4K screens, with a sharpness setting.
+  AMD FSR 3.1 and NVIDIA DLSS (RTX cards) are experimental, and only in the options file: in `potcawe_options.toml`
+  next to the game, set `native_x_renderer_antialiasing = "dlaa"` or `"fsr_native"` (antialiasing only), or
+  `"dlss_quality"`, `"fsr_quality"`, `_balanced`, `_performance` (upscaling). The launcher keeps it.
 - ⚡ **60 FPS** at the original game speed.
 - 📺 **Wide and ultrawide screens:** the game fills 16:10, 21:9 and wider screens and shows more of the world to the
   sides, while the HUD, menus and videos keep their shape.
@@ -90,7 +91,7 @@ Everything is set up from the launcher, with the mouse, the keyboard or a contro
 | ⚙️ **Game** | The launcher's language, skipping the intro videos, the developer keys. |
 | 🏆 **Achievements** | All 30 achievements, the ones you have unlocked and when, and your gamerscore. |
 | 🎮 **Controls** | Keyboard and mouse (experimental), and your controller's buttons. |
-| 🖥️ **Video** | Monitor, fullscreen or window, resolution, screen shape (fill a wide screen or keep 16:9), upscaling (FSR 1, NIS, FSR 3.1, DLSS) and its quality, sharpness. |
+| 🖥️ **Video** | Monitor, fullscreen or window, resolution, screen shape (fill a wide screen or keep 16:9), upscaling (FSR 1, NIS) and its quality, sharpness. |
 | 🎨 **Graphics** | Renderer, frame rate, antialiasing, texture sharpness, shadow quality, and the screen effects one by one (bloom, depth of field, blurs…). |
 | 🔄 **Updates** | Your version, and new ones when they come out. |
 

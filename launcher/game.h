@@ -88,6 +88,10 @@ inline constexpr bool kNativeXRendererDefault = true;
 // and EndViewGeometry, src/views.cpp). Without them DLSS never runs; false: FSR 1 and
 // NIS only.
 inline constexpr bool kHasDlaa = true;
+// ...but the launcher does not offer them (RecompLauncher 3.14.3; Gustavo, 2026-11-10): Video > Upscaling has Off, FSR 1
+// and NIS. FSR 3.1 or DLSS is chosen in potcawe_options.toml (native_x_renderer_antialiasing = "dlaa", "fsr_native",
+// "dlss_quality"...), which the launcher keeps.
+inline constexpr bool kOffersTemporalUpscalers = false;
 
 // The Graphics page's shadow quality row: NativeXRenderer draws the game's shadow maps at a scale of their own
 // (native_x_renderer_shadow_scale, its D92): at least twice or four times the game's resolution. Only where it
