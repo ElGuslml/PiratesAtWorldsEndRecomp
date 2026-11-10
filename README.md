@@ -67,11 +67,17 @@ From then on, the launcher keeps itself up to date: when a new version comes out
 - ⚡ **60 FPS** at the original game speed.
 - 📺 **Wide and ultrawide screens:** the game fills 16:10, 21:9 and wider screens and shows more of the world to the
   sides, while the HUD, menus and videos keep their shape.
-- 🚀 **No shader stutter:** from the second time you play, effects you have already seen appear without a hitch.
+- 🚀 **No shader stutter:** before the first start the launcher prepares the game's shaders for your graphics card
+  ("Compiling shaders", a few seconds), so the first levels appear without a hitch; anything new is kept for the
+  next time.
 - 🏆 **Achievements:** all 30, with a notification when you unlock one (its icon, name and gamerscore), and the full
   list in the launcher or with F7 in the game.
 - 🛠️ **More stable than the original:** a game script error no longer closes the game.
 - 🕹️ **Your controls:** change the buttons of your controller, or play with the keyboard and mouse.
+- 🎮 **The buttons of your controller on screen:** with a PlayStation controller the game shows ✕ ○ △ □ (the
+  PlayStation 3's own art from the disc, with OPTIONS and SHARE / CREATE for the PS4 and PS5), MENU and VIEW for
+  Xbox One and Series controllers, and your keys when you play with the keyboard.
+- ⏩ **Skip the intro videos:** an option that goes straight to the language menu.
 - 🔄 **Automatic updates** from this page.
 
 ## 🧭 PiratesAtWorldsEnd Launcher
@@ -81,6 +87,7 @@ Everything is set up from the launcher, with the mouse, the keyboard or a contro
 | Page | What you find there |
 |---|---|
 | ▶️ **Play** | Start the game, and see your settings, achievements and updates at a glance. |
+| ⚙️ **Game** | The launcher's language, skipping the intro videos, the developer keys. |
 | 🏆 **Achievements** | All 30 achievements, the ones you have unlocked and when, and your gamerscore. |
 | 🎮 **Controls** | Keyboard and mouse (experimental), and your controller's buttons. |
 | 🖥️ **Video** | Monitor, fullscreen or window, resolution, screen shape (fill a wide screen or keep 16:9), upscaling (FSR 1, NIS, FSR 3.1, DLSS) and its quality, sharpness. |
@@ -111,6 +118,9 @@ graphics instead), and tell us whether it happens there too.
 
 - 🟥 NativeXRenderer has not been tested on AMD or Intel graphics cards yet: if it fails there, use Xenos.
 - ⌨️ Keyboard and mouse controls are experimental.
+- 🌫️ Above 720p, what the depth of field blurs (the distant town and trees) shows a fine crosshatch with
+  NativeXRenderer ([docs/depth-of-field.md](docs/depth-of-field.md)). If it bothers you, turn off **Depth of field**
+  in **Graphics → Screen effects**.
 - 📺 With the Xenos renderer, wide screens get black bars at the sides.
 
 ## ❤️ Support
