@@ -20,6 +20,7 @@ To build the project and work on it: [Building and developing](development.md).
 | [compiling-shaders.md](compiling-shaders.md) — freezes and late objects the first time a level is shown (NativeXRenderer); the launcher's "Compiling shaders" from a pipeline list | Fixed |
 | [button-prompts.md](button-prompts.md) — the buttons of the controller in hand: the PS3's own art from the disc, OPTIONS, SHARE / CREATE, MENU and VIEW of ours for the PS4, PS5, Xbox One and Series, and the keys bound for the keyboard | Working |
 | [journal-text.md](journal-text.md) — the journal's first page with light, jagged halos around its letters | Fixed (NativeXRenderer) |
+| [intro-videos.md](intro-videos.md) — the Disney and Eurocom logos at every start; an option goes straight to the language menu | Option |
 | [depth-of-field.md](depth-of-field.md) — a diagonal crosshatch in what the depth of field blurs, above 720 lines (NativeXRenderer) | Cause found |
 
 ## NativeXRenderer

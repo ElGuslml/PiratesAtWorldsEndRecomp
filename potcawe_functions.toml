@@ -207,6 +207,18 @@ address = 0x8245DF84   # cmplwi cr6,r11,0 (sub_8245DCD0: r11 = effect+176, HDREn
 name = "PotcaweColorAdjustHook"
 registers = ["r11"]
 
+# The intro videos skipped (src/intro.cpp, docs/intro-videos.md): the boot state plays two Bink logos, which the game
+# lets a button end only once its front end has loaded. With potcawe_skip_intro the boot state marks them skippable as
+# soon as the front end's loading has started, and the movie player sees a button pressed for those two.
+[[midasm_hook]]
+address = 0x82081BF4   # cmplwi cr6,r11,0 (sub_82081AB8, Bootup's update: r11 = [r25+18], the front end loaded)
+name = "PotcaweIntroSkippableHook"
+registers = ["r11", "r25"]
+[[midasm_hook]]
+address = 0x8229EF94   # extsb r11,r25 (sub_8229EE00, the movie player: r25 = a button pressed, r27 = the movie)
+name = "PotcaweIntroSkipHook"
+registers = ["r25", "r27"]
+
 # Button prompts for the controller in the player's hands (src/button_prompts.cpp, local_docs/12-button-glyphs.md):
 # the fonts' button glyphs and the HUD's button sprites as the PlayStation 3's with a PlayStation controller.
 [[midasm_hook]]

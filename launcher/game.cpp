@@ -16,6 +16,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Heat haze", "The image shimmering as through hot air.",
           "Radial blur", "The blur outward from the center.",
           "Motion blur", "The blur of the camera's fast moves.",
+          "Skip intro videos", "Straight to the language menu at startup.",
       },
       {
           "The halo of light around the sun, fire and the brightest surfaces. Off, the image is sharper and flatter.",
@@ -24,6 +25,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Makes the image shimmer as through hot air, in the places that use it.",
           "Blurs the image outward from its center, in the moments that use it.",
           "Blurs the image when the camera moves fast, in the moments that use it.",
+          "Skips the logo videos that play when the game starts: it goes straight to the language menu and then the title screen. The title screen's video and the levels' videos still play.",
       },
       "All set, captain!",
       "The game was installed. Set sail now, or first review the video, graphics and control settings; you can always "
@@ -39,6 +41,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Hitzeflimmern", "Das Bild flimmert wie durch heiße Luft.",
           "Radiale Unschärfe", "Die Unschärfe von der Mitte nach außen.",
           "Bewegungsunschärfe", "Die Unschärfe schneller Kamerabewegungen.",
+          "Intro-Videos überspringen", "Beim Start direkt zum Sprachmenü.",
       },
       {
           "Der Lichtschein um die Sonne, Feuer und die hellsten Flächen. Aus wirkt das Bild schärfer und flacher.",
@@ -47,6 +50,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Lässt das Bild wie durch heiße Luft flimmern, an den Orten, die es verwenden.",
           "Macht das Bild von der Mitte nach außen unscharf, in den Momenten, die es verwenden.",
           "Macht das Bild bei schnellen Kamerabewegungen unscharf, in den Momenten, die es verwenden.",
+          "Überspringt die Logo-Videos beim Spielstart: Es geht direkt zum Sprachmenü und dann zum Titelbildschirm. Das Video des Titelbildschirms und die Videos der Level laufen weiterhin.",
       },
       "Alles bereit, Käpt'n!",
       "Das Spiel wurde installiert. Stich jetzt in See oder prüfe zuerst die Video-, Grafik- und "
@@ -62,6 +66,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Brume de chaleur", "L'image ondule comme à travers l'air chaud.",
           "Flou radial", "Le flou du centre vers l'extérieur.",
           "Flou de mouvement", "Le flou des mouvements rapides de la caméra.",
+          "Passer les vidéos d'intro", "Directement au menu des langues au démarrage.",
       },
       {
           "Le halo autour du soleil, du feu et des surfaces les plus claires. Désactivé, l'image est plus nette et plus plate.",
@@ -70,6 +75,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Fait onduler l'image comme à travers l'air chaud, dans les lieux qui l'utilisent.",
           "Floute l'image du centre vers l'extérieur, dans les moments qui l'utilisent.",
           "Floute l'image quand la caméra bouge vite, dans les moments qui l'utilisent.",
+          "Passe les vidéos des logos au lancement du jeu : il va directement au menu des langues, puis à l'écran titre. La vidéo de l'écran titre et celles des niveaux sont toujours lues.",
       },
       "Tout est prêt, capitaine !",
       "Le jeu est installé. Prenez la mer maintenant, ou vérifiez d'abord les paramètres vidéo, graphiques et de "
@@ -85,6 +91,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Distorsión por calor", "La imagen ondula como con aire caliente.",
           "Desenfoque radial", "Desde el centro hacia afuera.",
           "Desenfoque de movimiento", "Al mover rápido la cámara.",
+          "Saltar videos de inicio", "Directo al menú de idioma al arrancar.",
       },
       {
           "El halo de luz alrededor del sol, el fuego y las superficies más brillantes. Desactivado, la imagen se ve más nítida y plana.",
@@ -93,6 +100,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Hace ondular la imagen como el aire caliente, en los lugares que la usan.",
           "Desenfoca la imagen desde el centro hacia afuera, en los momentos que lo usan.",
           "Desenfoca la imagen cuando la cámara se mueve rápido, en los momentos que lo usan.",
+          "Salta los videos de logotipos que se reproducen al iniciar el juego: pasa directo al menú de idioma y luego a la pantalla de título. El video de la pantalla de título y los de los niveles se siguen reproduciendo.",
       },
       "¡Todo listo, capitán!",
       "El juego se instaló correctamente. Puedes zarpar ya o revisar primero los ajustes de video, gráficos y "
@@ -108,6 +116,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Foschia di calore", "L'immagine ondula come attraverso l'aria calda.",
           "Sfocatura radiale", "Dal centro verso l'esterno.",
           "Sfocatura di movimento", "Nei movimenti rapidi della telecamera.",
+          "Salta i video iniziali", "Subito al menu della lingua all'avvio.",
       },
       {
           "L'alone di luce intorno al sole, al fuoco e alle superfici più chiare. Disattivato, l'immagine è più nitida e più piatta.",
@@ -116,6 +125,7 @@ const GameTexts& GameTextsFor(uint32_t language) {
           "Fa ondulare l'immagine come attraverso l'aria calda, nei luoghi che la usano.",
           "Sfoca l'immagine dal centro verso l'esterno, nei momenti che la usano.",
           "Sfoca l'immagine quando la telecamera si muove velocemente, nei momenti che la usano.",
+          "Salta i video dei loghi all'avvio del gioco: si passa subito al menu della lingua e poi alla schermata del titolo. Il video della schermata del titolo e quelli dei livelli vengono comunque riprodotti.",
       },
       "Tutto pronto, capitano!",
       "Il gioco è stato installato. Salpa subito o controlla prima le impostazioni video, grafica e controlli; potrai "

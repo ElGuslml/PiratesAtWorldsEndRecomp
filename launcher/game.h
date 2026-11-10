@@ -125,14 +125,16 @@ inline constexpr std::array<Language, 0> kLanguages{};
 
 // Switches of the game's own (src/), each a boolean cvar with a row in the Settings tab (game_types.h's Toggle); their
 // titles, hints and help are game.cpp's (GameTexts::toggles and toggle_help, in this order).
-// The screen effects (src/screen_fx.cpp, docs/screen-effects.md), all on as on the console.
-inline constexpr std::array<Toggle, 6> kToggles{{
+// The screen effects (src/screen_fx.cpp, docs/screen-effects.md), all on as on the console. The intro videos skipped
+// (src/intro.cpp, docs/intro-videos.md), off as on the console.
+inline constexpr std::array<Toggle, 7> kToggles{{
     {"potcawe_fx_bloom", true, ToggleGroup::kScreenEffects},
     {"potcawe_fx_depth_of_field", true, ToggleGroup::kScreenEffects},
     {"potcawe_fx_color", true, ToggleGroup::kScreenEffects},
     {"potcawe_fx_heat_haze", true, ToggleGroup::kScreenEffects},
     {"potcawe_fx_radial_blur", true, ToggleGroup::kScreenEffects},
     {"potcawe_fx_motion_blur", true, ToggleGroup::kScreenEffects},
+    {"potcawe_skip_intro", false, ToggleGroup::kGame},
 }};
 
 // Whether some switch is in `group`.

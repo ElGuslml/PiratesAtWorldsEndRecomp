@@ -72,6 +72,7 @@ set(POTCAWE_SOURCES
     src/prompt_pictures.cpp
     src/views.cpp
     src/framerate.cpp
+    src/intro.cpp
     src/msaa.cpp
     src/gpu_wait.cpp
     src/level_packages.cpp
