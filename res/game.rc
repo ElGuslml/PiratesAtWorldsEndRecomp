@@ -20,6 +20,10 @@ PROMPT_XBOX_MENU_GLYPH RCDATA "prompts/xbox_menu_glyph.png"
 PROMPT_XBOX_VIEW_GLYPH RCDATA "prompts/xbox_view_glyph.png"
 PROMPT_XBOX_MENU_SPRITE RCDATA "prompts/xbox_menu_sprite.png"
 PROMPT_XBOX_VIEW_SPRITE RCDATA "prompts/xbox_view_sprite.png"
+// The keyboard's keys (src/keyboard_prompts.cpp): two atlases and their index.
+PROMPT_KEYS_GLYPH RCDATA "prompts/keys_glyph.png"
+PROMPT_KEYS_SPRITE RCDATA "prompts/keys_sprite.png"
+PROMPT_KEYS_INDEX RCDATA "prompts/keys.txt"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION POTCAWERECOMP_VERSION

@@ -68,6 +68,8 @@ set(POTCAWE_SOURCES
     src/aspect.cpp
     src/button_prompts.cpp
     src/dxt5_texture.cpp
+    src/keyboard_prompts.cpp
+    src/prompt_pictures.cpp
     src/views.cpp
     src/framerate.cpp
     src/msaa.cpp
@@ -139,7 +141,8 @@ endif()
 if(WIN32)
     target_sources(potcawe PRIVATE res/game.rc)
     # The button pictures it embeds (res/prompts/, src/button_prompts.cpp).
-    file(GLOB POTCAWE_PROMPT_PICTURES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/res/prompts/*.png")
+    file(GLOB POTCAWE_PROMPT_PICTURES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/res/prompts/*.png"
+         "${CMAKE_CURRENT_SOURCE_DIR}/res/prompts/*.txt")
     set_source_files_properties(res/game.rc PROPERTIES OBJECT_DEPENDS "${POTCAWE_PROMPT_PICTURES}")
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/res/icon.ico")
         target_compile_definitions(potcawe PRIVATE POTCAWERECOMP_HAS_ICON)

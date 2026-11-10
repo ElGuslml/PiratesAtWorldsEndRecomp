@@ -10,12 +10,14 @@
 //
 // The style follows the controller in hand (SDL's type, rex::input::GetActiveDevice): the PS3's art for a PS3
 // controller; for a PS4's or a PS5's the same, but OPTIONS and SHARE / CREATE in place of START and SELECT; for an Xbox
-// One's or a Series' the 360's, but MENU and VIEW in place of START and BACK; the original for anything else. The
-// buttons the disc has no picture of are ours (res/prompts/, retouched from Xelu's CC0 prompts by make_prompts.py).
+// One's or a Series' the 360's, but MENU and VIEW in place of START and BACK; for the keyboard, the keys bound to each
+// button (keyboard_prompts.cpp); the original for anything else. The buttons the disc has no picture of are ours
+// (res/prompts/, retouched from Xelu's CC0 prompts by make_prompts.py).
 // - Text: in each loaded font's glyph table, the 28 Xbox glyphs' records get the style's records (their UVs in the
 //   atlas, their size and advance). The text code reads the records as it lays out a line (sub_822C8618), so nothing
 //   in the text changes, only the pictures of its characters. Our glyphs are drawn into the atlases' empty rows when
-//   the game decompresses them, and their records are made from the records they replace.
+//   the game decompresses them, and their records are made from the records they replace. The keyboard's are made at
+//   start from the bindings then (the launcher sets them before the game starts), packed from row 384.
 // - Sprites: when the game has decompressed a section of a package (sub_82324F80), a texture holding an Xbox sprite's
 //   pixels (the player's hud_main.edb, read at start) is noted and gets the style's pixels; on a change of controller
 //   every noted texture that still holds one of its versions is rewritten. Both renderers' texture caches watch the
@@ -29,7 +31,7 @@
 //   Three legends written with letters ("A - Select     B - Backup", "A - Continue", "Start - Continue     A - Select")
 //   are used nowhere: no package (their compressed sections included), script or code names them.
 // All is checked every fourth frame (the Direct3D library's Swap, sub_822B58B0). potcawe_button_prompts chooses: auto
-// (the default), xbox (or xbox360), xboxone (or xboxseries), ps3 (or playstation), ps4, ps5.
+// (the default), xbox (or xbox360), xboxone (or xboxseries), ps3 (or playstation), ps4, ps5, keyboard.
 //
 // Not covered: the controls page's diagram (the PS3's has the left stick and the d-pad's labels the other way round),
 // four 64x64 A B X Y sprites with no PS3 counterpart (used nowhere either).
@@ -37,7 +39,9 @@
 #include "button_prompts.h"
 
 #include "dxt5_texture.h"
+#include "keyboard_prompts.h"
 #include "level_packages.h"
+#include "prompt_pictures.h"
 
 #include <rex/cvar.h>
 #include <rex/hash.h>
@@ -46,15 +50,6 @@
 #include <rex/ppc/context.h>
 #include <rex/system/kernel_state.h>
 #include <rex/system/xmemory.h>
-#include <rex/ui/image_decode.h>
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
 
 #include <algorithm>
 #include <array>
@@ -71,13 +66,17 @@
 
 REXCVAR_DEFINE_STRING(potcawe_button_prompts, "auto", "Potcawe",
                       "The buttons the game shows: auto (for the controller in hand: a PlayStation's or an Xbox One's "
-                      "and Series' with one of those, the original Xbox 360's otherwise), xbox (or xbox360), xboxone "
-                      "(or xboxseries), ps3 (or playstation), ps4 or ps5");
+                      "and Series' with one of those, the keys bound with the keyboard, the original Xbox 360's "
+                      "otherwise), xbox (or xbox360), xboxone (or xboxseries), ps3 (or playstation), ps4, ps5 or "
+                      "keyboard");
 
 namespace {
 
-enum class Style { kXbox360, kXboxOne, kPS3, kPS4, kPS5 };
-constexpr size_t kStyleCount = 5;
+namespace keyboard = potcawe::keyboard;
+using potcawe::RgbaPicture;
+
+enum class Style { kXbox360, kXboxOne, kPS3, kPS4, kPS5, kKeyboard };
+constexpr size_t kStyleCount = 6;
 
 const char* StyleName(Style style) {
   switch (style) {
@@ -85,6 +84,7 @@ const char* StyleName(Style style) {
     case Style::kPS3: return "PS3";
     case Style::kPS4: return "PS4";
     case Style::kPS5: return "PS5";
+    case Style::kKeyboard: return "keyboard";
     default: return "Xbox 360";
   }
 }
@@ -112,11 +112,58 @@ constexpr std::array<uint16_t, 28> kXboxGlyphs = {0x01, 0x02, 0x03, 0x04, 0x05, 
 constexpr uint16_t kPlayStationGlyphs = 0x100;
 constexpr uint16_t kStartGlyph = 0x1C, kBackGlyph = 0x11;
 
-// The font atlases (menuresource.edb), 512x512 DXT5, empty from row 314 down (local_docs/12): our glyphs go from row
-// 320, at multiples of 64 so that the mips' pixels up to level 6 (a 64-pixel footprint) cover only empty rows and ours.
+// What each Xbox glyph names, for the keyboard (the macros' names, sub_822C6BC8's table). The stick's glyph (LTHUMB,
+// "move the ##LTHUMB up") is its four directions; LBTHUMB and RBTHUMB, a stick with an arrow up and down, its vertical.
+using KeyPrompt = keyboard::Prompt;
+using KeyKind = keyboard::Prompt::Kind;
+using KeyControl = keyboard::Control;
+struct KeyboardGlyph {
+  uint16_t xbox_glyph;
+  KeyPrompt prompt;
+};
+constexpr KeyboardGlyph kKeyboardGlyphs[] = {
+    {0x13, {KeyKind::kOne, KeyControl::kA}},
+    {0x14, {KeyKind::kOne, KeyControl::kB}},
+    {0x15, {KeyKind::kOne, KeyControl::kX}},
+    {0x16, {KeyKind::kOne, KeyControl::kY}},
+    {0x18, {KeyKind::kOne, KeyControl::kLeftShoulder}},
+    {0x1A, {KeyKind::kOne, KeyControl::kRightShoulder}},
+    {0x19, {KeyKind::kOne, KeyControl::kLeftTrigger}},
+    {0x1B, {KeyKind::kOne, KeyControl::kRightTrigger}},
+    {kStartGlyph, {KeyKind::kOne, KeyControl::kStart}},
+    {kBackGlyph, {KeyKind::kOne, KeyControl::kBack}},
+    {0x12, {KeyKind::kOne, KeyControl::kGuide}},
+    {0x10, {KeyKind::kWhole, KeyControl::kLeftStickUp}},
+    {0x1D, {KeyKind::kWhole, KeyControl::kRightStickUp}},
+    {0x17, {KeyKind::kWhole, KeyControl::kDpadUp}},
+    {0x0C, {KeyKind::kOne, KeyControl::kDpadUp}},
+    {0x0E, {KeyKind::kOne, KeyControl::kDpadDown}},
+    {0x0F, {KeyKind::kOne, KeyControl::kDpadLeft}},
+    {0x1E, {KeyKind::kOne, KeyControl::kDpadRight}},
+    {0x01, {KeyKind::kOne, KeyControl::kLeftStickUp}},
+    {0x02, {KeyKind::kOne, KeyControl::kLeftStickDown}},
+    {0x03, {KeyKind::kOne, KeyControl::kLeftStickLeft}},
+    {0x04, {KeyKind::kOne, KeyControl::kLeftStickRight}},
+    {0x05, {KeyKind::kVertical, KeyControl::kLeftStickUp}},
+    {0x06, {KeyKind::kOne, KeyControl::kRightStickUp}},
+    {0x07, {KeyKind::kOne, KeyControl::kRightStickDown}},
+    {0x08, {KeyKind::kOne, KeyControl::kRightStickLeft}},
+    {0x09, {KeyKind::kOne, KeyControl::kRightStickRight}},
+    {0x0B, {KeyKind::kVertical, KeyControl::kRightStickUp}},
+};
+
+// The font atlases (menuresource.edb), 512x512 DXT5, empty from row 314 down (local_docs/12). Our fixed glyphs go in
+// row 320, at multiples of 64 so that the mips' pixels up to level 6 (a 64-pixel footprint) cover only empty rows and
+// ours. The keyboard's go in four rows from 360, 8 pixels apart, each glyph at a multiple of 8 and at least 4 pixels
+// from the next, so that the mips' pixels up to level 3 (an 8-pixel footprint) and the filter at the glyph's edges see
+// only its own; the text is never drawn small enough to use the levels after. A glyph is at most 124 wide (its advance
+// has 7 bits).
 constexpr uint32_t kMenuResource = 0xC10003DF;
 constexpr uint32_t kAtlases[] = {0xC2006254, 0xC2006255, 0xC2006256};
 constexpr uint32_t kAtlasSize = 512 << 16 | 512, kAtlasMips = 10, kAtlasSurface = 0x60000, kAtlasLevels = 7;
+constexpr uint32_t kKeyboardRow = 360, kKeyboardRowStep = 40, kKeyboardAlign = 8, kKeyboardGap = 4;
+constexpr uint32_t kKeyboardLevels = 4, kAtlasExtent = 512;
+constexpr uint32_t kGlyphHeight = 32, kMaxGlyphWidth = 124;
 struct NewGlyph {
   Style style;
   uint16_t xbox_glyph;  // the button it shows
@@ -132,39 +179,42 @@ constexpr NewGlyph kNewGlyphs[] = {
     {Style::kXboxOne, kBackGlyph, L"PROMPT_XBOX_VIEW_GLYPH", 448, 320},
 };
 
-// hud_main.edb's button sprites, each Xbox texture's GUID and its PS3 counterpart's.
+// hud_main.edb's button sprites, each Xbox texture's GUID, its PS3 counterpart's, and what it names for the keyboard
+// (the sticks' arrows pointing down, over or under the stick, both a push down).
 constexpr uint32_t kHudMain = 0xC10001EE;
 struct SpritePair {
   uint32_t xbox, playstation;
+  KeyPrompt keys;
 };
 constexpr SpritePair kSpritePairs[] = {
-    {0xC2007DDB, 0xC2007DD0},  // A, cross
-    {0xC2007DDC, 0xC2007DE8},  // B, circle
-    {0xC2007DE5, 0xC2007DCE},  // X, square
-    {0xC2007B44, 0xC2007DCF},  // Y, triangle
-    {0xC2009394, 0xC20093E5},  // A, cross (a second pair)
-    {0xC2009395, 0xC20093E4},  // Y, triangle (a second pair)
-    {0xC2007DE3, 0xC2007DD4},  // LB, L1
-    {0xC2007DE4, 0xC2007DD6},  // RB, R1
-    {0xC2007DDE, 0xC2007DD5},  // LT, L2
-    {0xC2007DDF, 0xC2007DD7},  // RT, R2
-    {0xC2007DCC, 0xC2007DD8},  // START
-    {0xC2007DDA, 0xC2007DD3},  // BACK, SELECT
-    {0xC2007DDD, 0xC2007DD1},  // the d-pad
-    {0xC2007DE6, 0xC2007DD2},  // the guide button, the PS button
-    {0xC2008FC0, 0xC2008FC2},  // LS, L
-    {0xC2008FC1, 0xC2008FC3},  // RS, R
-    {0xC2008714, 0xC2008713},  // the left stick, an arrow over it pointing down
-    {0xC2008715, 0xC2008726},  // the right stick, an arrow over it pointing down
-    {0xC2008716, 0xC2008724},  // the left stick, an arrow under it
-    {0xC2008717, 0xC2008725},  // the right stick, an arrow under it
-    {0xC2008719, 0xC2008727},  // the left stick, an arrow to its left
-    {0xC2008718, 0xC2008728},  // the right stick, an arrow to its left
-    {0xC200872E, 0xC2008721},  // the left stick, an arrow to its right
-    {0xC200871A, 0xC200871F},  // the right stick, an arrow to its right
-    {0xC200871C, 0xC200871D},  // the left stick, an arrow over it pointing up
-    {0xC200871B, 0xC200871E},  // the right stick, an arrow over it pointing up
+    {0xC2007DDB, 0xC2007DD0, {KeyKind::kOne, KeyControl::kA}},                // A, cross
+    {0xC2007DDC, 0xC2007DE8, {KeyKind::kOne, KeyControl::kB}},                // B, circle
+    {0xC2007DE5, 0xC2007DCE, {KeyKind::kOne, KeyControl::kX}},                // X, square
+    {0xC2007B44, 0xC2007DCF, {KeyKind::kOne, KeyControl::kY}},                // Y, triangle
+    {0xC2009394, 0xC20093E5, {KeyKind::kOne, KeyControl::kA}},                // A, cross (a second pair)
+    {0xC2009395, 0xC20093E4, {KeyKind::kOne, KeyControl::kY}},                // Y, triangle (a second pair)
+    {0xC2007DE3, 0xC2007DD4, {KeyKind::kOne, KeyControl::kLeftShoulder}},     // LB, L1
+    {0xC2007DE4, 0xC2007DD6, {KeyKind::kOne, KeyControl::kRightShoulder}},    // RB, R1
+    {0xC2007DDE, 0xC2007DD5, {KeyKind::kOne, KeyControl::kLeftTrigger}},      // LT, L2
+    {0xC2007DDF, 0xC2007DD7, {KeyKind::kOne, KeyControl::kRightTrigger}},     // RT, R2
+    {0xC2007DCC, 0xC2007DD8, {KeyKind::kOne, KeyControl::kStart}},            // START
+    {0xC2007DDA, 0xC2007DD3, {KeyKind::kOne, KeyControl::kBack}},             // BACK, SELECT
+    {0xC2007DDD, 0xC2007DD1, {KeyKind::kWhole, KeyControl::kDpadUp}},         // the d-pad
+    {0xC2007DE6, 0xC2007DD2, {KeyKind::kOne, KeyControl::kGuide}},            // the guide button, the PS button
+    {0xC2008FC0, 0xC2008FC2, {KeyKind::kWhole, KeyControl::kLeftStickUp}},    // LS, L
+    {0xC2008FC1, 0xC2008FC3, {KeyKind::kWhole, KeyControl::kRightStickUp}},   // RS, R
+    {0xC2008714, 0xC2008713, {KeyKind::kOne, KeyControl::kLeftStickDown}},    // left stick, arrow over, pointing down
+    {0xC2008715, 0xC2008726, {KeyKind::kOne, KeyControl::kRightStickDown}},   // right stick, arrow over, pointing down
+    {0xC2008716, 0xC2008724, {KeyKind::kOne, KeyControl::kLeftStickDown}},    // left stick, arrow under
+    {0xC2008717, 0xC2008725, {KeyKind::kOne, KeyControl::kRightStickDown}},   // right stick, arrow under
+    {0xC2008719, 0xC2008727, {KeyKind::kOne, KeyControl::kLeftStickLeft}},    // left stick, arrow to its left
+    {0xC2008718, 0xC2008728, {KeyKind::kOne, KeyControl::kRightStickLeft}},   // right stick, arrow to its left
+    {0xC200872E, 0xC2008721, {KeyKind::kOne, KeyControl::kLeftStickRight}},   // left stick, arrow to its right
+    {0xC200871A, 0xC200871F, {KeyKind::kOne, KeyControl::kRightStickRight}},  // right stick, arrow to its right
+    {0xC200871C, 0xC200871D, {KeyKind::kOne, KeyControl::kLeftStickUp}},      // left stick, arrow over, pointing up
+    {0xC200871B, 0xC200871E, {KeyKind::kOne, KeyControl::kRightStickUp}},     // right stick, arrow over, pointing up
 };
+constexpr uint32_t kSpriteExtent = 128, kSpriteInner = 112;  // the game's button pictures are about 112 across
 constexpr size_t kSpriteCount = std::size(kSpritePairs);
 constexpr uint32_t kStartSprite = 0xC2007DCC, kBackSprite = 0xC2007DDA;
 struct NewSprite {
@@ -193,12 +243,17 @@ struct SpriteArt {
 };
 std::vector<SpriteArt> g_sprites;  // as kSpritePairs; made before the guest starts, then only read
 
-struct Picture {
-  std::vector<uint8_t> rgba;
-  uint32_t width = 0, height = 0;
+// A glyph of ours: the fixed ones (kNewGlyphs) and the keyboard's, and where it goes in the atlases. A keyboard glyph
+// that shows the same keys as one before it (A and RT both on E) takes its cell, and is not drawn again.
+struct GlyphCell {
+  Style style;
+  uint16_t xbox_glyph;
+  RgbaPicture picture;
+  uint32_t x, y, levels;
+  bool drawn = true;
 };
-std::vector<Picture> g_glyph_pictures;  // as kNewGlyphs
-std::vector<uint64_t> g_atlas_hashes;   // the atlases' surfaces as the game decompresses them
+std::vector<GlyphCell> g_glyph_cells;  // made before the guest starts, then only read
+std::vector<uint64_t> g_atlas_hashes;  // the atlases' surfaces as the game decompresses them
 std::atomic<uint32_t> g_atlases_drawn{0};
 
 // The sprites' state, shared by the loading thread (noting) and the render thread (a change of controller).
@@ -245,24 +300,6 @@ uint8_t* Guest(uint32_t address) {
   return kernel->memory()->TranslateVirtual<uint8_t*>(address);
 }
 
-// One of res/prompts/'s pictures, embedded by res/game.rc.
-Picture LoadPicture(const wchar_t* name) {
-  Picture picture;
-  HMODULE module = GetModuleHandleW(nullptr);
-  HRSRC resource = FindResourceW(module, name, MAKEINTRESOURCEW(10));  // RT_RCDATA
-  HGLOBAL loaded = resource ? LoadResource(module, resource) : nullptr;
-  const void* data = loaded ? LockResource(loaded) : nullptr;
-  if (!data) return picture;
-  int width = 0, height = 0;
-  picture.rgba = rex::ui::DecodeImageRGBA(static_cast<const uint8_t*>(data), SizeofResource(module, resource), width,
-                                          height);
-  if (!picture.rgba.empty()) {
-    picture.width = uint32_t(width);
-    picture.height = uint32_t(height);
-  }
-  return picture;
-}
-
 const char* TypeName(rex::input::GamepadType type) {
   using rex::input::GamepadType;
   switch (type) {
@@ -287,19 +324,25 @@ std::u16string Utf16(const std::string& ascii) {
   return out;
 }
 
-// Start's word for a device: its own label, or empty for START. With the keyboard, the first key of keybind_start
-// ("X,Return" by default), as the binding names it, in capitals.
+// Start's word with the keyboard: the first key of keybind_start ("X,Return" by default), as the binding names it, in
+// capitals.
+std::u16string KeyboardStartWord() {
+  std::string key = rex::cvar::Query<std::string>("keybind_start");
+  key = key.substr(0, key.find(','));
+  if (key == "Return" || key == "Enter") key = "ENTER";
+  for (char& c : key) c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+  return key.size() <= 16 ? Utf16(key) : std::u16string();
+}
+
+bool IsKeyboard(const rex::input::DeviceInfo& device) {
+  return device.id != rex::input::DeviceId::kInvalid && device.synthetic && device.name.rfind("Keyboard", 0) == 0;
+}
+
+// Start's word for a device: its own label, or empty for START.
 std::u16string StartWord(const rex::input::DeviceInfo& device) {
   using rex::input::GamepadType;
   if (device.id == rex::input::DeviceId::kInvalid) return {};
-  if (device.synthetic) {
-    if (device.name.rfind("Keyboard", 0) != 0) return {};
-    std::string key = rex::cvar::Query<std::string>("keybind_start");
-    key = key.substr(0, key.find(','));
-    if (key == "Return" || key == "Enter") key = "ENTER";
-    for (char& c : key) c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-    return key.size() <= 16 ? Utf16(key) : std::u16string();
-  }
+  if (device.synthetic) return IsKeyboard(device) ? KeyboardStartWord() : std::u16string();
   switch (device.gamepad_type) {
     case GamepadType::kPS4:
     case GamepadType::kPS5: return u"OPTIONS";
@@ -330,7 +373,7 @@ Style WantedStyle() {
   static const std::pair<std::string_view, Style> kSettings[] = {
       {"xbox", Style::kXbox360},       {"xbox360", Style::kXbox360}, {"xboxone", Style::kXboxOne},
       {"xboxseries", Style::kXboxOne}, {"ps3", Style::kPS3},         {"playstation", Style::kPS3},
-      {"ps4", Style::kPS4},            {"ps5", Style::kPS5},
+      {"ps4", Style::kPS4},            {"ps5", Style::kPS5},         {"keyboard", Style::kKeyboard},
   };
   auto forced = std::find_if(std::begin(kSettings), std::end(kSettings),
                              [&](const auto& entry) { return entry.first == setting; });
@@ -339,6 +382,7 @@ Style WantedStyle() {
     reason = "potcawe_button_prompts = " + setting;
     SetStartWord(style == Style::kPS4 || style == Style::kPS5 ? u"OPTIONS"
                  : style == Style::kXboxOne                   ? u"MENU"
+                 : style == Style::kKeyboard                  ? KeyboardStartWord()
                                                               : u"");
   } else {
     const rex::input::DeviceInfo device = rex::input::GetActiveDevice(0);
@@ -351,6 +395,7 @@ Style WantedStyle() {
       case GamepadType::kPS5: style = Style::kPS5; break;
       default: break;
     }
+    if (IsKeyboard(device)) style = Style::kKeyboard;
     if (device.id == rex::input::DeviceId::kInvalid) {
       reason = "no controller";
     } else if (device.synthetic) {
@@ -368,9 +413,10 @@ Style WantedStyle() {
 }
 
 // A record for one of our glyphs: the PS3 record of the button it replaces (for its y offset: the PS3's cells are 32
-// pixels high, as our pictures), pointing at its cell in the atlas. For every style, the Xbox One's included.
-GlyphRecord NewGlyphRecord(const uint8_t* ps3_record, const NewGlyph& glyph, const Picture& picture,
-                           uint32_t atlas_width, uint32_t atlas_height) {
+// pixels high, as our pictures), pointing at its cell in the atlas. For every style, the Xbox ones included.
+GlyphRecord NewGlyphRecord(const uint8_t* ps3_record, const GlyphCell& glyph, uint32_t atlas_width,
+                           uint32_t atlas_height) {
+  const RgbaPicture& picture = glyph.picture;
   GlyphRecord record;
   std::memcpy(record.data(), ps3_record, kGlyphRecordSize);
   const float uv[4] = {float(glyph.x) / atlas_width, float(glyph.y) / atlas_height,
@@ -424,12 +470,9 @@ void ApplyToFonts(Style style) {
       const uint8_t* ps3 = glyphs + Be16(glyphs + (kPlayStationGlyphs + k) * 2);
       GlyphRecord to = patch.original[k];
       if (IsPlayStation(style)) std::memcpy(to.data(), ps3, kGlyphRecordSize);
-      for (size_t n = 0; n < g_glyph_pictures.size(); ++n) {
-        const NewGlyph& glyph = kNewGlyphs[n];
-        const Picture& picture = g_glyph_pictures[n];
-        if (glyph.style == style && glyph.xbox_glyph == kXboxGlyphs[k] && picture.width && atlas_width &&
-            atlas_height) {
-          to = NewGlyphRecord(ps3, glyph, picture, atlas_width, atlas_height);
+      for (const GlyphCell& glyph : g_glyph_cells) {
+        if (glyph.style == style && glyph.xbox_glyph == kXboxGlyphs[k] && atlas_width && atlas_height) {
+          to = NewGlyphRecord(ps3, glyph, atlas_width, atlas_height);
         }
       }
       std::memcpy(record, to.data(), kGlyphRecordSize);
@@ -482,11 +525,10 @@ void OnTexture(uint32_t address, uint8_t* blob) {
   if (Be32(blob + kTextureSize) == kAtlasSize && texture.levels == kAtlasMips) {
     const uint64_t hash = XXH3_64bits(surface, kAtlasSurface);
     if (std::find(g_atlas_hashes.begin(), g_atlas_hashes.end(), hash) == g_atlas_hashes.end()) return;
-    for (size_t n = 0; n < g_glyph_pictures.size(); ++n) {
-      const Picture& picture = g_glyph_pictures[n];
-      if (!picture.width) continue;
-      potcawe::DrawDxt5(texture, kNewGlyphs[n].x, kNewGlyphs[n].y, picture.rgba.data(), picture.width, picture.height,
-                        kAtlasLevels);
+    for (const GlyphCell& glyph : g_glyph_cells) {
+      if (!glyph.drawn) continue;
+      potcawe::DrawDxt5(texture, glyph.x, glyph.y, glyph.picture.rgba.data(), glyph.picture.width,
+                        glyph.picture.height, glyph.levels);
     }
     g_atlases_drawn.fetch_add(1, std::memory_order_relaxed);
     return;
@@ -512,13 +554,46 @@ void OnTexture(uint32_t address, uint8_t* blob) {
 namespace potcawe {
 
 void InitButtonPrompts(const std::filesystem::path& game_data_root) {
-  // Our pictures.
-  g_glyph_pictures.clear();
-  size_t pictures = 0;
+  // Our glyphs: the fixed ones, then the keyboard's from the bindings now, packed row after row.
+  g_glyph_cells.clear();
   for (const NewGlyph& glyph : kNewGlyphs) {
-    g_glyph_pictures.push_back(LoadPicture(glyph.picture));
-    pictures += g_glyph_pictures.back().width ? 1 : 0;
+    RgbaPicture picture = LoadEmbeddedPicture(glyph.picture);
+    if (!picture.empty()) {
+      g_glyph_cells.push_back({glyph.style, glyph.xbox_glyph, std::move(picture), glyph.x, glyph.y, kAtlasLevels});
+    }
   }
+  const size_t fixed_glyphs = g_glyph_cells.size();
+  keyboard::KeyArt keys;
+  const bool have_keys = keys.Load();
+  std::string key_list;  // for the log
+  std::map<std::string, size_t> shown;  // the keys a glyph shows -> its cell in g_glyph_cells
+  uint32_t cell_x = 0, cell_y = kKeyboardRow;
+  for (const KeyboardGlyph& entry : kKeyboardGlyphs) {
+    RgbaPicture picture = have_keys ? keys.Glyph(entry.prompt, kGlyphHeight, kMaxGlyphWidth) : RgbaPicture{};
+    if (picture.empty()) continue;  // nothing bound, or no picture: the Xbox glyph stays
+    const std::string what = keys.Describe(entry.prompt);
+    key_list += fmt::format("{}0x{:02X} {}", key_list.empty() ? "" : ", ", entry.xbox_glyph, what);
+    if (auto same = shown.find(what); same != shown.end()) {
+      GlyphCell cell = g_glyph_cells[same->second];
+      cell.xbox_glyph = entry.xbox_glyph;
+      cell.drawn = false;
+      g_glyph_cells.push_back(std::move(cell));
+      continue;
+    }
+    if (cell_x + picture.width > kAtlasExtent) {
+      cell_x = 0;
+      cell_y += kKeyboardRowStep;
+    }
+    if (cell_y + kGlyphHeight > kAtlasExtent) {
+      REXLOG_WARN("[prompts] no room left in the font atlases for the keyboard's glyph 0x{:02X}", entry.xbox_glyph);
+      continue;
+    }
+    shown[what] = g_glyph_cells.size();
+    const uint32_t width = picture.width;
+    g_glyph_cells.push_back({Style::kKeyboard, entry.xbox_glyph, std::move(picture), cell_x, cell_y, kKeyboardLevels});
+    cell_x = (cell_x + width + kKeyboardGap + kKeyboardAlign - 1) / kKeyboardAlign * kKeyboardAlign;
+  }
+  REXLOG_INFO("[prompts] the keyboard's glyphs{}: {}", have_keys ? "" : " (no key pictures)", key_list);
 
   // The font atlases, to know them when the game decompresses them.
   auto atlases = ReadPackageTextures(game_data_root, kMenuResource,
@@ -532,7 +607,7 @@ void InitButtonPrompts(const std::filesystem::path& game_data_root) {
   }
 
   // The HUD's sprites: the Xbox 360 one, the PS3 one; for the PS4 and the PS5 the PS3 one, for the Xbox One the 360
-  // one, or our picture over all of it.
+  // one, or our picture over all of it; for the keyboard the keys bound, or the 360 one.
   std::vector<uint32_t> guids;
   for (const SpritePair& pair : kSpritePairs) {
     guids.push_back(pair.xbox);
@@ -546,8 +621,18 @@ void InitButtonPrompts(const std::filesystem::path& game_data_root) {
   auto surface_of = [](const std::vector<uint8_t>& blob) {
     return std::make_shared<const std::vector<uint8_t>>(blob.begin() + kTextureHeader, blob.end());
   };
+  // Our picture over all of a copy of `blob`'s, as its surface; null if it cannot be.
+  auto drawn_over = [&](std::vector<uint8_t> blob, const RgbaPicture& picture) -> Surface {
+    Dxt5Texture texture;
+    if (picture.width != kSpriteExtent || picture.height != kSpriteExtent ||
+        !Dxt5TextureFromBlob(blob.data(), blob.size(), texture)) {
+      return nullptr;
+    }
+    DrawDxt5(texture, 0, 0, picture.rgba.data(), picture.width, picture.height);
+    return surface_of(blob);
+  };
   std::vector<SpriteArt> sprites(kSpriteCount);
-  size_t read = 0, made = 0;
+  size_t read = 0, made = 0, keyboard_made = 0;
   for (size_t i = 0; i < kSpriteCount; ++i) {
     auto xbox = textures.find(kSpritePairs[i].xbox), ps3 = textures.find(kSpritePairs[i].playstation);
     if (xbox == textures.end() || ps3 == textures.end() || !is_sprite(xbox->second) || !is_sprite(ps3->second)) {
@@ -557,27 +642,31 @@ void InitButtonPrompts(const std::filesystem::path& game_data_root) {
     art.surfaces[size_t(Style::kXbox360)] = surface_of(xbox->second);
     art.surfaces[size_t(Style::kPS3)] = surface_of(ps3->second);
     art.surfaces[size_t(Style::kPS4)] = art.surfaces[size_t(Style::kPS5)] = art.surfaces[size_t(Style::kPS3)];
-    art.surfaces[size_t(Style::kXboxOne)] = art.surfaces[size_t(Style::kXbox360)];
+    art.surfaces[size_t(Style::kXboxOne)] = art.surfaces[size_t(Style::kKeyboard)] =
+        art.surfaces[size_t(Style::kXbox360)];
     for (const NewSprite& sprite : kNewSprites) {
       if (sprite.xbox != kSpritePairs[i].xbox) continue;
-      const Picture picture = LoadPicture(sprite.picture);
-      std::vector<uint8_t> blob = IsPlayStation(sprite.style) ? ps3->second : xbox->second;
-      Dxt5Texture texture;
-      if (picture.width != 128 || picture.height != 128 || !Dxt5TextureFromBlob(blob.data(), blob.size(), texture)) {
-        continue;
+      if (Surface surface = drawn_over(IsPlayStation(sprite.style) ? ps3->second : xbox->second,
+                                       LoadEmbeddedPicture(sprite.picture))) {
+        art.surfaces[size_t(sprite.style)] = std::move(surface);
+        ++made;
       }
-      DrawDxt5(texture, 0, 0, picture.rgba.data(), picture.width, picture.height);
-      art.surfaces[size_t(sprite.style)] = surface_of(blob);
-      ++made;
+    }
+    if (have_keys) {
+      if (Surface surface =
+              drawn_over(xbox->second, keys.Sprite(kSpritePairs[i].keys, kSpriteExtent, kSpriteInner))) {
+        art.surfaces[size_t(Style::kKeyboard)] = std::move(surface);
+        ++keyboard_made;
+      }
     }
     art.xbox_hash = XXH3_64bits(art.surfaces[0]->data(), kSpritePixels);
     ++read;
   }
   g_sprites = std::move(sprites);
-  REXLOG_INFO("[prompts] {} of {} HUD sprite pairs read from hud_main.edb, {} of {} sprites and {} of {} glyphs of ours, "
-              "{} font atlases known",
-              read, kSpriteCount, made, std::size(kNewSprites), pictures, std::size(kNewGlyphs),
-              g_atlas_hashes.size());
+  REXLOG_INFO("[prompts] {} of {} HUD sprite pairs read from hud_main.edb; {} of {} sprites and {} of {} glyphs of "
+              "ours; the keyboard's {} glyphs and {} sprites; {} font atlases known",
+              read, kSpriteCount, made, std::size(kNewSprites), fixed_glyphs, std::size(kNewGlyphs),
+              g_glyph_cells.size() - fixed_glyphs, keyboard_made, g_atlas_hashes.size());
 }
 
 }  // namespace potcawe

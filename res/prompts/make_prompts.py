@@ -12,7 +12,10 @@ The retouch: the picture cropped to what it draws, scaled, given a dark outline 
 
     python res/prompts/make_prompts.py <Xelu's pack folder> [--preview preview.png]
 
-Writes the PNG files next to this script; res/game.rc embeds them. Pillow and NumPy.
+And the keyboard's keys (Xelu's light ones), at two scales, packed into keys_glyph.png and keys_sprite.png with their
+index keys.txt, for src/keyboard_prompts.cpp to put the prompts together from the bindings.
+
+Writes the files next to this script; res/game.rc embeds them. Pillow and NumPy.
 """
 import argparse
 import os
@@ -152,6 +155,57 @@ def make(pack):
     }
 
 
+# The keyboard's keys, composed at run time from the bindings (src/keyboard_prompts.cpp): Xelu's light keys (a white
+# cap, a dark rim and letter), cropped, at two scales, packed into two atlases with an index.
+KEY_SUFFIX = "_Key_Light.png"
+KEY_GLYPH_SQUARE = 32  # a square key's height in a glyph (32 high), as the game's buttons
+KEY_GLYPH_MAX = 32
+KEY_SPRITE_SQUARE = 96  # a square key's height at the sprites' scale (fitted into 112x112 at run time)
+# In a glyph, a key whose word is too small to read at 30 pixels takes Xelu's symbol for it.
+KEY_GLYPH_SOURCE = {"Enter": "Enter_Alt", "Backspace": "Backspace_Alt"}
+
+
+def key_pictures(pack):
+    folder = os.path.join(pack, "Keyboard & Mouse", "Light")
+    return {f[: -len(KEY_SUFFIX)]: crop(Image.open(os.path.join(folder, f)).convert("RGBA"))
+            for f in sorted(os.listdir(folder)) if f.endswith(KEY_SUFFIX)}
+
+
+def scaled(im, scale, max_height=None):
+    if max_height:
+        scale = min(scale, max_height / im.height)
+    return im.resize((max(1, round(im.width * scale)), max(1, round(im.height * scale))), Image.LANCZOS)
+
+
+def pack_atlas(pictures, width, gutter=2):
+    """Shelves, the tallest first: (atlas, {name: (x, y, w, h)})."""
+    order = sorted(pictures, key=lambda n: (-pictures[n].height, n))
+    places, x, y, shelf = {}, 0, 0, 0
+    for n in order:
+        im = pictures[n]
+        if x + im.width > width:
+            x, y, shelf = 0, y + shelf + gutter, 0
+        places[n] = (x, y, im.width, im.height)
+        x += im.width + gutter
+        shelf = max(shelf, im.height)
+    atlas = Image.new("RGBA", (width, y + shelf), (0, 0, 0, 0))
+    for n, (x, y, w, h) in places.items():
+        atlas.alpha_composite(pictures[n], (x, y))
+    return atlas, places
+
+
+def make_keys(pack):
+    """The two atlases and their index: a line per key, `name gx gy gw gh sx sy sw sh`, the name Xelu's."""
+    keys = key_pictures(pack)
+    square = keys["A"].height
+    glyphs = {n: scaled(keys[KEY_GLYPH_SOURCE.get(n, n)], KEY_GLYPH_SQUARE / square, KEY_GLYPH_MAX) for n in keys}
+    sprites = {n: scaled(keys[n], KEY_SPRITE_SQUARE / square) for n in keys}
+    glyph_atlas, glyph_places = pack_atlas(glyphs, 512)
+    sprite_atlas, sprite_places = pack_atlas(sprites, 1024, 4)
+    index = "".join("%s %d %d %d %d %d %d %d %d\n" % ((n,) + glyph_places[n] + sprite_places[n]) for n in sorted(keys))
+    return glyph_atlas, sprite_atlas, index
+
+
 def preview(pictures, path):
     """The pictures at their size and three times it, on a dark scene and on parchment."""
     names = list(pictures)
@@ -178,9 +232,14 @@ def main():
     pictures = make(args.pack)
     for name, im in pictures.items():
         im.save(os.path.join(HERE, name + ".png"), optimize=True)
+    glyph_atlas, sprite_atlas, index = make_keys(args.pack)
+    glyph_atlas.save(os.path.join(HERE, "keys_glyph.png"), optimize=True)
+    sprite_atlas.save(os.path.join(HERE, "keys_sprite.png"), optimize=True)
+    with open(os.path.join(HERE, "keys.txt"), "w", newline="\n") as f:
+        f.write(index)
     if args.preview:
         preview(pictures, args.preview)
-    print(f"{len(pictures)} pictures in {HERE}")
+    print(f"{len(pictures)} pictures and {index.count(chr(10))} keys in {HERE}")
 
 
 if __name__ == "__main__":
