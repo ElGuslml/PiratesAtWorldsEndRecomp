@@ -67,6 +67,7 @@ set(POTCAWE_SOURCES
     src/main.cpp
     src/aspect.cpp
     src/button_prompts.cpp
+    src/dxt5_texture.cpp
     src/views.cpp
     src/framerate.cpp
     src/msaa.cpp
@@ -137,6 +138,9 @@ endif()
 # executable's first icon is also the one SDL and the launcher use for their windows.
 if(WIN32)
     target_sources(potcawe PRIVATE res/game.rc)
+    # The button pictures it embeds (res/prompts/, src/button_prompts.cpp).
+    file(GLOB POTCAWE_PROMPT_PICTURES "${CMAKE_CURRENT_SOURCE_DIR}/res/prompts/*.png")
+    set_source_files_properties(res/game.rc PROPERTIES OBJECT_DEPENDS "${POTCAWE_PROMPT_PICTURES}")
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/res/icon.ico")
         target_compile_definitions(potcawe PRIVATE POTCAWERECOMP_HAS_ICON)
         target_compile_definitions(potcawe_launcher PRIVATE POTCAWERECOMP_HAS_ICON)

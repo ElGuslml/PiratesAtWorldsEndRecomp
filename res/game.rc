@@ -6,6 +6,17 @@
 1 ICON "icon.ico"
 #endif
 
+// Button pictures for controllers whose art is not on the game's disc (src/button_prompts.cpp), made by
+// prompts/make_prompts.py from Xelu's Free Controller & Key Prompts (CC0).
+PROMPT_PS5_OPTIONS_GLYPH RCDATA "prompts/ps5_options_glyph.png"
+PROMPT_PS5_CREATE_GLYPH RCDATA "prompts/ps5_create_glyph.png"
+PROMPT_PS4_OPTIONS_GLYPH RCDATA "prompts/ps4_options_glyph.png"
+PROMPT_PS4_SHARE_GLYPH RCDATA "prompts/ps4_share_glyph.png"
+PROMPT_PS5_OPTIONS_SPRITE RCDATA "prompts/ps5_options_sprite.png"
+PROMPT_PS5_CREATE_SPRITE RCDATA "prompts/ps5_create_sprite.png"
+PROMPT_PS4_OPTIONS_SPRITE RCDATA "prompts/ps4_options_sprite.png"
+PROMPT_PS4_SHARE_SPRITE RCDATA "prompts/ps4_share_sprite.png"
+
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION POTCAWERECOMP_VERSION
 PRODUCTVERSION POTCAWERECOMP_VERSION

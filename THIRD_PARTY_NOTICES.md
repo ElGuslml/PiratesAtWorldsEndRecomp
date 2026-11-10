@@ -17,6 +17,12 @@ AMD FSR 3.1). Their notices:
 DLAA uses NVIDIA DLSS. NVIDIA and DLSS are trademarks or registered trademarks of NVIDIA Corporation in the
 U.S. and other countries.
 
+## Button pictures
+
+`PiratesAtWorldsEndRecomp.exe` embeds button pictures for the PS4's and the PS5's OPTIONS and SHARE / CREATE buttons
+(`res/prompts/`, docs/button-prompts.md), retouched from **Xelu's Free Controller & Key Prompts** by Nicolae "Xelu"
+Berbece (Those Awesome Guys), https://thoseawesomeguys.com/prompts/, in the public domain (CC0 1.0).
+
 ## PiratesAtWorldsEnd Launcher
 
 The launcher (the RecompLauncher submodule, `recomp_launcher/`, and this game's `launcher/`) uses SDL 3, Dear ImGui,

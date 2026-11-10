@@ -216,3 +216,7 @@ name = "PotcaweButtonPromptsFrameHook"
 address = 0x82325010   # cmplwi cr6,r3,0 (sub_82324F80: after the EDL decoder, r3 = decoded, r31 = the section)
 name = "PotcaweButtonPromptsSectionHook"
 registers = ["r3", "r31"]
+[[midasm_hook]]
+address = 0x82348D88   # addi r1,r1,112 (sub_82348D28, a text by GUID: after sub_82426AE8, r3 = its record, r29 = the GUID)
+name = "PotcaweButtonPromptsTextHook"
+registers = ["r3", "r29"]
